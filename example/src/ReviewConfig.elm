@@ -2,6 +2,13 @@ module ReviewConfig exposing (config)
 
 
 import Review.Rule exposing (Rule)
+import Install.TypeVariant
+import Install.FieldInTypeAlias
+import Install.Initializer
+import Install.ClauseInCase
+
+
+
 
 
 {-| The first three rules in the config file add variants to somoe
