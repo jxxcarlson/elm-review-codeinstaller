@@ -10,5 +10,12 @@ code to the 'init' and `updateFromFrontend` function of the`Backend` module.
 -}
 config : List Rule
 config =
-    [
+    [ Install.TypeVariant.makeRule "Types" "ToBackend" "ResetCounter"
+    , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "message: String"
+    , Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
+    , Install.ClauseInCase.makeRule
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
     ]
