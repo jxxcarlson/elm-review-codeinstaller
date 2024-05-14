@@ -1,0 +1,7 @@
+node_modules/
+elm-stuff/
+.DS_Store
+
+# Editors
+.idea/
+ElmjutsuDumMyM0DuL3.elm
