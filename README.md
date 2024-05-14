@@ -1,29 +1,34 @@
-# elm-review-codeinstaller
+# Elm-review-install-code
 
-Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/) rules to REPLACEME.
+May 14, 2024
 
-## Provided rules
+This aim of this project is to write a set of elm-review rules
+which make it easy to add new abilities to an existing Elm app.
 
-- [`Install.ClauseInCase`](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/1.0.0/Install-ClauseInCase) - Reports REPLACEME.
+Consider, for example, the "magic-token" authentification
+system for Lamdera apps at [jxxcarlson/kitchen-sink](https://github.com/jxxcarlson/kitchen-sink).
+While the code from this app can be extracted by hand and implanted
+in another, that process is laborious, time-consuming, and
+utterly routine. In other words, it is a task best carried out by a 
+computer program.
 
-## Configuration
+The project is still in development, so expect it to change a lot
+over the next weeks and likely months.  Consider it an experiment.
 
-```elm
-module ReviewConfig exposing (config)
+To test the review code in its current state, try running this in 
+a clean Lamdera project:
 
-import Install.ClauseInCase
-import Review.Rule exposing (Rule)
-
-config : List Rule
-config =
-    [ Install.ClauseInCase.rule
-    ]
+```
+npx elm-review --template jxxcarlson/elm-review-install-code/review
 ```
 
-## Try it out
+A total of five changes should be made to the Lamdera code in `src`.
 
-You can try the example configuration above out by running the following command:
+See the comments at the top of `Install/ClauseInCase.elm` for
+more information.
 
-```bash
-elm-review --template jxxcarlson/elm-review-codeinstaller/example
-```
+Once the code stabilized, it will be published on the package manager.
+
+
+**Note.** The Lamdera code is not working: the Lamdera codecs have been
+removed for the time being so that `elm-review` will run.  An issue to be addresed.
