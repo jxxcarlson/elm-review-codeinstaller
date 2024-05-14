@@ -1,4 +1,4 @@
-module Install.FieldInTypeAlias exposing (..)
+module Install.FieldInTypeAlias exposing (makeRule)
 
 {-| Add a field to specified type alias
 in a specified module. For example, if you put the code below in your

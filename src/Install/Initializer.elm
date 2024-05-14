@@ -1,4 +1,4 @@
-module Install.Initializer exposing (..)
+module Install.Initializer exposing (makeRule)
 
 {-| Add a field to the body of a function like `init` in which the
 the return value is of the form `( Model, Cmd msg )`. As in
