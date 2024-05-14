@@ -1,11 +1,5 @@
 module Install.Library exposing (..)
 
-{-|
-
-@docs rule
-
--}
-
 import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetBlock, LetDeclaration(..))
 import Elm.Syntax.Node as Node exposing (Node(..), range)
 import Elm.Syntax.Pattern exposing (Pattern(..))

@@ -15,7 +15,7 @@ Then you will have
 
 where the last variant is the one added.
 
-b@docs rule
+@docs makeRule
 
 -}
 
@@ -29,6 +29,11 @@ import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNam
 import Review.Rule as Rule exposing (Error, Rule)
 
 
+{-| Create a rule that adds a variant to a type in a specified module:
+
+    Install.TypeVariant.makeRule "Types" "ToBackend" "ResetCounter"
+
+-}
 makeRule : String -> String -> String -> Rule
 makeRule moduleName typeName_ variant_ =
     let

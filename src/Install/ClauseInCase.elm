@@ -23,7 +23,7 @@ in a specified module. For example, if you put the code below in your
             ResetCounter ->
                 ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
-b@docs rule
+@docs makeRule
 
 -}
 
@@ -38,6 +38,8 @@ import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
 
 
+{-| Create a rule that adds a clause to a case expression in a specified function
+-}
 makeRule : String -> String -> String -> String -> Rule
 makeRule moduleName functionName clause functionCall =
     let

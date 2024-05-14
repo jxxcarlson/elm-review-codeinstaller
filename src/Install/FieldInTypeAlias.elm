@@ -16,7 +16,7 @@ Thus we will have
         , quot : String
         }
 
-b@docs rule
+@docs makeRule
 
 -}
 
@@ -31,6 +31,8 @@ import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNam
 import Review.Rule as Rule exposing (Error, Rule)
 
 
+{-| Create a rule that adds a field to a type alias in a specified module.
+-}
 makeRule : String -> String -> String -> Rule
 makeRule moduleName_ typeName_ fieldDefinition_ =
     let

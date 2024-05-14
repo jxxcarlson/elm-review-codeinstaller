@@ -18,7 +18,7 @@ Thus we will have
          , Cmd.none
          )
 
-b@docs rule
+@docs makeRule
 
 -}
 
@@ -37,6 +37,15 @@ type alias Ignored =
     Set String
 
 
+{-| Create a rule that adds a field to the body of a function like
+`init` in which the return value is of the form `( Model, Cmd msg )`.
+As in the `ReviewConfig` item below, you specify
+the module name, the function name, as well as the
+field name and value to be added to the function:
+
+    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""}
+
+-}
 makeRule : String -> String -> String -> String -> Rule
 makeRule moduleName functionName fieldName fieldValue =
     let
