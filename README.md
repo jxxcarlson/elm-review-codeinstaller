@@ -1,4 +1,4 @@
-# Elm-review-install-code
+# Elm-review-codeinstaller
 
 May 14, 2024
 
