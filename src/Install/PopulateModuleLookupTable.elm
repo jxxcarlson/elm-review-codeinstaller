@@ -1,9 +1,5 @@
 module Install.PopulateModuleLookupTable exposing (..)
 
-import Dict
-import Elm.Syntax.Declaration
-import Elm.Syntax.Node exposing (Node)
-import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule
 
 

@@ -22,12 +22,10 @@ Thus we will have
 
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node, range)
+import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
-import Elm.Syntax.Type exposing (ValueConstructor)
-import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
+import Elm.Syntax.TypeAnnotation as TypeAnnotation
 import Review.Fix as Fix exposing (Fix)
-import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -138,8 +136,3 @@ declarationVisitor moduleName_ typeName_ fieldName_ fieldValueCode_ node context
 
         _ ->
             ( [], context )
-
-
-type alias ModuleContext =
-    { moduleName : String
-    }

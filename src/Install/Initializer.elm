@@ -23,11 +23,11 @@ Thus we will have
 -}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetBlock, LetDeclaration(..))
+import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node(..), range)
+import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
-import Install.Library exposing (..)
+import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
@@ -134,9 +134,6 @@ visitFunction namespace moduleName functionName fieldName fieldValue ignored fun
 
                 _ ->
                     ( [], Elm.Syntax.Range.empty )
-
-        _ =
-            ( fieldNames, lastRange )
     in
     if
         isInCorrectModule

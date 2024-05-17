@@ -28,9 +28,9 @@ in a specified module. For example, if you put the code below in your
 -}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetBlock, LetDeclaration(..))
+import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node(..), range)
+import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range exposing (Range)
 import Review.Fix as Fix exposing (Fix)
