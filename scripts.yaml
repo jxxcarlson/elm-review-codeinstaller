@@ -1,0 +1,5 @@
+scripts:
+  review: npx elm-review
+  review-debug: npx elm-review --ignore-dirs vendor,src/Evergreen/ --fix-all --rules NoDebug.Log
+  cloc: cloc --by-file --exclude-dir=Evergreen,Pages src/
+  cgraph: npx elm-review --template miniBill/elm-review-call-graph/example --extract --report=json | jq ".extracts.ExtractCallGraph" > call-graph.json
