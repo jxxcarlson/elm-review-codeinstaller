@@ -1,7 +1,4 @@
-module Install.ClauseInCase exposing
-    ( init, makeRule, withInsertAfter, withCustomErrorMessage
-    , Config, CustomError
-    )
+module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError)
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -45,7 +42,7 @@ in a specified module. For example, if you put the code below in your
             |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
             |> Install.ClauseInCase.makeRule
 
-@docs init, makeRule, withInsertAfter, withCustomErrorMessage
+@docs init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError
 
 -}
 
