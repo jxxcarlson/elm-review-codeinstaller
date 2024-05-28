@@ -1,7 +1,4 @@
-module Install.ClauseInCase exposing
-    ( init, makeRule, withInsertAfter, withCustomErrorMessage
-    , Config, CustomError
-    )
+module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError)
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -45,7 +42,7 @@ in a specified module. For example, if you put the code below in your
             |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
             |> Install.ClauseInCase.makeRule
 
-@docs init, makeRule, withInsertAfter, withCustomErrorMessage
+@docs init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError
 
 -}
 
@@ -63,6 +60,8 @@ import Set exposing (Set)
 import String.Extra
 
 
+{-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
+-}
 type Config
     = Config
         { moduleName : String
@@ -74,6 +73,8 @@ type Config
         }
 
 
+{-| Custom error message to be displayed when running `elm-review --fix` or `elm-review --fix-all`
+-}
 type CustomError
     = CustomError { message : String, details : List String }
 
@@ -107,8 +108,8 @@ makeRule : Config -> Rule
 makeRule (Config config) =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
-        visitor =
-            declarationVisitor config.moduleName config.functionName config.clause config.functionCall config.clauseToInsertAfter config.customErrorMessage
+        visitor declaration context =
+            declarationVisitor declaration config.moduleName config.functionName config.clause config.functionCall config.clauseToInsertAfter context config.customErrorMessage
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.ClauseInCase" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -137,8 +138,8 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> String -> String -> String -> Maybe String -> Node Declaration -> Context -> CustomError -> ( List (Rule.Error {}), Context )
-declarationVisitor moduleName functionName clause functionCall clauseToInsertAfter (Node _ declaration) context customError =
+declarationVisitor : Node Declaration -> String -> String -> String -> String -> Maybe String -> Context -> CustomError -> ( List (Rule.Error {}), Context )
+declarationVisitor (Node _ declaration) moduleName functionName clause functionCall clauseToInsertAfter context customError =
     case declaration of
         FunctionDeclaration function ->
             let
