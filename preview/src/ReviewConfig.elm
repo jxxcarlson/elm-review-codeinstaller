@@ -17,5 +17,10 @@ import Review.Rule exposing (Rule)
 
 config : List Rule
 config =
-    [ Install.ClauseInCase.rule
+    [ Install.ClauseInCase.init
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        |> Install.ClauseInCase.makeRule
     ]
