@@ -73,6 +73,8 @@ type Config
         }
 
 
+{-| Custom error message to be displayed when running `elm-review --fix` or `elm-review --fix-all`
+-}
 type CustomError
     = CustomError { message : String, details : List String }
 
