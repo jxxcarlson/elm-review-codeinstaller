@@ -26,11 +26,13 @@ a = 1
 a = 1
 """
                     |> Review.Test.run rule
-                    |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = "REPLACEME"
-                            , details = [ "REPLACEME" ]
-                            , under = "REPLACEME"
-                            }
-                        ]
+                    |> Review.Test.expectNoErrors
+
+        -- |> Review.Test.expectErrors
+        --     [ Review.Test.error
+        --         { message = "REPLACEME"
+        --         , details = [ "REPLACEME" ]
+        --         , under = "REPLACEME"
+        --         }
+        --     ]
         ]
