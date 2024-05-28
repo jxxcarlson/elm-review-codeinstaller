@@ -8,6 +8,7 @@
     "dependencies": {
         "direct": {
             "elm/core": "1.0.5",
+            "elmcraft/core-extra": "2.0.0",
             "jfmengels/elm-review": "2.13.2",
             "stil4m/elm-syntax": "7.3.2"
         },
@@ -18,6 +19,7 @@
             "elm/parser": "1.1.0",
             "elm/project-metadata-utils": "1.0.2",
             "elm/random": "1.0.0",
+            "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.3",
             "elm-explorations/test": "2.2.0",
