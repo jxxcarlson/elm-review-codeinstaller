@@ -60,6 +60,8 @@ import Set exposing (Set)
 import String.Extra
 
 
+{-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
+-}
 type Config
     = Config
         { moduleName : String
