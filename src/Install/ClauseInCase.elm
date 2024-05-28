@@ -107,8 +107,8 @@ makeRule : Config -> Rule
 makeRule (Config config) =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
-        visitor =
-            declarationVisitor config.moduleName config.functionName config.clause config.functionCall config.clauseToInsertAfter config.customErrorMessage
+        visitor declaration context =
+            declarationVisitor declaration config.moduleName config.functionName config.clause config.functionCall config.clauseToInsertAfter context config.customErrorMessage
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.ClauseInCase" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -137,8 +137,8 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> String -> String -> String -> Maybe String -> Node Declaration -> Context -> CustomError -> ( List (Rule.Error {}), Context )
-declarationVisitor moduleName functionName clause functionCall clauseToInsertAfter (Node _ declaration) context customError =
+declarationVisitor : Node Declaration -> String -> String -> String -> String -> Maybe String -> Context -> CustomError -> ( List (Rule.Error {}), Context )
+declarationVisitor (Node _ declaration) moduleName functionName clause functionCall clauseToInsertAfter context customError =
     case declaration of
         FunctionDeclaration function ->
             let
