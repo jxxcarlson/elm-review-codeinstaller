@@ -2,6 +2,8 @@
 
 Package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
 
+The project is still in development, so expect it to change a lot over the next weeks and likely months.  Consider it an experiment.
+
 ## Installation
 To install `elm-review-codeinstaller`, add it to your `elm.json` dependencies:
 
@@ -91,6 +93,12 @@ update msg model =
 - **Install.Initializer**: Add a field to the body of an initializer function where the return value is of the form `( Model, Cmd msg )`. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Initializer).
 - **Install.TypeVariant**: Add a variant to a specified type in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-TypeVariant).
 
+## Try it out
+To test the review code in its current state, try running this in a clean Lamdera project:
+
+```
+npx elm-review --template jxxcarlson/elm-review-install-code/example
+```
 
 ## Contributing
 
