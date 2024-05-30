@@ -150,7 +150,7 @@ errorWithFix fieldName fieldValue node errorRange =
     Rule.errorWithFix
         { message = "Add field " ++ fieldName ++ " with value " ++ fieldValue ++ " to the model"
         , details =
-            [ "This addition is required to add magic-token authentication to your application"
+            [ ""
             ]
         }
         (Node.range node)
