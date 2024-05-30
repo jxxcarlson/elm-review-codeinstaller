@@ -60,7 +60,7 @@ makeRule moduleName_ typeName_ fieldDefinition_ =
                 |> String.trim
 
         fieldCode =
-            "\n    , " ++ fieldDefinition_ ++ "\n    }"
+            "    , " ++ fieldDefinition_ ++ "\n    }"
 
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
