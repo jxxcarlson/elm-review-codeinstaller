@@ -94,8 +94,7 @@ errorWithFix typeName_ fieldName fieldCode node errorRange =
     Rule.errorWithFix
         { message = "Add " ++ fieldName ++ " to " ++ typeName_
         , details =
-            [ "This addition is required to add magic-token authentication to your application"
-            ]
+            [ "" ]
         }
         (Node.range node)
         (case errorRange of
