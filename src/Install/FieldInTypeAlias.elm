@@ -29,7 +29,25 @@ import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Create a rule that adds a field to a type alias in a specified module.
+{-| Create a rule that adds a field to a type alias in a specified module. Example usage:
+
+    module Types exposing (FrontendModel)
+
+    type alias FrontendModel =
+        { counter : Int
+        , clientId : String
+        }
+
+After running the rule with the following code:
+
+    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "quot: String"
+
+        type alias FrontendModel =
+            { counter : Int
+            , clientId : String
+            , quot : String
+            }
+
 -}
 makeRule : String -> String -> String -> Rule
 makeRule moduleName_ typeName_ fieldDefinition_ =
