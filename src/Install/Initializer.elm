@@ -171,6 +171,6 @@ addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
 addMissingCase insertionPoint fieldName fieldValue =
     let
         insertion =
-            ", " ++ fieldName ++ " = " ++ fieldValue ++ "\n  "
+            ", " ++ fieldName ++ " = " ++ fieldValue ++ "\n"
     in
     Fix.insertAt { row = insertionPoint.row, column = insertionPoint.column } insertion
