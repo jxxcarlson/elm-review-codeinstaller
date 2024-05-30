@@ -43,7 +43,7 @@ As in the `ReviewConfig` item below, you specify
 the module name, the function name, as well as the
 field name and value to be added to the function:
 
-    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""}
+    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
 
 -}
 makeRule : String -> String -> String -> String -> Rule
