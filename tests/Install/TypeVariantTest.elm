@@ -1,8 +1,6 @@
 module Install.TypeVariantTest exposing (all)
 
 import Install.TypeVariant
-import Review.Rule exposing (Rule)
-import Review.Test
 import Run
 import Test exposing (Test, describe, test)
 
