@@ -104,6 +104,10 @@ npx elm-review --template jxxcarlson/elm-review-install-code/example
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
 
+## Contributors
+
+James Carlson and Mateus Leite.
+
 ## License
 
 This package is licensed under the MIT License.
