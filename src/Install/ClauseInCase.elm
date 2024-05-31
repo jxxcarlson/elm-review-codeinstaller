@@ -93,7 +93,7 @@ init moduleName functionName clause functionCall =
         , clause = clause
         , functionCall = functionCall
         , clauseToInsertAfter = Nothing
-        , customErrorMessage = CustomError { message = "Add handler for " ++ clause, details = [] }
+        , customErrorMessage = CustomError { message = "Add handler for " ++ clause, details = [ "" ] }
         }
 
 
@@ -197,6 +197,13 @@ visitFunction namespace clause functionCall ignored function clauseToInsertAfter
 
 rangeToInsertClause : Maybe String -> List Case -> Node Expression -> Range
 rangeToInsertClause clauseToInsertAfter cases expression =
+    let
+        lastClauseExpression =
+            cases
+                |> List.Extra.last
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault expression
+    in
     case clauseToInsertAfter of
         Just previousClause ->
             let
@@ -214,10 +221,10 @@ rangeToInsertClause clauseToInsertAfter cases expression =
                         |> Node.range
 
                 Nothing ->
-                    Node.range expression
+                    Node.range lastClauseExpression
 
         Nothing ->
-            Node.range expression
+            Node.range lastClauseExpression
 
 
 errorWithFix : CustomError -> String -> String -> Node a -> Maybe Range -> Error {}
@@ -242,7 +249,7 @@ addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
 addMissingCase { row, column } clause functionCall =
     let
         insertion =
-            "\n\n        " ++ clause ++ " -> " ++ functionCall ++ "\n\n"
+            "\n         " ++ clause ++ " -> " ++ functionCall ++ "\n\n"
     in
     Fix.insertAt { row = row, column = column } insertion
 
