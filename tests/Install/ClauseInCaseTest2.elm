@@ -1,6 +1,6 @@
 module Install.ClauseInCaseTest2 exposing (all)
 
-import Install.ClauseInCase exposing (init, makeRule)
+import Install.ClauseInCase
 import Review.Test
 import Test exposing (Test, describe, test)
 
