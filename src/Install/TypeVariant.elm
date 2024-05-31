@@ -77,7 +77,7 @@ errorWithFix typeName_ variantName_ variantCode_ node errorRange =
     Rule.errorWithFix
         { message = "Add " ++ variantName_ ++ " to " ++ typeName_
         , details =
-            [ "This addition is required to add magic-token authentication to your application"
+            [ ""
             ]
         }
         (Node.range node)

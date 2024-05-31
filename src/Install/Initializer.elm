@@ -43,7 +43,7 @@ As in the `ReviewConfig` item below, you specify
 the module name, the function name, as well as the
 field name and value to be added to the function:
 
-    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""}
+    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
 
 -}
 makeRule : String -> String -> String -> String -> Rule
@@ -150,7 +150,7 @@ errorWithFix fieldName fieldValue node errorRange =
     Rule.errorWithFix
         { message = "Add field " ++ fieldName ++ " with value " ++ fieldValue ++ " to the model"
         , details =
-            [ "This addition is required to add magic-token authentication to your application"
+            [ ""
             ]
         }
         (Node.range node)
@@ -171,6 +171,6 @@ addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
 addMissingCase insertionPoint fieldName fieldValue =
     let
         insertion =
-            ", " ++ fieldName ++ " = " ++ fieldValue ++ "\n  "
+            ", " ++ fieldName ++ " = " ++ fieldValue ++ "\n"
     in
     Fix.insertAt { row = insertionPoint.row, column = insertionPoint.column } insertion

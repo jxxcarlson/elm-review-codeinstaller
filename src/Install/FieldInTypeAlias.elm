@@ -29,7 +29,25 @@ import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Create a rule that adds a field to a type alias in a specified module.
+{-| Create a rule that adds a field to a type alias in a specified module. Example usage:
+
+    module Types exposing (FrontendModel)
+
+    type alias FrontendModel =
+        { counter : Int
+        , clientId : String
+        }
+
+After running the rule with the following code:
+
+    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "quot: String"
+
+        type alias FrontendModel =
+            { counter : Int
+            , clientId : String
+            , quot : String
+            }
+
 -}
 makeRule : String -> String -> String -> Rule
 makeRule moduleName_ typeName_ fieldDefinition_ =
@@ -42,7 +60,7 @@ makeRule moduleName_ typeName_ fieldDefinition_ =
                 |> String.trim
 
         fieldCode =
-            "\n    , " ++ fieldDefinition_ ++ "\n    }"
+            "    , " ++ fieldDefinition_ ++ "\n    }"
 
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
@@ -76,8 +94,7 @@ errorWithFix typeName_ fieldName fieldCode node errorRange =
     Rule.errorWithFix
         { message = "Add " ++ fieldName ++ " to " ++ typeName_
         , details =
-            [ "This addition is required to add magic-token authentication to your application"
-            ]
+            [ "" ]
         }
         (Node.range node)
         (case errorRange of
