@@ -1,4 +1,4 @@
-module Run exposing (expectNoErrorsTest, testFix)
+module Run exposing (expectErrorsTest, expectNoErrorsTest, testFix)
 
 import Review.Rule exposing (Rule)
 import Review.Test
@@ -12,6 +12,23 @@ expectNoErrorsTest description src rule =
             src
                 |> Review.Test.run rule
                 |> Review.Test.expectNoErrors
+
+
+
+-- expectNoErrors : ReviewResult -> Expectation
+
+
+expectErrorsTest : String -> String -> Rule -> Test
+expectErrorsTest description src rule =
+    test description <|
+        \() ->
+            src
+                |> Review.Test.run rule
+                |> Review.Test.expectErrors []
+
+
+
+-- expectErrors : List ExpectedError -> ReviewResult -> Expectation
 
 
 type alias TestData =
