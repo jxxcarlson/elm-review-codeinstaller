@@ -1,33 +1,32 @@
 module Install.ClauseInCaseTest2 exposing (all)
 
-import Expect exposing (Expectation)
 import Install.ClauseInCase
-import Review.Rule exposing (Rule)
-import Review.Test
+import Run
 import Test exposing (Test, describe, test)
 
 
 all : Test
 all =
     describe "Install.ClauseInCase"
-        [ makeTest "Test 1: should report an error and fix it" src1 rule1 under1 fixed1 "Add handler for ResetCounter"
+        [ Run.testFix test1
+
+        --, makeTestExpectNoErrors "Test 2" src1 rule1
+        -- , makeTestExpectNoErrors "Test 2" src2 rule2
         ]
-
-
-makeTest : String -> String -> Rule -> String -> String -> String -> Test
-makeTest description src rule under fixed message =
-    test description <|
-        \() ->
-            src
-                |> Review.Test.run rule
-                |> Review.Test.expectErrors
-                    [ Review.Test.error { message = message, details = [ "" ], under = under }
-                        |> Review.Test.whenFixed fixed
-                    ]
 
 
 
 -- TEST 1
+
+
+test1 =
+    { description = "Test 1: should report an error and fix it"
+    , src = src1
+    , rule = rule1
+    , under = under1
+    , fixed = fixed1
+    , message = "Add handler for ResetCounter"
+    }
 
 
 rule1 =
@@ -84,3 +83,26 @@ under1 =
 
 
 -- TEST 2
+
+
+rule2 =
+    Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
+        |> Install.ClauseInCase.makeRule
+
+
+src2 =
+    """module Frontend exposing (Model, app)
+
+update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
+       update msg model =
+           case msg of
+               Increment ->
+                   ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
+       
+               Decrement ->
+                   ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+       
+               FNoop ->
+                   ( model, Cmd.none )
+                   
+"""
