@@ -11,7 +11,7 @@ import Install.ClauseInCase
 
 
 
-{-| The first three rules in the config file add variants to somoe
+{-| The first three rules in the config file add variants to some
 of the types defined in module `Types`. The last two rules add
 code to the 'init' and `updateFromFrontend` function of the`Backend` module.
 -}
