@@ -10,19 +10,19 @@ import Test exposing (Test, describe, test)
 all : Test
 all =
     describe "Install.ClauseInCase"
-        [ makeTest "Test 1: should report an error and fix it" src1 rule1 under1 "Add handler for ResetCounter"
+        [ makeTest "Test 1: should report an error and fix it" src1 rule1 under1 fixed1 "Add handler for ResetCounter"
         ]
 
 
-makeTest : String -> String -> Rule -> String -> String -> Test
-makeTest description src rule under message =
+makeTest : String -> String -> Rule -> String -> String -> String -> Test
+makeTest description src rule under fixed message =
     test description <|
         \() ->
             src
                 |> Review.Test.run rule
                 |> Review.Test.expectErrors
                     [ Review.Test.error { message = message, details = [ "" ], under = under }
-                        |> Review.Test.whenFixed fixed1
+                        |> Review.Test.whenFixed fixed
                     ]
 
 
