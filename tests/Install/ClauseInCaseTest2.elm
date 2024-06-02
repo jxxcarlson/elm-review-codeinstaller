@@ -8,10 +8,10 @@ import Test exposing (Test, describe, test)
 all : Test
 all =
     describe "Install.ClauseInCase"
-        [ --Run.testFix test1a
-          -- Run.testFix test1b
-          Run.testFix test1c
+        [ Run.testFix test1a
 
+        --, Run.testFix test1b
+        --, Run.testFix test1c
         -- Run.testFix test2
         ]
 
@@ -111,7 +111,7 @@ updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd
 updateFromFrontend sessionId clientId msg model =
     case msg of
          ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
-         
+
          CounterIncremented ->
             let
                 newCounter =

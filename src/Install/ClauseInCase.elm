@@ -192,7 +192,7 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
             in
             if not (findClause clause cases) then
                 let
-                    rangeToInsert : Maybe ( Range, Int )
+                    rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
                         rangeToInsertClause insertAt cases expression |> Just
                 in
@@ -205,7 +205,7 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
             ( [], context )
 
 
-rangeToInsertClause : InsertAt -> List Case -> Node Expression -> ( Range, Int )
+rangeToInsertClause : InsertAt -> List Case -> Node Expression -> ( Range, Int, Int )
 rangeToInsertClause insertAt cases expression =
     let
         lastClauseExpression =
@@ -213,6 +213,18 @@ rangeToInsertClause insertAt cases expression =
                 |> List.Extra.last
                 |> Maybe.map Tuple.second
                 |> Maybe.withDefault expression
+
+        firstClauseExpression =
+            cases
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault expression
+
+        _ =
+            Debug.log "LAST CLAUSE RANGE" (Node.range lastClauseExpression)
+
+        _ =
+            Debug.log "FIRST CLAUSE RANGE" (Node.range firstClauseExpression)
     in
     case insertAt of
         After previousClause ->
@@ -229,44 +241,59 @@ rangeToInsertClause insertAt cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2 ))
+                        |> Debug.log "NODE RANGE (1)"
+                        |> (\range -> ( range, 2, 0 ))
 
                 Nothing ->
-                    ( Node.range lastClauseExpression, 2 )
+                    ( Node.range lastClauseExpression |> Debug.log "NODE RANGE (2)", 2, 0 )
 
         AtBeginning ->
             -- TODO: Review, is it correct?
-            ( Node.range expression, 1 )
+            ( Node.range expression |> Debug.log "NODE RANGE (3)", 1, 0 )
 
         AtEnd ->
-            ( Node.range lastClauseExpression, 2 )
+            let
+                range =
+                    Node.range lastClauseExpression |> Debug.log "NODE RANGE (4)"
+            in
+            ( range, 2, range.start.column |> Debug.log "H OFFSET" )
 
 
-errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int ) -> Error {}
+errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
 errorWithFix (CustomError customError) clause functionCall node errorRange =
+    let
+        deltaH =
+            Node.range node |> .start |> .row |> Debug.log "@@NODE RANGE, start, row"
+    in
     Rule.errorWithFix
         customError
         (Node.range node |> Debug.log "RANGE")
         (case errorRange of
-            Just ( range, verticalOffset ) ->
+            Just ( range, verticalOffset, horizontalOffset ) ->
                 let
+                    horizontalOffset2 =
+                        Debug.log "HORI OFFF!!!" horizontalOffset - deltaH + 1
+
                     insertionPoint =
                         { row = range.end.row + verticalOffset, column = 0 }
+
+                    prefix =
+                        "\n" ++ String.repeat horizontalOffset2 " "
                 in
-                [ addMissingCase insertionPoint clause functionCall |> Debug.log "insertion" ]
+                [ addMissingCase insertionPoint prefix clause functionCall |> Debug.log "insertion" ]
 
             Nothing ->
                 []
         )
 
 
-addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
-addMissingCase { row, column } clause functionCall =
+addMissingCase : { row : Int, column : Int } -> String -> String -> String -> Fix
+addMissingCase { row, column } prefix clause functionCall =
     let
         insertion =
-            "\n         " ++ clause ++ " -> " ++ functionCall ++ "\n\n"
+            prefix ++ clause ++ " -> " ++ functionCall ++ "\n\n"
     in
-    Fix.insertAt { row = row, column = column } insertion
+    Fix.insertAt ({ row = row, column = column } |> Debug.log "INSERTING AT") insertion
 
 
 
