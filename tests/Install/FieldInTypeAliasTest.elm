@@ -1,45 +1,46 @@
 module Install.FieldInTypeAliasTest exposing (..)
 
 import Install.FieldInTypeAlias
-import Review.Test
 import Run
-import Test exposing (Test, describe, test)
+import Test exposing (Test, describe)
 
 
 all : Test
 all =
-    let
-        rule =
-            Install.FieldInTypeAlias.makeRule "Client" "Client" "name : String"
-    in
     describe "Install.FieldInTypeAlias"
-        [ test "should not report an error when the field already exists" <|
-            \() ->
-                """module Client exposing (..)
+        [ Run.expectNoErrorsTest test1.description test1.src test1.rule
+        , Run.testFix test2
+        ]
+
+
+test1 =
+    { description = "should not report an error when the field already exists"
+    , src = """module Client exposing (..)
 type alias Client =
     { name : String
     , age : Int
     }
-"""
-                    |> Review.Test.run rule
-                    |> Review.Test.expectNoErrors
-        , test "should report an error when the field does not exist" <|
-            \() ->
-                """module Client exposing (..)
+    """
+    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" "name : String"
+    }
+
+
+test2 =
+    { description = "should report an error when the field does not exist"
+    , src = """module Client exposing (..)
 type alias Client =
     { age : Int
     }
-"""
-                    |> Review.Test.run rule
-                    |> Review.Test.expectErrors
-                        [ Review.Test.error { message = "Add name to Client", details = [ "" ], under = """type alias Client =
+    """
+    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" "name : String"
+    , under = """type alias Client =
     { age : Int
-    }""" }
-                            |> Review.Test.whenFixed """module Client exposing (..)
+    }"""
+    , fixed = """module Client exposing (..)
 type alias Client =
     { age : Int
     , name : String
     }
-"""
-                        ]
-        ]
+    """
+    , message = "Add name to Client"
+    }
