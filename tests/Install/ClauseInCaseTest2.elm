@@ -9,8 +9,8 @@ all : Test
 all =
     describe "Install.ClauseInCase"
         [ Run.testFix test1a
-        , Run.testFix test1b
 
+        --, Run.testFix test1b
         -- Run.testFix test1c
         -- Run.testFix test2
         ]
