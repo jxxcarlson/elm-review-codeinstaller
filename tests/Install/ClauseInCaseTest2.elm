@@ -8,10 +8,10 @@ import Test exposing (Test, describe, test)
 all : Test
 all =
     describe "Install.ClauseInCase"
-        [ -- Run.testFix test1a
-          -- Run.testFix test1b
-          Run.testFix test1c
+        [ Run.testFix test1a
+        , Run.testFix test1b
 
+        -- Run.testFix test1c
         -- Run.testFix test2
         ]
 
@@ -43,7 +43,7 @@ test1b =
 test1c =
     { description = "Test 1c, withInsertAtBeginning: should report an error and fix it"
     , src = src1
-    , rule = rule1c
+    , rule = rule1b
     , under = under1c
     , fixed = fixed1c
     , message = "Add handler for ResetCounter"
@@ -61,10 +61,12 @@ rule1b =
         |> Install.ClauseInCase.makeRule
 
 
-rule1c =
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.ClauseInCase.makeRule
+
+--
+--rule1c =
+--    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+--        |> Install.ClauseInCase.withInsertAtBeginning
+--        |> Install.ClauseInCase.makeRule
 
 
 src1 =
