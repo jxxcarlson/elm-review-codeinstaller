@@ -2,7 +2,7 @@ module Install.ClauseInCaseTest2 exposing (all)
 
 import Install.ClauseInCase
 import Run
-import Test exposing (Test, describe, test)
+import Test exposing (Test, describe)
 
 
 all : Test
