@@ -2,7 +2,7 @@ module Install.ClauseInCaseTest2 exposing (all)
 
 import Install.ClauseInCase
 import Run
-import Test exposing (Test, describe, test)
+import Test exposing (Test, describe)
 
 
 all : Test
@@ -10,9 +10,8 @@ all =
     describe "Install.ClauseInCase"
         [ Run.testFix test1a
         , Run.testFix test1b
-
-        -- Run.testFix test1c
-        -- Run.testFix test2
+        , Run.testFix test1c
+        , Run.testFix test2
         ]
 
 
@@ -43,8 +42,8 @@ test1b =
 test1c =
     { description = "Test 1c, withInsertAtBeginning: should report an error and fix it"
     , src = src1
-    , rule = rule1b
-    , under = under1c
+    , rule = rule1c
+    , under = under1
     , fixed = fixed1c
     , message = "Add handler for ResetCounter"
     }
@@ -61,12 +60,10 @@ rule1b =
         |> Install.ClauseInCase.makeRule
 
 
-
---
---rule1c =
---    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
---        |> Install.ClauseInCase.withInsertAtBeginning
---        |> Install.ClauseInCase.makeRule
+rule1c =
+    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        |> Install.ClauseInCase.withInsertAtBeginning
+        |> Install.ClauseInCase.makeRule
 
 
 src1 =
@@ -75,7 +72,7 @@ src1 =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-       CounterIncremented ->
+        CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
@@ -92,7 +89,7 @@ fixed1 =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-       CounterIncremented ->
+        CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
@@ -100,7 +97,7 @@ updateFromFrontend sessionId clientId msg model =
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )
 
 
-       ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+        ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
 
 """
@@ -112,31 +109,28 @@ fixed1c =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-         ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
-         CounterIncremented ->
+        ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+
+        CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
             in
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )
 
+
 """
 
 
 under1 =
     """case msg of
-       CounterIncremented ->
+        CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
             in
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )"""
-
-
-under1c =
-    """case msg of
-         """
 
 
 
@@ -164,15 +158,15 @@ src2 =
 
 update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
 update msg model =
-   case msg of
-       Increment ->
-           ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
+    case msg of
+        Increment ->
+            ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
 
-       Decrement ->
-           ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+        Decrement ->
+            ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
 
-       FNoop ->
-           ( model, Cmd.none )
+        FNoop ->
+            ( model, Cmd.none )
 """
 
 
@@ -181,23 +175,28 @@ fixed2 =
 
 update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
 update msg model =
-   case msg of
-       Increment ->
-           ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
+    case msg of
+        Increment ->
+            ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
 
-       Reset ->
-           ( { model | counter = 0 }, sendToBackend CounterReset )
 
-       Decrement ->
-           ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+        Reset -> ( { model | counter = 0 }, sendToBackend CounterReset )
 
-       FNoop ->
-           ( model, Cmd.none )
+        Decrement ->
+            ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+
+        FNoop ->
+            ( model, Cmd.none )
 """
 
 
 under2 =
     """case msg of
-       Increment ->
-           ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
-"""
+        Increment ->
+            ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
+
+        Decrement ->
+            ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+
+        FNoop ->
+            ( model, Cmd.none )"""

@@ -1,4 +1,4 @@
-module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError)
+module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError)
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -42,7 +42,7 @@ in a specified module. For example, if you put the code below in your
             |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
             |> Install.ClauseInCase.makeRule
 
-@docs init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError
+@docs init, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError
 
 -}
 
@@ -240,8 +240,12 @@ rangeToInsertClause insertAt cases expression =
                     ( Node.range lastClauseExpression, 2, 0 )
 
         AtBeginning ->
-            -- TODO: this code is not correct
-            ( Node.range expression, 1, (Node.range expression).start.column )
+            let
+                -- The -2 is to account for the `case` keyword and the space after it
+                firstClauseOffset =
+                    (Node.range expression).start.column - 2
+            in
+            ( Node.range expression, 1, firstClauseOffset )
 
         AtEnd ->
             let
@@ -349,6 +353,8 @@ withInsertAfter clauseToInsertAfter (Config config) =
         }
 
 
+{-| Add a clause at the beginning of the case expression.
+-}
 withInsertAtBeginning : Config -> Config
 withInsertAtBeginning (Config config) =
     Config

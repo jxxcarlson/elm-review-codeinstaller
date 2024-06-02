@@ -11,7 +11,7 @@ To install `elm-review-codeinstaller`, add it to your `elm.json` dependencies:
 elm install jxxcarlson/elm-review-codeinstaller
 ```
 
-### Usage
+## Usage
 Suppose you have the following `Msg` type and `update` function in your `Counter` module:
 
 ```elm
@@ -84,7 +84,7 @@ update msg model =
         ResetCounter ->
             ( { model | counter = 0 }, Cmd.none )
 ```
-### Modules
+## Modules
 
 `elm-review-codeinstaller` includes the following modules:
 
