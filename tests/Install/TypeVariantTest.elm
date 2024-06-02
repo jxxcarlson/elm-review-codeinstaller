@@ -2,7 +2,7 @@ module Install.TypeVariantTest exposing (all)
 
 import Install.TypeVariant
 import Run
-import Test exposing (Test, describe, test)
+import Test exposing (Test, describe)
 
 
 all : Test

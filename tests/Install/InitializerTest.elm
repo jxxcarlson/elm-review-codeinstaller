@@ -1,9 +1,8 @@
 module Install.InitializerTest exposing (all)
 
 import Install.Initializer
-import Review.Test
 import Run
-import Test exposing (Test, describe, test)
+import Test exposing (Test, describe)
 
 
 all : Test
