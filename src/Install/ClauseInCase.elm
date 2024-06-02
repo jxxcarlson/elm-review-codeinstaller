@@ -231,14 +231,14 @@ errorWithFix : CustomError -> String -> String -> Node a -> Maybe Range -> Error
 errorWithFix (CustomError customError) clause functionCall node errorRange =
     Rule.errorWithFix
         customError
-        (Node.range node)
+        (Node.range node |> Debug.log "RANGE")
         (case errorRange of
             Just range ->
                 let
                     insertionPoint =
                         { row = range.end.row + 2, column = 0 }
                 in
-                [ addMissingCase insertionPoint clause functionCall ]
+                [ addMissingCase insertionPoint clause functionCall |> Debug.log "insertion" ]
 
             Nothing ->
                 []
