@@ -240,7 +240,7 @@ rangeToInsertClause insertAt cases expression =
                     ( Node.range lastClauseExpression, 2, 0 )
 
         AtBeginning ->
-            -- TODO: Review, is it correct?
+            -- TODO: this code is not correct
             ( Node.range expression, 1, (Node.range expression).start.column )
 
         AtEnd ->
@@ -253,13 +253,6 @@ rangeToInsertClause insertAt cases expression =
 
 errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
 errorWithFix (CustomError customError) clause functionCall node errorRange =
-    let
-        nodeStartRow =
-            (Node.range node).start.row
-
-        nodeStartColumn =
-            (Node.range node).start.column
-    in
     Rule.errorWithFix
         customError
         (Node.range node)
