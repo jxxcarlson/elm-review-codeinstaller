@@ -244,9 +244,9 @@ rangeToInsertClause insertAt cases expression =
 
         AtBeginning ->
             let
-                -- The clause must always be indented 3 columns after the start of the case expression
+                -- The -2 is to account for the `case` keyword and the space after it
                 firstClauseOffset =
-                    (Node.range expression).start.column + 3
+                    (Node.range expression).start.column - 2
             in
             ( Node.range expression, 1, firstClauseOffset )
 
