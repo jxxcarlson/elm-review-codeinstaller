@@ -67,9 +67,15 @@ type Config
         , functionName : String
         , clause : String
         , functionCall : String
-        , clauseToInsertAfter : Maybe String
+        , insertAt : InsertAt
         , customErrorMessage : CustomError
         }
+
+
+type InsertAt
+    = After String
+    | AtBeginning
+    | AtEnd
 
 
 {-| Custom error message to be displayed when running `elm-review --fix` or `elm-review --fix-all`
@@ -92,7 +98,7 @@ init moduleName functionName clause functionCall =
         , functionName = functionName
         , clause = clause
         , functionCall = functionCall
-        , clauseToInsertAfter = Nothing
+        , insertAt = AtEnd
         , customErrorMessage = CustomError { message = "Add handler for " ++ clause, details = [ "" ] }
         }
 
@@ -108,7 +114,7 @@ makeRule (Config config) =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor declaration context =
-            declarationVisitor declaration config.moduleName config.functionName config.clause config.functionCall config.clauseToInsertAfter context config.customErrorMessage
+            declarationVisitor declaration config.moduleName config.functionName config.clause config.functionCall config.insertAt context config.customErrorMessage
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.ClauseInCase" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -137,8 +143,8 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : Node Declaration -> String -> String -> String -> String -> Maybe String -> Context -> CustomError -> ( List (Rule.Error {}), Context )
-declarationVisitor (Node _ declaration) moduleName functionName clause functionCall clauseToInsertAfter context customError =
+declarationVisitor : Node Declaration -> String -> String -> String -> String -> InsertAt -> Context -> CustomError -> ( List (Rule.Error {}), Context )
+declarationVisitor (Node _ declaration) moduleName functionName clause functionCall insertAt context customError =
     case declaration of
         FunctionDeclaration function ->
             let
@@ -151,7 +157,7 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
                     String.join "." context.moduleName ++ "." ++ name
             in
             if name == functionName && moduleName == String.join "." context.moduleName then
-                visitFunction namespace clause functionCall Set.empty function clauseToInsertAfter customError context
+                visitFunction namespace clause functionCall Set.empty function insertAt customError context
 
             else
                 ( [], context )
@@ -160,8 +166,8 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
             ( [], context )
 
 
-visitFunction : String -> String -> String -> Ignored -> Function -> Maybe String -> CustomError -> Context -> ( List (Rule.Error {}), Context )
-visitFunction namespace clause functionCall ignored function clauseToInsertAfter customError context =
+visitFunction : String -> String -> String -> Ignored -> Function -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
+visitFunction namespace clause functionCall ignored function insertAt customError context =
     let
         declaration : FunctionImplementation
         declaration =
@@ -183,10 +189,11 @@ visitFunction namespace clause functionCall ignored function clauseToInsertAfter
             in
             if not (findClause clause cases) then
                 let
+                    rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
-                        rangeToInsertClause clauseToInsertAfter cases expression
+                        rangeToInsertClause insertAt cases expression |> Just
                 in
-                ( [ errorWithFix customError clause functionCall declaration.expression (Just <| rangeToInsert) ], context )
+                ( [ errorWithFix customError clause functionCall declaration.expression rangeToInsert ], context )
 
             else
                 ( [], context )
@@ -195,17 +202,23 @@ visitFunction namespace clause functionCall ignored function clauseToInsertAfter
             ( [], context )
 
 
-rangeToInsertClause : Maybe String -> List Case -> Node Expression -> Range
-rangeToInsertClause clauseToInsertAfter cases expression =
+rangeToInsertClause : InsertAt -> List Case -> Node Expression -> ( Range, Int, Int )
+rangeToInsertClause insertAt cases expression =
     let
         lastClauseExpression =
             cases
                 |> List.Extra.last
                 |> Maybe.map Tuple.second
                 |> Maybe.withDefault expression
+
+        firstClauseExpression =
+            cases
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault expression
     in
-    case clauseToInsertAfter of
-        Just previousClause ->
+    case insertAt of
+        After previousClause ->
             let
                 previousClausePattern =
                     cases
@@ -219,37 +232,56 @@ rangeToInsertClause clauseToInsertAfter cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
+                        |> (\range -> ( range, 2, range.start.column ))
 
                 Nothing ->
+                    ( Node.range lastClauseExpression, 2, 0 )
+
+        AtBeginning ->
+            -- TODO: Review, is it correct?
+            ( Node.range expression, 1, (Node.range expression).start.column )
+
+        AtEnd ->
+            let
+                range =
                     Node.range lastClauseExpression
+            in
+            ( range, 2, range.start.column )
 
-        Nothing ->
-            Node.range lastClauseExpression
 
-
-errorWithFix : CustomError -> String -> String -> Node a -> Maybe Range -> Error {}
+errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
 errorWithFix (CustomError customError) clause functionCall node errorRange =
+    let
+        nodeStartRow =
+            (Node.range node).start.row
+    in
     Rule.errorWithFix
         customError
         (Node.range node)
         (case errorRange of
-            Just range ->
+            Just ( range, verticalOffset, horizontalOffset ) ->
                 let
+                    horizontalPadding =
+                        horizontalOffset - nodeStartRow + 1
+
                     insertionPoint =
-                        { row = range.end.row + 2, column = 0 }
+                        { row = range.end.row + verticalOffset, column = 0 }
+
+                    prefix =
+                        "\n" ++ String.repeat horizontalPadding " "
                 in
-                [ addMissingCase insertionPoint clause functionCall ]
+                [ addMissingCase insertionPoint prefix clause functionCall ]
 
             Nothing ->
                 []
         )
 
 
-addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
-addMissingCase { row, column } clause functionCall =
+addMissingCase : { row : Int, column : Int } -> String -> String -> String -> Fix
+addMissingCase { row, column } prefix clause functionCall =
     let
         insertion =
-            "\n         " ++ clause ++ " -> " ++ functionCall ++ "\n\n"
+            prefix ++ clause ++ " -> " ++ functionCall ++ "\n\n"
     in
     Fix.insertAt { row = row, column = column } insertion
 
@@ -318,7 +350,15 @@ withInsertAfter : String -> Config -> Config
 withInsertAfter clauseToInsertAfter (Config config) =
     Config
         { config
-            | clauseToInsertAfter = Just clauseToInsertAfter
+            | insertAt = After clauseToInsertAfter
+        }
+
+
+withInsertAtBeginning : Config -> Config
+withInsertAtBeginning (Config config) =
+    Config
+        { config
+            | insertAt = AtBeginning
         }
 
 

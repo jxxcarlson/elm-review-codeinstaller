@@ -2,6 +2,7 @@ module Install.FieldInTypeAliasTest exposing (..)
 
 import Install.FieldInTypeAlias
 import Review.Test
+import Run
 import Test exposing (Test, describe, test)
 
 
