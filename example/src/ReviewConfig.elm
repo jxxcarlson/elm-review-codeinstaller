@@ -25,4 +25,9 @@ config =
         "updateFromFrontend"
         "ResetCounter"
         "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    , Install.ClauseInCase.makeRule
+              "Frontend"
+              "update"
+              "Reset"
+              "( { model | counter = 0 }, sendToBackend CounterReset )"
     ]
