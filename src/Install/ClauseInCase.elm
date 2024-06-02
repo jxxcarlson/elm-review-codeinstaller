@@ -211,11 +211,13 @@ rangeToInsertClause insertAt cases expression =
                 |> Maybe.map Tuple.second
                 |> Maybe.withDefault expression
 
-        firstClauseExpression =
+        lastClauseStartingColumn =
             cases
-                |> List.head
-                |> Maybe.map Tuple.second
-                |> Maybe.withDefault expression
+                |> List.Extra.last
+                |> Maybe.map Tuple.first
+                |> Maybe.map (Node.range >> .start >> .column)
+                |> Maybe.withDefault 0
+                |> (\x -> x - 1)
     in
     case insertAt of
         After previousClause ->
@@ -232,13 +234,13 @@ rangeToInsertClause insertAt cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2, range.start.column ))
+                        |> (\range -> ( range, 2, lastClauseStartingColumn ))
 
                 Nothing ->
                     ( Node.range lastClauseExpression, 2, 0 )
 
         AtBeginning ->
-            -- TODO: Review, is it correct?
+            -- TODO: this code is not correct
             ( Node.range expression, 1, (Node.range expression).start.column )
 
         AtEnd ->
@@ -246,29 +248,22 @@ rangeToInsertClause insertAt cases expression =
                 range =
                     Node.range lastClauseExpression
             in
-            ( range, 2, range.start.column )
+            ( range, 2, lastClauseStartingColumn )
 
 
 errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
 errorWithFix (CustomError customError) clause functionCall node errorRange =
-    let
-        nodeStartRow =
-            (Node.range node).start.row
-    in
     Rule.errorWithFix
         customError
         (Node.range node)
         (case errorRange of
             Just ( range, verticalOffset, horizontalOffset ) ->
                 let
-                    horizontalPadding =
-                        horizontalOffset - nodeStartRow + 1
-
                     insertionPoint =
                         { row = range.end.row + verticalOffset, column = 0 }
 
                     prefix =
-                        "\n" ++ String.repeat horizontalPadding " "
+                        "\n" ++ String.repeat horizontalOffset " "
                 in
                 [ addMissingCase insertionPoint prefix clause functionCall ]
 
