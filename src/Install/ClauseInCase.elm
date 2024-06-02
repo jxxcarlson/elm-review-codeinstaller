@@ -1,4 +1,7 @@
-module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError)
+module Install.ClauseInCase exposing
+    ( init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError
+    , withInsertAtBeginning
+    )
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -240,8 +243,12 @@ rangeToInsertClause insertAt cases expression =
                     ( Node.range lastClauseExpression, 2, 0 )
 
         AtBeginning ->
-            -- TODO: this code is not correct
-            ( Node.range expression, 1, (Node.range expression).start.column )
+            let
+                -- The clause must always be indented 3 columns after the start of the case expression
+                firstClauseOffset =
+                    (Node.range expression).start.column + 3
+            in
+            ( Node.range expression, 1, firstClauseOffset )
 
         AtEnd ->
             let
