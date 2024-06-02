@@ -242,7 +242,7 @@ rangeToInsertClause insertAt cases expression =
                         |> Tuple.second
                         |> Node.range
                         |> Debug.log "NODE RANGE (1)"
-                        |> (\range -> ( range, 2, 0 ))
+                        |> (\range -> ( range, 2, range.start.column |> Debug.log "H OFFSET" ))
 
                 Nothing ->
                     ( Node.range lastClauseExpression |> Debug.log "NODE RANGE (2)", 2, 0 )
@@ -272,7 +272,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
             Just ( range, verticalOffset, horizontalOffset ) ->
                 let
                     horizontalOffset2 =
-                        Debug.log "HORI OFFF!!!" horizontalOffset - deltaH + 1
+                        Debug.log "@@@ horizontalOffset2" horizontalOffset - deltaH + 1
 
                     insertionPoint =
                         { row = range.end.row + verticalOffset, column = 0 }
