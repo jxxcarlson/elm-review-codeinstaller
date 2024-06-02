@@ -14,10 +14,6 @@ expectNoErrorsTest description src rule =
                 |> Review.Test.expectNoErrors
 
 
-
--- expectNoErrors : ReviewResult -> Expectation
-
-
 expectErrorsTest : String -> String -> Rule -> Test
 expectErrorsTest description src rule =
     test description <|
@@ -25,10 +21,6 @@ expectErrorsTest description src rule =
             src
                 |> Review.Test.run rule
                 |> Review.Test.expectErrors []
-
-
-
--- expectErrors : List ExpectedError -> ReviewResult -> Expectation
 
 
 type alias TestData =

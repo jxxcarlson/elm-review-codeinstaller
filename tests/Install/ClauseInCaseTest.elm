@@ -1,38 +1,24 @@
 module Install.ClauseInCaseTest exposing (all)
 
 import Install.ClauseInCase exposing (init, makeRule)
-import Review.Test
-import Test exposing (Test, describe, test)
+import Run
+import Test exposing (Test, describe)
 
 
 all : Test
 all =
-    let
-        rule =
-            init "REPLACEME" "REPLACEME" "REPLACEME" "REPLACEME"
-                |> makeRule
-    in
-    describe "Install.ClauseInCase"
-        [ test "should not report an error when REPLACEME" <|
-            \() ->
-                """module A exposing (..)
-a = 1
-"""
-                    |> Review.Test.run rule
-                    |> Review.Test.expectNoErrors
-        , test "should report an error when REPLACEME" <|
-            \() ->
-                """module A exposing (..)
-a = 1
-"""
-                    |> Review.Test.run rule
-                    |> Review.Test.expectNoErrors
-
-        -- |> Review.Test.expectErrors
-        --     [ Review.Test.error
-        --         { message = "REPLACEME"
-        --         , details = [ "REPLACEME" ]
-        --         , under = "REPLACEME"
-        --         }
-        --     ]
+    describe "Install.ClauseInCase1"
+        [ Run.expectNoErrorsTest "should not report an error when REPLACEME" src1 rule1
+        , Run.expectErrorsTest "should report an error when REPLACEME" src1 rule1
         ]
+
+
+rule1 =
+    init "REPLACEME" "REPLACEME" "REPLACEME" "REPLACEME"
+        |> makeRule
+
+
+src1 =
+    """module A exposing (..)
+a = 1
+"""

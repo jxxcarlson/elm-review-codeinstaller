@@ -9,9 +9,6 @@ all : Test
 all =
     describe "Install.ClauseInCase"
         [ Run.testFix test1
-
-        --, makeTestExpectNoErrors "Test 2" src1 rule1
-        -- , makeTestExpectNoErrors "Test 2" src2 rule2
         ]
 
 
@@ -79,30 +76,3 @@ under1 =
                     model.counter + 1
             in
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )"""
-
-
-
--- TEST 2
-
-
-rule2 =
-    Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
-        |> Install.ClauseInCase.makeRule
-
-
-src2 =
-    """module Frontend exposing (Model, app)
-
-update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
-       update msg model =
-           case msg of
-               Increment ->
-                   ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
-       
-               Decrement ->
-                   ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
-       
-               FNoop ->
-                   ( model, Cmd.none )
-                   
-"""
