@@ -97,7 +97,7 @@ update msg model =
 To test the review code in its current state, try running this in a clean Lamdera project:
 
 ```
-npx elm-review --template jxxcarlson/elm-review-install-code/example
+npx elm-review --template jxxcarlson/elm-review-codeinstaller/example
 ```
 
 ## Contributing

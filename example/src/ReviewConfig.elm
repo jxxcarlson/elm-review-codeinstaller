@@ -20,14 +20,9 @@ config =
     [ Install.TypeVariant.makeRule "Types" "ToBackend" "ResetCounter"
     , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "message: String"
     , Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
-    , Install.ClauseInCase.makeRule
-        "Backend"
-        "updateFromFrontend"
-        "ResetCounter"
-        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-    , Install.ClauseInCase.makeRule
-              "Frontend"
-              "update"
-              "Reset"
-              "( { model | counter = 0 }, sendToBackend CounterReset )"
+    , Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+              |> Install.ClauseInCase.makeRule
+    ,  Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
+              |> Install.ClauseInCase.withInsertAfter "Increment"
+              |> Install.ClauseInCase.makeRule
     ]
