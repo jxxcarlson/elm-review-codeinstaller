@@ -232,14 +232,14 @@ rangeToInsertClause insertAt cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2, range.start.column ))
+                        |> (\range -> ( range, 2, range.start.column |> Debug.log "rangeStartColumn (1)" ))
 
                 Nothing ->
-                    ( Node.range lastClauseExpression, 2, 0 )
+                    ( Node.range lastClauseExpression |> Debug.log "rangeLastClauseExpression", 2, 0 )
 
         AtBeginning ->
             -- TODO: Review, is it correct?
-            ( Node.range expression, 1, (Node.range expression).start.column )
+            ( Node.range expression |> Debug.log "NODE RANGE (3)", 1, (Node.range expression).start.column |> Debug.log "expressionStartColumn (2)" )
 
         AtEnd ->
             let
@@ -253,7 +253,10 @@ errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, 
 errorWithFix (CustomError customError) clause functionCall node errorRange =
     let
         nodeStartRow =
-            (Node.range node).start.row
+            (Node.range node).start.row |> Debug.log "nodeStartRow"
+
+        nodeStartColumn =
+            (Node.range node).start.column |> Debug.log "nodeStartColumn"
     in
     Rule.errorWithFix
         customError
@@ -262,7 +265,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
             Just ( range, verticalOffset, horizontalOffset ) ->
                 let
                     horizontalPadding =
-                        horizontalOffset - nodeStartRow + 1
+                        Debug.log "horizontalPadding" (horizontalOffset - nodeStartColumn + 1)
 
                     insertionPoint =
                         { row = range.end.row + verticalOffset, column = 0 }
@@ -270,7 +273,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
                     prefix =
                         "\n" ++ String.repeat horizontalPadding " "
                 in
-                [ addMissingCase insertionPoint prefix clause functionCall ]
+                [ addMissingCase insertionPoint prefix clause functionCall |> Debug.log "insertion" ]
 
             Nothing ->
                 []
