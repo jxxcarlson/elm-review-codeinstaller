@@ -1,7 +1,4 @@
-module Install.ClauseInCase exposing
-    ( init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError
-    , withInsertAtBeginning
-    )
+module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withCustomErrorMessage, Config, CustomError)
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -235,14 +232,14 @@ rangeToInsertClause insertAt cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2, range.start.column |> Debug.log "rangeStartColumn (1)" ))
+                        |> (\range -> ( range, 2, range.start.column ))
 
                 Nothing ->
-                    ( Node.range lastClauseExpression |> Debug.log "rangeLastClauseExpression", 2, 0 )
+                    ( Node.range lastClauseExpression, 2, 0 )
 
         AtBeginning ->
             -- TODO: Review, is it correct?
-            ( Node.range expression |> Debug.log "NODE RANGE (3)", 1, (Node.range expression).start.column |> Debug.log "expressionStartColumn (2)" )
+            ( Node.range expression, 1, (Node.range expression).start.column )
 
         AtEnd ->
             let
@@ -256,7 +253,7 @@ errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, 
 errorWithFix (CustomError customError) clause functionCall node errorRange =
     let
         nodeStartRow =
-            (Node.range node).start.row |> Debug.log "nodeStartRow"
+            (Node.range node).start.row
     in
     Rule.errorWithFix
         customError
@@ -265,7 +262,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
             Just ( range, verticalOffset, horizontalOffset ) ->
                 let
                     horizontalPadding =
-                        Debug.log "horizontalPadding" (horizontalOffset - nodeStartRow + 1)
+                        horizontalOffset - nodeStartRow + 1
 
                     insertionPoint =
                         { row = range.end.row + verticalOffset, column = 0 }
@@ -273,7 +270,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
                     prefix =
                         "\n" ++ String.repeat horizontalPadding " "
                 in
-                [ addMissingCase insertionPoint prefix clause functionCall |> Debug.log "insertion" ]
+                [ addMissingCase insertionPoint prefix clause functionCall ]
 
             Nothing ->
                 []
