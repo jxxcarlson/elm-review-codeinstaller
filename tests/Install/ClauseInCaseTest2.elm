@@ -9,8 +9,8 @@ all : Test
 all =
     describe "Install.ClauseInCase"
         [ Run.testFix test1a
+        , Run.testFix test1b
 
-        --, Run.testFix test1b
         -- Run.testFix test1c
         -- Run.testFix test2
         ]
@@ -75,7 +75,7 @@ src1 =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-         CounterIncremented ->
+       CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
@@ -92,7 +92,7 @@ fixed1 =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-         CounterIncremented ->
+       CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1
@@ -100,7 +100,7 @@ updateFromFrontend sessionId clientId msg model =
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )
 
 
-         ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+       ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
 
 """
@@ -126,7 +126,7 @@ updateFromFrontend sessionId clientId msg model =
 
 under1 =
     """case msg of
-         CounterIncremented ->
+       CounterIncremented ->
             let
                 newCounter =
                     model.counter + 1

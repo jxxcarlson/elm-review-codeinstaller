@@ -205,17 +205,23 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
 rangeToInsertClause : InsertAt -> List Case -> Node Expression -> ( Range, Int, Int )
 rangeToInsertClause insertAt cases expression =
     let
+        rng =
+            Node.range expression |> Debug.log "NODE RANGE (**)"
+
         lastClauseExpression =
             cases
                 |> List.Extra.last
                 |> Maybe.map Tuple.second
                 |> Maybe.withDefault expression
 
-        firstClauseExpression =
+        lastClauseStartingColumn =
             cases
-                |> List.head
-                |> Maybe.map Tuple.second
-                |> Maybe.withDefault expression
+                |> List.Extra.last
+                |> Maybe.map Tuple.first
+                |> Maybe.map (Node.range >> .start >> .column)
+                |> Maybe.withDefault 0
+                |> (\x -> x - 1)
+                |> Debug.log "lastClauseStartingColumn"
     in
     case insertAt of
         After previousClause ->
@@ -232,7 +238,7 @@ rangeToInsertClause insertAt cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2, range.start.column |> Debug.log "rangeStartColumn (1)" ))
+                        |> (\range -> ( range, 2, lastClauseStartingColumn ))
 
                 Nothing ->
                     ( Node.range lastClauseExpression |> Debug.log "rangeLastClauseExpression", 2, 0 )
@@ -246,7 +252,7 @@ rangeToInsertClause insertAt cases expression =
                 range =
                     Node.range lastClauseExpression
             in
-            ( range, 2, range.start.column )
+            ( range, 2, lastClauseStartingColumn )
 
 
 errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
@@ -264,6 +270,9 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
         (case errorRange of
             Just ( range, verticalOffset, horizontalOffset ) ->
                 let
+                    _ =
+                        Debug.log "horizontalOffset" horizontalOffset
+
                     horizontalPadding =
                         Debug.log "horizontalPadding" (horizontalOffset - nodeStartColumn + 1)
 
@@ -271,7 +280,7 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
                         { row = range.end.row + verticalOffset, column = 0 }
 
                     prefix =
-                        "\n" ++ String.repeat horizontalPadding " "
+                        "\n" ++ String.repeat horizontalOffset " "
                 in
                 [ addMissingCase insertionPoint prefix clause functionCall |> Debug.log "insertion" ]
 
