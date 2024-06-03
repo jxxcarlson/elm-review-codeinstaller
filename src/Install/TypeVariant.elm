@@ -23,6 +23,7 @@ import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
+import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
@@ -101,7 +102,7 @@ declarationVisitor moduleName_ typeName_ variantName_ variantCode_ node context 
         Declaration.CustomTypeDeclaration type_ ->
             let
                 isInCorrectModule =
-                    moduleName_ == (context.moduleName |> String.join "")
+                    Install.Library.isInCorrectModule moduleName_ context
 
                 shouldFix : Node Declaration -> Context -> Bool
                 shouldFix node_ context_ =

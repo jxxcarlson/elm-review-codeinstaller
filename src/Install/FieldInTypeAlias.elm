@@ -25,6 +25,7 @@ import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation
+import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
@@ -121,7 +122,7 @@ declarationVisitor moduleName_ typeName_ fieldName_ fieldValueCode_ node context
         Declaration.AliasDeclaration type_ ->
             let
                 isInCorrectModule =
-                    moduleName_ == (context.moduleName |> String.join "")
+                    Install.Library.isInCorrectModule moduleName_ context
 
                 shouldFix : Node Declaration -> Context -> Bool
                 shouldFix node_ context_ =

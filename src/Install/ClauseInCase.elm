@@ -52,6 +52,7 @@ import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range exposing (Range)
+import Install.Library
 import List.Extra
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
@@ -155,8 +156,11 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
                 namespace : String
                 namespace =
                     String.join "." context.moduleName ++ "." ++ name
+
+                isInCorrectModule =
+                    Install.Library.isInCorrectModule moduleName context
             in
-            if name == functionName && moduleName == String.join "." context.moduleName then
+            if name == functionName && isInCorrectModule then
                 visitFunction namespace clause functionCall Set.empty function insertAt customError context
 
             else

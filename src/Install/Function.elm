@@ -105,7 +105,7 @@ declarationVisitor context config declaration =
                     Node.value (Node.value function.declaration).name
 
                 isInCorrectModule =
-                    config.moduleName == (context.moduleName |> String.join "")
+                    Install.Library.isInCorrectModule config.moduleName context
 
                 functionImplementationA : Expression
                 functionImplementationA =
@@ -115,7 +115,8 @@ declarationVisitor context config declaration =
                     config.theFunctionImplmentation |> Maybe.map (.expression >> Node.value >> Debug.log "EXPR B")
 
                 isImplemented =
-                    Just functionImplementationA == functionImplementationB
+                    Just functionImplementationA
+                        == functionImplementationB
             in
             if name == config.functionName && isInCorrectModule && not isImplemented then
                 visitFunction (Node.range declaration) config context

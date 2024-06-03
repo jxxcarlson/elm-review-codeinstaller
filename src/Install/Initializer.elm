@@ -107,7 +107,7 @@ visitFunction namespace moduleName functionName fieldName fieldValue ignored fun
             Node.value function.declaration
 
         isInCorrectModule =
-            moduleName == (context.moduleName |> String.join "")
+            Install.Library.isInCorrectModule moduleName context
 
         ( fieldNames, lastRange ) =
             case declaration.expression |> Node.value of
