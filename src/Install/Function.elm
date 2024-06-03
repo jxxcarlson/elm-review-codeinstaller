@@ -1,4 +1,22 @@
-module Install.Function exposing (Config, CustomError, init, makeRule)
+module Install.Function exposing (makeRule, init, Config, CustomError)
+
+{-| Replace a function in a given module with a new implementation or
+add that function definition if it is not present in the module.
+
+    -- code for ReviewConfig.elm:
+    rule =
+        Install.Function.init
+            "Frontend"
+            "view"
+            """view model =
+       Html.text "This is a test\""""
+            |> Install.Function.makeRule
+
+Running this rule will insert or replace the function `view` in the module `Frontend` with the new implementation.
+
+@docs makeRule, init, Config, CustomError
+
+-}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
