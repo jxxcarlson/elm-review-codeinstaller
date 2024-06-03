@@ -35,12 +35,12 @@ type Role
 
 under1 =
     """type Role
-   = Standard"""
+  = Standard"""
 
 
 fixed1 =
     """module User exposing (..)
 type Role
-   = Standard
-    | Admin
+ = Standard
+ | Admin
 """
