@@ -19,14 +19,13 @@ Running this rule will insert or replace the function `view` in the module `Fron
 -}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
+import Elm.Syntax.Expression exposing (Expression, FunctionImplementation)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
 import Install.Library
-import Review.Fix as Fix exposing (Fix)
+import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
 
 
 {-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
@@ -56,10 +55,6 @@ init moduleName functionName functionImplementation =
     , theFunctionImplmentation = Install.Library.getFunctionImplementation functionImplementation |> Maybe.map Node.value
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
-
-
-type alias Ignored =
-    Set String
 
 
 {-| Create a rule that replaces a function in a given module with a new implementation or
