@@ -30,6 +30,8 @@ import Review.Fix as Fix exposing (Fix)
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
+                                                                                                                 import Simplify.Infer as Infer
+import Simplify.Normalize as Normalize
 
 
 {-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.

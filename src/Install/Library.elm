@@ -200,7 +200,10 @@ toNodeList str =
         |> Result.withDefault []
 
 
-getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
+
+--getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
+
+
 getFunctionImplementation str =
     case toNodeList str |> List.head of
         Just (Node _ (FunctionDeclaration f)) ->
