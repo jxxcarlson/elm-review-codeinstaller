@@ -18,13 +18,16 @@ Running this rule will insert or replace the function `view` in the module `Fron
 
 -}
 
+import Dict
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
-import Elm.Syntax.ModuleName exposing (ModuleName)
+import Elm.Syntax.Module as Module
+import Elm.Syntax.ModuleName as Module exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
 import Install.Library
 import Review.Fix as Fix exposing (Fix)
+import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
 
