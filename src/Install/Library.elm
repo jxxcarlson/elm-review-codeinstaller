@@ -1,5 +1,7 @@
 module Install.Library exposing (..)
 
+import Elm.Parser
+import Elm.Syntax.Declaration exposing (Declaration)
 import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Lambda)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
@@ -188,3 +190,11 @@ visitCase namespace ignored ( pattern, expression ) context =
         (extractNamesFromPattern pattern ignored)
         expression
         context
+
+
+toNodeList : String -> List (Node Declaration)
+toNodeList str =
+    ("module Foo exposing(..)\n\n" ++ str)
+        |> Elm.Parser.parseToFile
+        |> Result.map .declarations
+        |> Result.withDefault []
