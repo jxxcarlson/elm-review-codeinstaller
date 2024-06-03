@@ -45,6 +45,8 @@ type CustomError
     = CustomError { message : String, details : List String }
 
 
+{-| Initialize the configuration for the rule.
+-}
 init : String -> String -> String -> Config
 init moduleName functionName functionImplementation =
     Config
@@ -59,6 +61,9 @@ type alias Ignored =
     Set String
 
 
+{-| Create a rule that replaces a function in a given module with a new implementation or
+creates it if it is not present.
+-}
 makeRule : Config -> Rule
 makeRule (Config config) =
     let
