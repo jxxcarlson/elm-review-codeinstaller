@@ -25,13 +25,13 @@ import Elm.Syntax.Module as Module
 import Elm.Syntax.ModuleName as Module exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
+import Install.Infer as Infer
 import Install.Library
+import Install.Normalize as Normalize
 import Review.Fix as Fix exposing (Fix)
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
-                                                                                                                 import Simplify.Infer as Infer
-import Simplify.Normalize as Normalize
 
 
 {-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
@@ -108,13 +108,6 @@ declarationVisitor context config declaration =
 
                 isInCorrectModule =
                     config.moduleName == (context.moduleName |> String.join "")
-
-                functionImplementationA : Expression
-                functionImplementationA =
-                    function.declaration |> Node.value |> .expression |> Node.value |> Debug.log "EXPR A"
-
-                functionImplementationB =
-                    config.theFunctionImplmentation |> Maybe.map (.expression >> Node.value >> Debug.log "EXPR B")
 
                 isImplemented =
                     case config.theFunctionDeclaration of

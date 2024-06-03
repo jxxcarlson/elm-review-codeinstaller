@@ -1,4 +1,4 @@
-module Simplify.Infer exposing
+module Install.Infer exposing
     ( DeducedValue(..)
     , Fact(..)
     , Inferred(..)

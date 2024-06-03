@@ -1,4 +1,4 @@
-module Simplify.Normalize exposing (Comparison(..), areAllTheSame, compare, compareWithoutNormalization, getNumberValue, normalize)
+module Install.Normalize exposing (Comparison(..), areAllTheSame, compare, compareWithoutNormalization, getNumberValue, normalize)
 
 import Dict
 import Elm.Syntax.Expression as Expression exposing (Expression)
@@ -7,8 +7,8 @@ import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern as Pattern exposing (Pattern)
 import Elm.Syntax.Range as Range
 import Elm.Writer
+import Install.Infer as Infer
 import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
-import Simplify.Infer as Infer
 
 
 areAllTheSame : Infer.Resources a -> Node Expression -> List (Node Expression) -> Bool
