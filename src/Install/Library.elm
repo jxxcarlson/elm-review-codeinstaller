@@ -1,8 +1,8 @@
 module Install.Library exposing (..)
 
 import Elm.Parser
-import Elm.Syntax.Declaration exposing (Declaration)
-import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Lambda)
+import Elm.Syntax.Declaration exposing (Declaration(..))
+import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), FunctionImplementation, Lambda)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range as Range exposing (Range)
@@ -198,3 +198,13 @@ toNodeList str =
         |> Elm.Parser.parseToFile
         |> Result.map .declarations
         |> Result.withDefault []
+
+
+getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
+getFunctionImplementation str =
+    case toNodeList str |> List.head of
+        Just (Node _ (FunctionDeclaration f)) ->
+            Just f.declaration
+
+        _ ->
+            Nothing

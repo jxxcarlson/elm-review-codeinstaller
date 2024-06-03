@@ -35,7 +35,7 @@ type alias Config =
     { moduleName : String
     , functionName : String
     , functionImplementation : String
-    , theFunctionDeclaration : List (Node Declaration)
+    , theFunctionImplmentation : Maybe FunctionImplementation
     , customErrorMessage : CustomError
     }
 
@@ -53,7 +53,7 @@ init moduleName functionName functionImplementation =
     { moduleName = moduleName
     , functionName = functionName
     , functionImplementation = functionImplementation
-    , theFunctionDeclaration = Install.Library.toNodeList functionImplementation
+    , theFunctionImplmentation = Install.Library.getFunctionImplementation functionImplementation |> Maybe.map Node.value
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
 
@@ -107,8 +107,15 @@ declarationVisitor context config declaration =
                 isInCorrectModule =
                     config.moduleName == (context.moduleName |> String.join "")
 
+                functionImplementationA : Expression
+                functionImplementationA =
+                    function.declaration |> Node.value |> .expression |> Node.value |> Debug.log "EXPR A"
+
+                functionImplementationB =
+                    config.theFunctionImplmentation |> Maybe.map (.expression >> Node.value >> Debug.log "EXPR B")
+
                 isImplemented =
-                    [ declaration ] == config.theFunctionDeclaration
+                    Just functionImplementationA == functionImplementationB
             in
             if name == config.functionName && isInCorrectModule && not isImplemented then
                 visitFunction (Node.range declaration) config context
