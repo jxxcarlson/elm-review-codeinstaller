@@ -40,7 +40,7 @@ type alias Config =
     { moduleName : String
     , functionName : String
     , functionImplementation : String
-    , theFunctionImplmentation : Maybe FunctionImplementation
+    , theFunctionDeclaration : Maybe (Node Declaration)
     , customErrorMessage : CustomError
     }
 
@@ -58,7 +58,7 @@ init moduleName functionName functionImplementation =
     { moduleName = moduleName
     , functionName = functionName
     , functionImplementation = functionImplementation
-    , theFunctionImplmentation = Install.Library.getFunctionImplementation functionImplementation |> Maybe.map Node.value
+    , theFunctionDeclaration = Install.Library.toNodeList functionImplementation |> List.head
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
 
@@ -77,7 +77,7 @@ makeRule config =
         visitor declaration context =
             declarationVisitor context config declaration
     in
-    Rule.newModuleRuleSchemaUsingContextCreator "Install.FunctionBody" contextCreator
+    Rule.newModuleRuleSchemaUsingContextCreator "Install.FunctionBody" initialContext
         |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -85,18 +85,15 @@ makeRule config =
 
 type alias Context =
     { moduleName : ModuleName
+    , lookupTable : ModuleNameLookupTable
     }
 
 
-contextCreator : Rule.ContextCreator () { moduleName : ModuleName }
-contextCreator =
+initialContext : Rule.ContextCreator () { moduleName : ModuleName, lookupTable : ModuleNameLookupTable }
+initialContext =
     Rule.initContextCreator
-        (\moduleName () ->
-            { moduleName = moduleName
-
-            -- ...other fields
-            }
-        )
+        (\lookupTable moduleName () -> { lookupTable = lookupTable, moduleName = moduleName })
+        |> Rule.withModuleNameLookupTable
         |> Rule.withModuleName
 
 
@@ -120,7 +117,14 @@ declarationVisitor context config declaration =
                     config.theFunctionImplmentation |> Maybe.map (.expression >> Node.value >> Debug.log "EXPR B")
 
                 isImplemented =
-                    Just functionImplementationA == functionImplementationB
+                    case config.theFunctionDeclaration of
+                        Nothing ->
+                            False
+
+                        Just declarationNode ->
+                            False
+
+                --Normalize.compare (Infer.empty []) declarationNode config.functionImplementation
             in
             if name == config.functionName && isInCorrectModule && not isImplemented then
                 visitFunction (Node.range declaration) config context
