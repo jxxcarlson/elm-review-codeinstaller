@@ -40,7 +40,7 @@ type alias Config =
     { moduleName : String
     , functionName : String
     , functionImplementation : String
-    , theFunctionDeclaration : Maybe (Node Declaration)
+    , theFunctionNodeExpression : Maybe (Node Expression)
     , customErrorMessage : CustomError
     }
 
@@ -58,7 +58,7 @@ init moduleName functionName functionImplementation =
     { moduleName = moduleName
     , functionName = functionName
     , functionImplementation = functionImplementation
-    , theFunctionDeclaration = Install.Library.toNodeList functionImplementation |> List.head
+    , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString functionImplementation
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
 
@@ -109,17 +109,18 @@ declarationVisitor context config declaration =
                 isInCorrectModule =
                     config.moduleName == (context.moduleName |> String.join "")
 
+                resources =
+                    { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
+
+                isImplemented_ =
+                    Maybe.map2 (Normalize.compare resources)
+                        config.theFunctionNodeExpression
+                        (Install.Library.getExpressionFromString config.functionImplementation)
+
                 isImplemented =
-                    case config.theFunctionDeclaration of
-                        Nothing ->
-                            False
-
-                        Just declarationNode ->
-                            False
-
-                --Normalize.compare (Infer.empty []) declarationNode config.functionImplementation
+                    List.member isImplemented_ [ Just Normalize.ConfirmedEquality, Just Normalize.Unconfirmed ]
             in
-            if name == config.functionName && isInCorrectModule && not isImplemented then
+            if name == config.functionName && isInCorrectModule && isImplemented then
                 visitFunction (Node.range declaration) config context
 
             else

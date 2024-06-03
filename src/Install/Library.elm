@@ -200,10 +200,37 @@ toNodeList str =
         |> Result.withDefault []
 
 
+expressionFromNodeFunctionImplmentation : Node FunctionImplementation -> Node Expression
+expressionFromNodeFunctionImplmentation (Node _ impl) =
+    impl.expression
 
---getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
+
+getExpressionFromString : String -> Maybe (Node Expression)
+getExpressionFromString str =
+    str |> getFunctionImplementation |> Maybe.map expressionFromNodeFunctionImplmentation
 
 
+maybeNodeExpressionFromNodeDeclaration : Node Declaration -> Maybe (Node Expression)
+maybeNodeExpressionFromNodeDeclaration node =
+    case node of
+        Node _ (FunctionDeclaration f) ->
+            Just (expressionFromNodeFunctionImplmentation f.declaration)
+
+        _ ->
+            Nothing
+
+
+maybeNodeExpressionFromString : String -> Maybe (Node Expression)
+maybeNodeExpressionFromString str =
+    case toNodeList str |> List.head of
+        Just node ->
+            maybeNodeExpressionFromNodeDeclaration node
+
+        _ ->
+            Nothing
+
+
+getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
 getFunctionImplementation str =
     case toNodeList str |> List.head of
         Just (Node _ (FunctionDeclaration f)) ->
