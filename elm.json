@@ -8,7 +8,8 @@
         "Install.ClauseInCase",
         "Install.FieldInTypeAlias",
         "Install.Initializer",
-        "Install.TypeVariant"
+        "Install.TypeVariant",
+        "Install.Function"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

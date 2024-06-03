@@ -1,4 +1,4 @@
-module Install.FunctionBody exposing (..)
+module Install.Function exposing (Config, CustomError, init, makeRule)
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)

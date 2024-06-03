@@ -1,7 +1,6 @@
-module Install.FunctionBodyTest exposing (..)
+module Install.FunctionTest exposing (all)
 
-import Install.ClauseInCase
-import Install.FunctionBody
+import Install.Function
 import Run
 import Test exposing (Test, describe)
 
@@ -28,12 +27,12 @@ test1 =
 
 
 rule1 =
-    Install.FunctionBody.init
+    Install.Function.init
         "Frontend"
         "view"
         """view model =
    Html.text "This is a test\""""
-        |> Install.FunctionBody.makeRule
+        |> Install.Function.makeRule
 
 
 src1 =
