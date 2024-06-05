@@ -18,13 +18,18 @@ Running this rule will insert or replace the function `view` in the module `Fron
 
 -}
 
+import Dict
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Expression, FunctionImplementation)
-import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node)
+import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
+import Elm.Syntax.Module as Module
+import Elm.Syntax.ModuleName as Module exposing (ModuleName)
+import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
+import Install.Infer as Infer
 import Install.Library
-import Review.Fix as Fix
+import Install.Normalize as Normalize
+import Review.Fix as Fix exposing (Fix)
+import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -34,7 +39,7 @@ type alias Config =
     { moduleName : String
     , functionName : String
     , functionImplementation : String
-    , theFunctionImplmentation : Maybe FunctionImplementation
+    , theFunctionNodeExpression : Maybe (Node Expression)
     , customErrorMessage : CustomError
     }
 
@@ -52,7 +57,7 @@ init moduleName functionName functionImplementation =
     { moduleName = moduleName
     , functionName = functionName
     , functionImplementation = functionImplementation
-    , theFunctionImplmentation = Install.Library.getFunctionImplementation functionImplementation |> Maybe.map Node.value
+    , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString functionImplementation
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
 
@@ -67,7 +72,7 @@ makeRule config =
         visitor declaration context =
             declarationVisitor context config declaration
     in
-    Rule.newModuleRuleSchemaUsingContextCreator "Install.FunctionBody" contextCreator
+    Rule.newModuleRuleSchemaUsingContextCreator "Install.Function" initialContext
         |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -75,18 +80,15 @@ makeRule config =
 
 type alias Context =
     { moduleName : ModuleName
+    , lookupTable : ModuleNameLookupTable
     }
 
 
-contextCreator : Rule.ContextCreator () { moduleName : ModuleName }
-contextCreator =
+initialContext : Rule.ContextCreator () { moduleName : ModuleName, lookupTable : ModuleNameLookupTable }
+initialContext =
     Rule.initContextCreator
-        (\moduleName () ->
-            { moduleName = moduleName
-
-            -- ...other fields
-            }
-        )
+        (\lookupTable moduleName () -> { lookupTable = lookupTable, moduleName = moduleName })
+        |> Rule.withModuleNameLookupTable
         |> Rule.withModuleName
 
 
@@ -102,18 +104,19 @@ declarationVisitor context config declaration =
                 isInCorrectModule =
                     Install.Library.isInCorrectModule config.moduleName context
 
-                functionImplementationA : Expression
-                functionImplementationA =
-                    function.declaration |> Node.value |> .expression |> Node.value |> Debug.log "EXPR A"
+                resources =
+                    { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                functionImplementationB =
-                    config.theFunctionImplmentation |> Maybe.map (.expression >> Node.value >> Debug.log "EXPR B")
+                isImplemented_ =
+                    Maybe.map2 (Normalize.compare resources)
+                        config.theFunctionNodeExpression
+                        (Install.Library.getExpressionFromString config.functionImplementation)
 
                 isImplemented =
-                    Just functionImplementationA
-                        == functionImplementationB
+                    --List.member isImplemented_ [ Just Normalize.ConfirmedEquality, Just Normalize.Unconfirmed ]
+                    isImplemented_ == Just Normalize.ConfirmedEquality
             in
-            if name == config.functionName && isInCorrectModule && not isImplemented then
+            if name == config.functionName && isInCorrectModule && isImplemented then
                 visitFunction (Node.range declaration) config context
 
             else
