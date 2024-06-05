@@ -77,7 +77,7 @@ makeRule config =
         visitor declaration context =
             declarationVisitor context config declaration
     in
-    Rule.newModuleRuleSchemaUsingContextCreator "Install.FunctionBody" initialContext
+    Rule.newModuleRuleSchemaUsingContextCreator "Install.Function" initialContext
         |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
