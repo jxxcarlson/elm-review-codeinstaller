@@ -118,7 +118,8 @@ declarationVisitor context config declaration =
                         (Install.Library.getExpressionFromString config.functionImplementation)
 
                 isImplemented =
-                    List.member isImplemented_ [ Just Normalize.ConfirmedEquality, Just Normalize.Unconfirmed ]
+                    --List.member isImplemented_ [ Just Normalize.ConfirmedEquality, Just Normalize.Unconfirmed ]
+                    isImplemented_ == Just Normalize.ConfirmedEquality
             in
             if name == config.functionName && isInCorrectModule && isImplemented then
                 visitFunction (Node.range declaration) config context
