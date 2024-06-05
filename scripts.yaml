@@ -1,4 +1,5 @@
 scripts:
+  review-counter:  npx elm-review --config example counter/src
   review: npx elm-review
   review-debug: npx elm-review --ignore-dirs vendor,src/Evergreen/ --fix-all --rules NoDebug.Log
   cloc: cloc --by-file --exclude-dir=Evergreen,Pages src/
