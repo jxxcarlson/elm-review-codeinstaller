@@ -241,7 +241,7 @@ getFunctionImplementation str =
             Nothing
 
 
-isInCorrectModule : String -> { moduleName : ModuleName } -> Bool
+isInCorrectModule : String -> { a | moduleName : ModuleName } -> Bool
 isInCorrectModule moduleName context =
     context.moduleName
         |> String.join "."
