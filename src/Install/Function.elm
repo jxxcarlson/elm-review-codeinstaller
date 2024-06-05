@@ -107,14 +107,11 @@ declarationVisitor context config declaration =
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                isImplemented_ =
-                    Maybe.map2 (Normalize.compare resources)
-                        config.theFunctionNodeExpression
-                        (Install.Library.getExpressionFromString config.functionImplementation)
-
                 isImplemented =
-                    --List.member isImplemented_ [ Just Normalize.ConfirmedEquality, Just Normalize.Unconfirmed ]
-                    isImplemented_ == Just Normalize.ConfirmedEquality
+                    Maybe.map2 (Normalize.compare resources)
+                        (function.declaration |> Node.value |> .expression |> Just)
+                        (Install.Library.getExpressionFromString config.functionImplementation)
+                        == Just Normalize.ConfirmedEquality
             in
             if name == config.functionName && isInCorrectModule && isImplemented then
                 visitFunction (Node.range declaration) config context
@@ -132,8 +129,8 @@ visitFunction range config context =
 
 
 errorWithFix_ : String -> String -> Range -> Error {}
-errorWithFix_ functionName functionImplemenation range =
+errorWithFix_ functionName functionImplementation range =
     Rule.errorWithFix
         { message = "Replace function \"" ++ functionName ++ "\"", details = [ "" ] }
         range
-        [ Fix.replaceRangeBy range functionImplemenation ]
+        [ Fix.replaceRangeBy range functionImplementation ]
