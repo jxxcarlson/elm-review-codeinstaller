@@ -52,12 +52,12 @@ type CustomError
 
 {-| Initialize the configuration for the rule.
 -}
-init : String -> String -> String -> Config
-init moduleName functionName functionImplementation =
-    { moduleName = moduleName
+init : List String -> String -> String -> Config
+init moduleNameList functionName functionImplementation =
+    { moduleName = String.join "." moduleNameList
     , functionName = functionName
     , functionImplementation = functionImplementation
-    , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString functionImplementation
+    , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = moduleNameList } functionImplementation
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
 
@@ -107,14 +107,20 @@ declarationVisitor context config declaration =
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                isImplemented =
+                isImplemented confg f =
                     Maybe.map2 (Normalize.compare resources)
-                        (function.declaration |> Node.value |> .expression |> Just)
-                        (Install.Library.getExpressionFromString config.functionImplementation)
-                        == Just Normalize.ConfirmedEquality
+                        (f.declaration |> Node.value |> .expression |> Just)
+                        (Install.Library.getExpressionFromString context confg.functionImplementation)
+                        == Just Normalize.ConfirmedInequality
+                        |> not
+                        |> Debug.log "@@COMPARE Functions"
             in
-            if name == config.functionName && isInCorrectModule && isImplemented then
-                visitFunction (Node.range declaration) config context
+            if name == config.functionName && isInCorrectModule then
+                if isImplemented config function then
+                    visitFunction (Node.range declaration) config context
+
+                else
+                    ( [], context )
 
             else
                 ( [], context )
@@ -130,6 +136,10 @@ visitFunction range config context =
 
 errorWithFix_ : String -> String -> Range -> Error {}
 errorWithFix_ functionName functionImplementation range =
+    let
+        _ =
+            Debug.log "@@ERROR WITH FIX" range
+    in
     Rule.errorWithFix
         { message = "Replace function \"" ++ functionName ++ "\"", details = [ "" ] }
         range

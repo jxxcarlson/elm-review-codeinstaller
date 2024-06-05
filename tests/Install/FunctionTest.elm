@@ -28,7 +28,7 @@ test1 =
 
 rule1 =
     Install.Function.init
-        "Frontend"
+        [ "Frontend" ]
         "view"
         """view model =
    Html.text "This is a test\""""

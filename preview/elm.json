@@ -10,6 +10,7 @@
             "elm/core": "1.0.5",
             "elmcraft/core-extra": "2.0.0",
             "jfmengels/elm-review": "2.13.2",
+            "pzp1997/assoc-list": "1.0.0",
             "stil4m/elm-syntax": "7.3.2"
         },
         "indirect": {

@@ -49,6 +49,9 @@ update msg model =
         Increment ->
             ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
 
+        Reset ->
+            ( { model | counter = 0 }, sendToBackend CounterReset )
+
         Decrement ->
             ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
 

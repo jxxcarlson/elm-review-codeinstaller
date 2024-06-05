@@ -1,1 +1,1 @@
-npx elm-review --config example counter/src --fix-all
+npx elm-review --config preview counter/src --debug --fix-all

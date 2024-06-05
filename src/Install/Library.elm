@@ -193,37 +193,45 @@ visitCase namespace ignored ( pattern, expression ) context =
         context
 
 
-toNodeList : String -> List (Node Declaration)
-toNodeList str =
-    ("module Foo exposing(..)\n\n" ++ str)
+toNodeList : { a | moduleName : ModuleName } -> String -> List (Node Declaration)
+toNodeList context str =
+    let
+        moduleName =
+            context.moduleName
+                |> String.join "."
+    in
+    "module "
+        ++ moduleName
+        ++ " exposing(..)\n\n"
+        ++ str
         |> Elm.Parser.parseToFile
         |> Result.map .declarations
         |> Result.withDefault []
 
 
-expressionFromNodeFunctionImplmentation : Node FunctionImplementation -> Node Expression
-expressionFromNodeFunctionImplmentation (Node _ impl) =
+expressionFromNodeFunctionImplementation : Node FunctionImplementation -> Node Expression
+expressionFromNodeFunctionImplementation (Node _ impl) =
     impl.expression
 
 
-getExpressionFromString : String -> Maybe (Node Expression)
-getExpressionFromString str =
-    str |> getFunctionImplementation |> Maybe.map expressionFromNodeFunctionImplmentation
+getExpressionFromString : { a | moduleName : ModuleName } -> String -> Maybe (Node Expression)
+getExpressionFromString context str =
+    str |> getFunctionImplementation context |> Maybe.map expressionFromNodeFunctionImplementation
 
 
 maybeNodeExpressionFromNodeDeclaration : Node Declaration -> Maybe (Node Expression)
 maybeNodeExpressionFromNodeDeclaration node =
     case node of
         Node _ (FunctionDeclaration f) ->
-            Just (expressionFromNodeFunctionImplmentation f.declaration)
+            Just (expressionFromNodeFunctionImplementation f.declaration)
 
         _ ->
             Nothing
 
 
-maybeNodeExpressionFromString : String -> Maybe (Node Expression)
-maybeNodeExpressionFromString str =
-    case toNodeList str |> List.head of
+maybeNodeExpressionFromString : { a | moduleName : ModuleName } -> String -> Maybe (Node Expression)
+maybeNodeExpressionFromString context str =
+    case toNodeList context str |> List.head of
         Just node ->
             maybeNodeExpressionFromNodeDeclaration node
 
@@ -231,9 +239,9 @@ maybeNodeExpressionFromString str =
             Nothing
 
 
-getFunctionImplementation : String -> Maybe (Node FunctionImplementation)
-getFunctionImplementation str =
-    case toNodeList str |> List.head of
+getFunctionImplementation : { a | moduleName : ModuleName } -> String -> Maybe (Node FunctionImplementation)
+getFunctionImplementation context str =
+    case toNodeList context str |> List.head of
         Just (Node _ (FunctionDeclaration f)) ->
             Just f.declaration
 
