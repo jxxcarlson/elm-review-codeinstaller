@@ -31,7 +31,6 @@ import Install.Normalize as Normalize
 import Review.Fix as Fix exposing (Fix)
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
 
 
 {-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
@@ -61,10 +60,6 @@ init moduleName functionName functionImplementation =
     , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString functionImplementation
     , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
     }
-
-
-type alias Ignored =
-    Set String
 
 
 {-| Create a rule that replaces a function in a given module with a new implementation or
@@ -107,7 +102,7 @@ declarationVisitor context config declaration =
                     Node.value (Node.value function.declaration).name
 
                 isInCorrectModule =
-                    config.moduleName == (context.moduleName |> String.join "")
+                    Install.Library.isInCorrectModule config.moduleName context
 
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }

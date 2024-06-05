@@ -42,12 +42,6 @@ view model =
    Html.div [] [ Html.text "Hello, World!" ]"""
 
 
-under1b =
-    """module Frontend exposing(..)
-
-"""
-
-
 under1 =
     """view model =
    Html.div [] [ Html.text "Hello, World!" ]"""

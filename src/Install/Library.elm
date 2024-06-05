@@ -3,6 +3,7 @@ module Install.Library exposing (..)
 import Elm.Parser
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), FunctionImplementation, Lambda)
+import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range as Range exposing (Range)
@@ -238,3 +239,10 @@ getFunctionImplementation str =
 
         _ ->
             Nothing
+
+
+isInCorrectModule : String -> { moduleName : ModuleName } -> Bool
+isInCorrectModule moduleName context =
+    context.moduleName
+        |> String.join "."
+        |> (==) moduleName
