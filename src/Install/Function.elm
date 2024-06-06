@@ -116,7 +116,7 @@ declarationVisitor context config declaration =
                         (Install.Library.getExpressionFromString context confg.functionImplementation)
                         == Just Normalize.ConfirmedEquality
                         |> not
-                        |> Debug.log "@@isNotImplemented2 (1)"
+                        |> Debug.log "@@isNotImplemented (1)"
 
                 -- The ranges of the current function expression and the
                 -- replacement expression are different
@@ -126,7 +126,7 @@ declarationVisitor context config declaration =
                         (f.declaration |> Node.value |> .expression |> Just |> Maybe.map Node.range)
                         (Install.Library.getExpressionFromString context confg.functionImplementation |> Maybe.map Node.range)
                         |> (\x -> x == Just False)
-                        |> Debug.log "@@isNotImplemented2 (2)"
+                        |> Debug.log "@@isNotImplemented (2)"
             in
             if name == config.functionName && isInCorrectModule then
                 if isNotImplemented2 function config then
