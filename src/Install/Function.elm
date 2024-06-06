@@ -107,17 +107,30 @@ declarationVisitor context config declaration =
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                isImplemented confg f =
+                -- The values of the current function expression and the
+                -- replacement expression are different
+                isNotImplemented : Function -> { a | functionImplementation : String } -> Bool
+                isNotImplemented f confg =
                     Maybe.map2 (Normalize.compare resources)
                         (f.declaration |> Node.value |> .expression |> Just)
                         (Install.Library.getExpressionFromString context confg.functionImplementation)
-                        == Just Normalize.ConfirmedInequality
+                        == Just Normalize.ConfirmedEquality
                         |> not
-                        |> Debug.log "@@COMPARE Functions"
+                        |> Debug.log "@@isNotImplemented2 (1)"
+
+                -- The ranges of the current function expression and the
+                -- replacement expression are different
+                isNotImplemented2 : Function -> { a | functionImplementation : String } -> Bool
+                isNotImplemented2 f confg =
+                    Maybe.map2 (==)
+                        (f.declaration |> Node.value |> .expression |> Just |> Maybe.map Node.range)
+                        (Install.Library.getExpressionFromString context confg.functionImplementation |> Maybe.map Node.range)
+                        |> (\x -> x == Just False)
+                        |> Debug.log "@@isNotImplemented2 (2)"
             in
             if name == config.functionName && isInCorrectModule then
-                if isImplemented config function then
-                    visitFunction (Node.range declaration) config context
+                if isNotImplemented2 function config then
+                    errorWithFix (Node.range declaration) config context
 
                 else
                     ( [], context )
@@ -129,18 +142,12 @@ declarationVisitor context config declaration =
             ( [], context )
 
 
-visitFunction : Range -> Config -> Context -> ( List (Error {}), Context )
-visitFunction range config context =
-    ( [ errorWithFix_ config.functionName config.functionImplementation range ], context )
-
-
-errorWithFix_ : String -> String -> Range -> Error {}
-errorWithFix_ functionName functionImplementation range =
-    let
-        _ =
-            Debug.log "@@ERROR WITH FIX" range
-    in
-    Rule.errorWithFix
-        { message = "Replace function \"" ++ functionName ++ "\"", details = [ "" ] }
-        range
-        [ Fix.replaceRangeBy range functionImplementation ]
+errorWithFix : Range -> Config -> Context -> ( List (Error {}), Context )
+errorWithFix range config context =
+    ( [ Rule.errorWithFix
+            { message = "Replace function \"" ++ config.functionName ++ "\"", details = [ "" ] }
+            range
+            [ Fix.replaceRangeBy range config.functionImplementation ]
+      ]
+    , context
+    )
