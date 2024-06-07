@@ -107,7 +107,7 @@ declarationVisitor context config declaration =
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                -- The values of the current function expression and the
+                -- isNotImplemented returns True if the values of the current function expression and the
                 -- replacement expression are different
                 isNotImplemented : Function -> { a | functionImplementation : String } -> Bool
                 isNotImplemented f confg =
@@ -118,8 +118,11 @@ declarationVisitor context config declaration =
                         |> not
                         |> Debug.log "@@isNotImplemented (1)"
 
-                -- The ranges of the current function expression and the
-                -- replacement expression are different
+                -- isNotImplemented2 returns True if the ranges of the current function expression and the
+                -- replacement expression are different.
+                -- It uses a very weak and clearly incorrect comparison of functions.
+                -- The fact that it behaves the same (in tests so far) as the version above
+                -- is a sign that the version above is also defective.
                 isNotImplemented2 : Function -> { a | functionImplementation : String } -> Bool
                 isNotImplemented2 f confg =
                     Maybe.map2 (==)
