@@ -132,8 +132,8 @@ declarationVisitor context config declaration =
                         |> Debug.log "@@isNotImplemented (2)"
             in
             if name == config.functionName && isInCorrectModule then
-                if isNotImplemented2 function config then
-                    errorWithFix (Node.range declaration) config context
+                if isNotImplemented function config then
+                    fixError (Node.range declaration) config context
 
                 else
                     ( [], context )
@@ -145,8 +145,8 @@ declarationVisitor context config declaration =
             ( [], context )
 
 
-errorWithFix : Range -> Config -> Context -> ( List (Error {}), Context )
-errorWithFix range config context =
+fixError : Range -> Config -> Context -> ( List (Error {}), Context )
+fixError range config context =
     ( [ Rule.errorWithFix
             { message = "Replace function \"" ++ config.functionName ++ "\"", details = [ "" ] }
             range
