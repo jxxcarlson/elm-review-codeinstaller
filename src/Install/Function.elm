@@ -147,7 +147,7 @@ errorWithFix range config context =
     ( [ Rule.errorWithFix
             { message = "Replace function \"" ++ config.functionName ++ "\"", details = [ "" ] }
             range
-            [ Fix.replaceRangeBy range config.functionImplementation ]
+            [ Fix.replaceRangeBy (range |> Debug.log "RANGE") (config.functionImplementation |> Debug.log "IMPLEMENTATION") ]
       ]
     , context
     )
