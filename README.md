@@ -1,8 +1,8 @@
 # elm-review-codeinstaller
 
-Package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
+A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
 
-The project is still in development, so expect it to change a lot over the next weeks and likely months.  Consider it an experiment.
+The project is still in development, so expect it to change a lot over the next weeks and likely months.  For now, consider it to be an experiment.
 
 ## Installation
 To install `elm-review-codeinstaller`, add it to your `elm.json` dependencies:
