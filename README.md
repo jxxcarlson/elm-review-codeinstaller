@@ -54,7 +54,7 @@ addResetCounter =
 
 addResetCounterVariant : Rule
 addResetCounterVariant =
-    Install.TypeVariant.makeRule "Msg" "Msg" "ResetCounter"
+    Install.TypeVariant.makeRule "Counter" "Msg" "ResetCounter"
 
 addResetCounterClause : Rule
 addResetCounterClause =
@@ -92,6 +92,7 @@ update msg model =
 - **Install.FieldInTypeAlias**: Add a field to a specified type alias in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-FieldInTypeAlias).
 - **Install.Initializer**: Add a field to the body of an initializer function where the return value is of the form `( Model, Cmd msg )`. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Initializer).
 - **Install.TypeVariant**: Add a variant to a specified type in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-TypeVariant).
+- **Install.Function**: Replace a function in a given module with a new implementation or add that function definition if it is not present in the module. For more detailes, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function).
 
 ## Try it out
 To test the review code in its current state, try running this in a clean Lamdera project:
