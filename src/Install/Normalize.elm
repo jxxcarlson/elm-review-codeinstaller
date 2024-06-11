@@ -113,9 +113,7 @@ normalize resources node =
 
         Expression.FunctionOrValue rawModuleName string ->
             Expression.FunctionOrValue
-                (ModuleNameLookupTable.moduleNameFor resources.lookupTable node
-                    |> Maybe.withDefault rawModuleName
-                )
+                rawModuleName
                 string
                 |> toNodeAndInfer resources
 
