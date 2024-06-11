@@ -190,14 +190,17 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
                     List.any
                         (\pattern -> patternToString pattern == clause_)
                         (getPatterns cases_)
+
+                isClauseStringPattern =
+                    List.any isStringPattern (getPatterns cases)
             in
             if not (findClause clause cases) then
                 let
                     rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
-                        rangeToInsertClause insertAt cases expression |> Just
+                        rangeToInsertClause insertAt isClauseStringPattern cases expression |> Just
                 in
-                ( [ errorWithFix customError clause functionCall declaration.expression rangeToInsert ], context )
+                ( [ errorWithFix customError isClauseStringPattern clause functionCall declaration.expression rangeToInsert ], context )
 
             else
                 ( [], context )
@@ -206,8 +209,8 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
             ( [], context )
 
 
-rangeToInsertClause : InsertAt -> List Case -> Node Expression -> ( Range, Int, Int )
-rangeToInsertClause insertAt cases expression =
+rangeToInsertClause : InsertAt -> Bool -> List Case -> Node Expression -> ( Range, Int, Int )
+rangeToInsertClause insertAt isClauseStringPattern cases expression =
     let
         lastClauseExpression =
             cases
@@ -226,11 +229,18 @@ rangeToInsertClause insertAt cases expression =
     case insertAt of
         After previousClause ->
             let
+                normalizedPreviousClause =
+                    if isClauseStringPattern then
+                        escapeString previousClause
+
+                    else
+                        previousClause
+
                 previousClausePattern =
                     cases
                         |> List.Extra.find
                             (\( pattern, _ ) ->
-                                nodePatternToString pattern == previousClause
+                                nodePatternToString pattern == normalizedPreviousClause
                             )
             in
             case previousClausePattern of
@@ -259,8 +269,8 @@ rangeToInsertClause insertAt cases expression =
             ( range, 2, lastClauseStartingColumn )
 
 
-errorWithFix : CustomError -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
-errorWithFix (CustomError customError) clause functionCall node errorRange =
+errorWithFix : CustomError -> Bool -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
+errorWithFix (CustomError customError) isClauseStringPattern clause functionCall node errorRange =
     Rule.errorWithFix
         customError
         (Node.range node)
@@ -273,18 +283,25 @@ errorWithFix (CustomError customError) clause functionCall node errorRange =
                     prefix =
                         "\n" ++ String.repeat horizontalOffset " "
                 in
-                [ addMissingCase insertionPoint prefix clause functionCall ]
+                [ addMissingCase insertionPoint isClauseStringPattern prefix clause functionCall ]
 
             Nothing ->
                 []
         )
 
 
-addMissingCase : { row : Int, column : Int } -> String -> String -> String -> Fix
-addMissingCase { row, column } prefix clause functionCall =
+addMissingCase : { row : Int, column : Int } -> Bool -> String -> String -> String -> Fix
+addMissingCase { row, column } isClauseStringPattern prefix clause functionCall =
     let
+        clauseToAdd =
+            if isClauseStringPattern then
+                escapeString clause
+
+            else
+                clause
+
         insertion =
-            prefix ++ clause ++ " -> " ++ functionCall ++ "\n\n"
+            prefix ++ clauseToAdd ++ " -> " ++ functionCall ++ "\n\n"
     in
     Fix.insertAt { row = row, column = column } insertion
 
@@ -436,3 +453,27 @@ nodePatternToString node =
     node
         |> Node.value
         |> patternToString
+
+
+isStringPattern : Pattern -> Bool
+isStringPattern pattern =
+    case pattern of
+        StringPattern _ ->
+            True
+
+        _ ->
+            False
+
+
+escapeString : String -> String
+escapeString str =
+    if isStringScaped str then
+        str
+
+    else
+        "\"" ++ str ++ "\""
+
+
+isStringScaped : String -> Bool
+isStringScaped str =
+    String.startsWith "\\" str
