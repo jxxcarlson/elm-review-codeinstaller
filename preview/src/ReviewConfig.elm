@@ -16,19 +16,22 @@ import Install.FieldInTypeAlias
 import Install.Function
 import Install.Initializer
 import Install.TypeVariant
+import Install.Import
 import Review.Rule exposing (Rule)
 
 
 config : List Rule
 config =
-    [ Install.TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
-    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
-    , Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
-        |> Install.ClauseInCase.withInsertAfter "Increment"
-        |> Install.ClauseInCase.makeRule
-    , Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.ClauseInCase.makeRule
-    , Install.Function.init [ "Frontend" ] "view" viewFunction |> Install.Function.makeRule
+    [ --Install.TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
+          --, Install.TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
+          --, Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
+          --    |> Install.ClauseInCase.withInsertAfter "Increment"
+          --    |> Install.ClauseInCase.makeRule
+          --, Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+          --    |> Install.ClauseInCase.makeRule
+          --, Install.Function.init [ "Frontend" ] "view" viewFunction |> Install.Function.makeRule
+    --
+     Install.Import.makeRule "Frontend" "Foo.Bar" "add: import module Foo."
     ]
 
 
