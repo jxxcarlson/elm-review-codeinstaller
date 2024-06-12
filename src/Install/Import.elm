@@ -1,15 +1,8 @@
-module Install.Import exposing
-    ( Config
-    , CustomError
-    , init
-    , makeRule
-    , withAlias
-    , withExposedValues
-    )
+module Install.Import exposing (init, makeRule, withAlias, withExposedValues)
 
 {-| Add import statements to a given module.
 
-Exammples:
+Examples:
 
     ```
     Install.Import.init "Frontend" "Foo.Bar"
@@ -29,6 +22,8 @@ Exammples:
     This adds `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module.
 
     ```
+
+@docs init, makeRule, withAlias, withExposedValues
 
 -}
 
