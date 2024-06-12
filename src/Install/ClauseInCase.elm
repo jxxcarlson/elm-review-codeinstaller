@@ -177,8 +177,8 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
 visitFunction : String -> String -> String -> Ignored -> Node Expression -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
 visitFunction namespace clause functionCall ignored expressionNode insertAt customError context =
     let
-        couldNotFindCaseError =
-            { message = "Could not find the case expression", details = [ "Try to extract the case to a top-level function and call the rule on the new function" ] }
+        couldNotFindCaseError node =
+            Rule.error { message = "Could not find the case expression", details = [ "Try to extract the case to a top-level function and call the rule on the new function" ] } (Node.range node)
     in
     case expressionNode |> Node.value of
         CaseExpression { expression, cases } ->
@@ -211,6 +211,25 @@ visitFunction namespace clause functionCall ignored expressionNode insertAt cust
         LetExpression { expression } ->
             visitFunction namespace clause functionCall ignored expression insertAt customError context
 
+        -- ifExpression: try to apply the fix to then and, if it fails, to else
+        IfBlock conditionExpression thenExpression elseExpression ->
+            let
+                ( thenErrors, newContext ) =
+                    visitFunction namespace clause functionCall ignored thenExpression insertAt customError context
+
+                hasAppliedFix =
+                    thenErrors /= [ couldNotFindCaseError elseExpression ]
+
+                ( errors, finalContext ) =
+                    if hasAppliedFix then
+                        ( thenErrors, newContext )
+
+                    else
+                        visitFunction namespace clause functionCall ignored elseExpression insertAt customError newContext
+            in
+            ( errors, finalContext )
+
+        -- TupledExpression: apply fix to the first case expression found. Fail if there are multiple case expressions
         TupledExpression nodes ->
             let
                 expressions =
@@ -251,13 +270,13 @@ visitFunction namespace clause functionCall ignored expressionNode insertAt cust
                         visitFunction namespace clause functionCall ignored caseExpression insertAt customError context
 
                     Nothing ->
-                        ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
+                        ( [ couldNotFindCaseError expressionNode ], context )
 
         ParenthesizedExpression node ->
             visitFunction namespace clause functionCall ignored node insertAt customError context
 
         _ ->
-            ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
+            ( [ couldNotFindCaseError expressionNode ], context )
 
 
 rangeToInsertClause : InsertAt -> Bool -> List Case -> Node Expression -> ( Range, Int, Int )
