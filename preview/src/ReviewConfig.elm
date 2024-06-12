@@ -31,7 +31,10 @@ config =
           --    |> Install.ClauseInCase.makeRule
           --, Install.Function.init [ "Frontend" ] "view" viewFunction |> Install.Function.makeRule
     --
-     Install.Import.makeRule "Frontend" "Foo.Bar" "add: import module Foo."
+     Install.Import.init "Frontend" "Foo.Bar"
+       |> Install.Import.withAlias "FB"
+       |> Install.Import.withExposedValues ["a", "b", "c"]
+       |>   Install.Import.makeRule
     ]
 
 
