@@ -303,11 +303,22 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
 
         AtBeginning ->
             let
-                -- The -2 is to account for the `case` keyword and the space after it
+                -- If there are other clauses, the first clause will take the start of other clauses as reference.
+                otherClausesOffset =
+                    cases
+                        |> List.map (\( pattern, _ ) -> Node.range pattern |> .start >> .column)
+                        |> List.minimum
+                        |> Maybe.map (\x -> x - 1)
+
+                -- If there are no other clauses, the first clause will take the case expression as reference. The -2 is to account for the `case` keyword and the space after it
                 firstClauseOffset =
                     (Node.range expression).start.column - 2
+
+                clauseOffset =
+                    otherClausesOffset
+                        |> Maybe.withDefault firstClauseOffset
             in
-            ( Node.range expression, 1, firstClauseOffset )
+            ( Node.range expression, 1, clauseOffset )
 
         AtEnd ->
             let
