@@ -1,6 +1,7 @@
 module Install.ClauseInCaseTest2 exposing (all)
 
 import Install.ClauseInCase
+import Review.Rule exposing (Rule)
 import Run
 import Test exposing (Test, describe)
 
@@ -12,6 +13,7 @@ all =
         , Run.testFix test1b
         , Run.testFix test1c
         , Run.testFix test2
+        , Run.testFix test3
         ]
 
 
@@ -19,6 +21,7 @@ all =
 -- TEST 1
 
 
+test1a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
 test1a =
     { description = "Test 1a, simple makeRule: should report an error and fix it"
     , src = src1
@@ -29,6 +32,7 @@ test1a =
     }
 
 
+test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
 test1b =
     { description = "Test 1b, withInsertAfter CounterIncremented: should report an error and fix it"
     , src = src1
@@ -39,6 +43,7 @@ test1b =
     }
 
 
+test1c : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
 test1c =
     { description = "Test 1c, withInsertAtBeginning: should report an error and fix it"
     , src = src1
@@ -49,23 +54,27 @@ test1c =
     }
 
 
+rule1a : Rule
 rule1a =
     Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
 
+rule1b : Rule
 rule1b =
     Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
         |> Install.ClauseInCase.makeRule
 
 
+rule1c : Rule
 rule1c =
     Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.makeRule
 
 
+src1 : String
 src1 =
     """module Backend exposing (..)
 
@@ -83,6 +92,7 @@ updateFromFrontend sessionId clientId msg model =
 """
 
 
+fixed1 : String
 fixed1 =
     """module Backend exposing (..)
 
@@ -103,6 +113,7 @@ updateFromFrontend sessionId clientId msg model =
 """
 
 
+fixed1c : String
 fixed1c =
     """module Backend exposing (..)
 
@@ -123,6 +134,7 @@ updateFromFrontend sessionId clientId msg model =
 """
 
 
+under1 : String
 under1 =
     """case msg of
         CounterIncremented ->
@@ -137,6 +149,7 @@ under1 =
 -- TEST 2
 
 
+test2 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
 test2 =
     { description = "Test 2 (Reset, Frontend.update): should report an error and fix it"
     , src = src2
@@ -147,12 +160,14 @@ test2 =
     }
 
 
+rule2 : Rule
 rule2 =
     Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
         |> Install.ClauseInCase.makeRule
 
 
+src2 : String
 src2 =
     """module Frontend exposing (Model, app)
 
@@ -170,6 +185,7 @@ update msg model =
 """
 
 
+fixed2 : String
 fixed2 =
     """module Frontend exposing (Model, app)
 
@@ -190,6 +206,7 @@ update msg model =
 """
 
 
+under2 : String
 under2 =
     """case msg of
         Increment ->
@@ -200,3 +217,94 @@ under2 =
 
         FNoop ->
             ( model, Cmd.none )"""
+
+
+
+-- TEST 3
+
+
+test3 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test3 =
+    { description = "Test 2: should escape string pattern when is a case of string patterns"
+    , src = src3
+    , rule = rule3
+    , under = under3
+    , fixed = fixed3
+    , message = "Add handler for Aspasia"
+    }
+
+
+src3 : String
+src3 =
+    """module Philosopher exposing (Philosopher(..), stringToPhilosopher)
+
+type Philosopher
+    = Socrates
+    | Plato
+    | Aristotle
+
+stringToPhilosopher : String -> Maybe Philosopher
+stringToPhilosopher str =
+    case str of
+            "Socrates" ->
+                Just Socrates
+
+            "Plato" ->
+                Just Plato
+
+            "Aristotle" ->
+                Just Aristotle
+
+            _ ->
+                Nothing"""
+
+
+rule3 : Rule
+rule3 =
+    Install.ClauseInCase.init "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
+        |> Install.ClauseInCase.withInsertAfter "Aristotle"
+        |> Install.ClauseInCase.makeRule
+
+
+under3 : String
+under3 =
+    """case str of
+            "Socrates" ->
+                Just Socrates
+
+            "Plato" ->
+                Just Plato
+
+            "Aristotle" ->
+                Just Aristotle
+
+            _ ->
+                Nothing"""
+
+
+fixed3 : String
+fixed3 =
+    """module Philosopher exposing (Philosopher(..), stringToPhilosopher)
+
+type Philosopher
+    = Socrates
+    | Plato
+    | Aristotle
+
+stringToPhilosopher : String -> Maybe Philosopher
+stringToPhilosopher str =
+    case str of
+            "Socrates" ->
+                Just Socrates
+
+            "Plato" ->
+                Just Plato
+
+            "Aristotle" ->
+                Just Aristotle
+
+
+            "Aspasia" -> Just Aspasia
+
+            _ ->
+                Nothing"""
