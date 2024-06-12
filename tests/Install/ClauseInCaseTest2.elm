@@ -16,6 +16,7 @@ all =
         , Run.testFix test3
         , Run.testFix test4
         , Run.testFix test5
+        , Run.testFix test6
         ]
 
 
@@ -108,8 +109,8 @@ updateFromFrontend sessionId clientId msg model =
             in
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )
 
-
         ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+
 
 
 """
@@ -197,8 +198,8 @@ update msg model =
         Increment ->
             ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
 
-
         Reset -> ( { model | counter = 0 }, sendToBackend CounterReset )
+
 
         Decrement ->
             ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
@@ -305,8 +306,8 @@ stringToPhilosopher str =
             "Aristotle" ->
                 Just Aristotle
 
-
             "Aspasia" -> Just Aspasia
+
 
             _ ->
                 Nothing"""
@@ -364,7 +365,6 @@ isStringPattern nodePattern =
     in
     case pattern of
         StringPattern _ -> True
-
 
         _ -> False
 
@@ -432,3 +432,102 @@ errorFix context node maybeError =
             []
     , context)
     """
+
+
+
+-- TEST 6
+
+
+test6 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test6 =
+    { description = "Test 6: should add clause when case is inside parenthesized expression"
+    , src = src6
+    , rule = rule6
+    , under = under6
+    , fixed = fixed6
+    , message = "Add handler for Sun"
+    }
+
+
+src6 : String
+src6 =
+    """module WeekShiftForm exposing(..)
+
+getShiftFormFromWeekday weekday =
+    (case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday
+    )"""
+
+
+rule6 : Rule
+rule6 =
+    Install.ClauseInCase.init "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
+        |> Install.ClauseInCase.withInsertAfter "Sat"
+        |> Install.ClauseInCase.makeRule
+
+
+under6 : String
+under6 =
+    """case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday"""
+
+
+fixed6 : String
+fixed6 =
+    """module WeekShiftForm exposing(..)
+
+getShiftFormFromWeekday weekday =
+    (case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday
+
+        Sun -> .sunday
+
+    )"""
