@@ -17,6 +17,7 @@ all =
         , Run.testFix test4
         , Run.testFix test5
         , Run.testFix test6
+        , Run.testFix test7
         ]
 
 
@@ -524,3 +525,71 @@ getShiftFormFromWeekday weekday =
 
         Sun -> .sunday
     )"""
+
+
+
+-- TEST 7 - IfBlock test
+
+
+test7 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test7 =
+    { description = "Test 7: should add clause when case is inside if block"
+    , src = src7
+    , rule = rule7
+    , under = under7
+    , fixed = fixed7
+    , message = "Add handler for Just []"
+    }
+
+
+src7 : String
+src7 =
+    """module Backend exposing (..)
+
+someFunction : Bool -> Maybe Data -> Result String Data
+someFunction condition maybeData =
+    if condition then
+        case maybeData of
+            Just data ->
+                Result.Ok data
+
+            Nothing ->
+                Result.Err "No data"
+    else
+        Result.Err "Condition not satisfied" """
+
+
+rule7 : Rule
+rule7 =
+    Install.ClauseInCase.init "Backend" "someFunction" "Just []" "Result.Err \"Empty data\""
+        |> Install.ClauseInCase.withInsertAtBeginning
+        |> Install.ClauseInCase.makeRule
+
+
+under7 : String
+under7 =
+    """case maybeData of
+            Just data ->
+                Result.Ok data
+
+            Nothing ->
+                Result.Err "No data\""""
+
+
+fixed7 : String
+fixed7 =
+    """module Backend exposing (..)
+
+someFunction : Bool -> Maybe Data -> Result String Data
+someFunction condition maybeData =
+    if condition then
+        case maybeData of
+
+            Just [] -> Result.Err "Empty data"
+            Just data ->
+                Result.Ok data
+
+            Nothing ->
+                Result.Err "No data"
+    else
+        Result.Err "Condition not satisfied" """
