@@ -112,7 +112,6 @@ updateFromFrontend sessionId clientId msg model =
         ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
 
-
 """
 
 
@@ -125,7 +124,6 @@ updateFromFrontend sessionId clientId msg model =
     case msg of
 
         ResetCounter -> ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
-
         CounterIncremented ->
             let
                 newCounter =
@@ -199,7 +197,6 @@ update msg model =
             ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
 
         Reset -> ( { model | counter = 0 }, sendToBackend CounterReset )
-
 
         Decrement ->
             ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
@@ -308,7 +305,6 @@ stringToPhilosopher str =
 
             "Aspasia" -> Just Aspasia
 
-
             _ ->
                 Nothing"""
 
@@ -367,7 +363,6 @@ isStringPattern nodePattern =
         StringPattern _ -> True
 
         _ -> False
-
 """
 
 
@@ -425,7 +420,6 @@ errorFix context node maybeError =
     (case maybeError of
 
         Just "" -> []
-
         Just error ->
             [Rule.error error Node.range node]
         Nothing ->
@@ -529,5 +523,4 @@ getShiftFormFromWeekday weekday =
             .saturday
 
         Sun -> .sunday
-
     )"""

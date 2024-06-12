@@ -363,7 +363,7 @@ addMissingCase { row, column } isClauseStringPattern prefix clause functionCall 
                 clause
 
         insertion =
-            "\n" ++ prefix ++ clauseToAdd ++ " -> " ++ functionCall ++ "\n\n"
+            "\n" ++ prefix ++ clauseToAdd ++ " -> " ++ functionCall ++ "\n"
     in
     Fix.insertAt { row = row, column = column } insertion
 
