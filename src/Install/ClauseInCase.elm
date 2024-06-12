@@ -253,6 +253,9 @@ visitFunction namespace clause functionCall ignored expressionNode insertAt cust
                     Nothing ->
                         ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
 
+        ParenthesizedExpression node ->
+            visitFunction namespace clause functionCall ignored node insertAt customError context
+
         _ ->
             ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
 
@@ -296,10 +299,10 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 2, lastClauseStartingColumn ))
+                        |> (\range -> ( range, 1, lastClauseStartingColumn ))
 
                 Nothing ->
-                    ( Node.range lastClauseExpression, 2, 0 )
+                    ( Node.range lastClauseExpression, 1, 0 )
 
         AtBeginning ->
             let
@@ -325,7 +328,7 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                 range =
                     Node.range lastClauseExpression
             in
-            ( range, 2, lastClauseStartingColumn )
+            ( range, 1, lastClauseStartingColumn )
 
 
 errorWithFix : CustomError -> Bool -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
@@ -340,7 +343,7 @@ errorWithFix (CustomError customError) isClauseStringPattern clause functionCall
                         { row = range.end.row + verticalOffset, column = 0 }
 
                     prefix =
-                        "\n" ++ String.repeat horizontalOffset " "
+                        String.repeat horizontalOffset " "
                 in
                 [ addMissingCase insertionPoint isClauseStringPattern prefix clause functionCall ]
 
@@ -360,7 +363,7 @@ addMissingCase { row, column } isClauseStringPattern prefix clause functionCall 
                 clause
 
         insertion =
-            prefix ++ clauseToAdd ++ " -> " ++ functionCall ++ "\n\n"
+            "\n" ++ prefix ++ clauseToAdd ++ " -> " ++ functionCall ++ "\n\n"
     in
     Fix.insertAt { row = row, column = column } insertion
 
