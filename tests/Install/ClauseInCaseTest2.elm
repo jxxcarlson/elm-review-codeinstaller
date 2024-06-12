@@ -14,6 +14,8 @@ all =
         , Run.testFix test1c
         , Run.testFix test2
         , Run.testFix test3
+        , Run.testFix test4
+        , Run.testFix test5
         ]
 
 
@@ -308,3 +310,125 @@ stringToPhilosopher str =
 
             _ ->
                 Nothing"""
+
+
+
+-- TEST 4
+
+
+test4 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4 =
+    { description = "Test 4: should add clause when case is inside let in expression"
+    , src = src4
+    , rule = rule4
+    , under = under4
+    , fixed = fixed4
+    , message = "Add handler for _"
+    }
+
+
+src4 : String
+src4 =
+    """module Elm.Syntax.Pattern2 exposing (..)
+
+isStringPattern : Node Pattern -> Bool
+isStringPattern nodePattern =
+    let
+        pattern = Node.value nodePattern
+    in
+    case pattern of
+        StringPattern _ -> True
+"""
+
+
+rule4 : Rule
+rule4 =
+    Install.ClauseInCase.init "Elm.Syntax.Pattern2" "isStringPattern" "_" "False"
+        |> Install.ClauseInCase.makeRule
+
+
+under4 : String
+under4 =
+    """case pattern of
+        StringPattern _ -> True"""
+
+
+fixed4 : String
+fixed4 =
+    """module Elm.Syntax.Pattern2 exposing (..)
+
+isStringPattern : Node Pattern -> Bool
+isStringPattern nodePattern =
+    let
+        pattern = Node.value nodePattern
+    in
+    case pattern of
+        StringPattern _ -> True
+
+
+        _ -> False
+
+"""
+
+
+
+-- TEST 5
+
+
+test5 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test5 =
+    { description = "Test 5: should add clause when case is inside tupled expression"
+    , src = src5
+    , rule = rule5
+    , under = under5
+    , fixed = fixed5
+    , message = "Add handler for empty error string"
+    }
+
+
+src5 : String
+src5 =
+    """module SomeElmReviewRule exposing(..)
+
+errorFix context node maybeError =
+    (case maybeError of
+        Just error ->
+            [Rule.error error Node.range node]
+        Nothing ->
+            []
+    , context)
+    """
+
+
+rule5 : Rule
+rule5 =
+    Install.ClauseInCase.init "SomeElmReviewRule" "errorFix" "Just \"\"" "[]"
+        |> Install.ClauseInCase.withInsertAtBeginning
+        |> Install.ClauseInCase.withCustomErrorMessage "Add handler for empty error string" [ "" ]
+        |> Install.ClauseInCase.makeRule
+
+
+under5 : String
+under5 =
+    """case maybeError of
+        Just error ->
+            [Rule.error error Node.range node]
+        Nothing ->
+            []"""
+
+
+fixed5 : String
+fixed5 =
+    """module SomeElmReviewRule exposing(..)
+
+errorFix context node maybeError =
+    (case maybeError of
+
+        Just "" -> []
+
+        Just error ->
+            [Rule.error error Node.range node]
+        Nothing ->
+            []
+    , context)
+    """
