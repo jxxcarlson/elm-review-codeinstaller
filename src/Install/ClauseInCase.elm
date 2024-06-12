@@ -159,9 +159,13 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName context
+
+                functionDeclaration : FunctionImplementation
+                functionDeclaration =
+                    Node.value function.declaration
             in
             if name == functionName && isInCorrectModule then
-                visitFunction namespace clause functionCall Set.empty function insertAt customError context
+                visitFunction namespace clause functionCall Set.empty functionDeclaration.expression insertAt customError context
 
             else
                 ( [], context )
@@ -170,14 +174,13 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
             ( [], context )
 
 
-visitFunction : String -> String -> String -> Ignored -> Function -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
-visitFunction namespace clause functionCall ignored function insertAt customError context =
+visitFunction : String -> String -> String -> Ignored -> Node Expression -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
+visitFunction namespace clause functionCall ignored expressionNode insertAt customError context =
     let
-        declaration : FunctionImplementation
-        declaration =
-            Node.value function.declaration
+        couldNotFindCaseError =
+            { message = "Could not find the case expression", details = [ "Try to extract the case to a top-level function and call the rule on the new function" ] }
     in
-    case declaration.expression |> Node.value of
+    case expressionNode |> Node.value of
         CaseExpression { expression, cases } ->
             let
                 getPatterns : List Case -> List Pattern
@@ -200,13 +203,58 @@ visitFunction namespace clause functionCall ignored function insertAt customErro
                     rangeToInsert =
                         rangeToInsertClause insertAt isClauseStringPattern cases expression |> Just
                 in
-                ( [ errorWithFix customError isClauseStringPattern clause functionCall declaration.expression rangeToInsert ], context )
+                ( [ errorWithFix customError isClauseStringPattern clause functionCall expressionNode rangeToInsert ], context )
 
             else
                 ( [], context )
 
+        LetExpression { expression } ->
+            visitFunction namespace clause functionCall ignored expression insertAt customError context
+
+        TupledExpression nodes ->
+            let
+                expressions =
+                    List.map Node.value nodes
+
+                hasMoreThanOneCaseExpression =
+                    List.filter
+                        (\expression ->
+                            case expression of
+                                CaseExpression _ ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+                        expressions
+                        |> List.length
+                        |> (\x -> x > 1)
+
+                maybeCaseNode =
+                    List.Extra.find
+                        (\node ->
+                            case Node.value node of
+                                CaseExpression _ ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+                        nodes
+            in
+            if hasMoreThanOneCaseExpression then
+                ( [ Rule.error { message = "This tuple has multiple case expressions", details = [ "To add a clause to the desired case, please extract the other cases to either a let expression or a top-level function" ] } (Node.range expressionNode) ], context )
+
+            else
+                case maybeCaseNode of
+                    Just caseExpression ->
+                        visitFunction namespace clause functionCall ignored caseExpression insertAt customError context
+
+                    Nothing ->
+                        ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
+
         _ ->
-            ( [], context )
+            ( [ Rule.error couldNotFindCaseError (Node.range expressionNode) ], context )
 
 
 rangeToInsertClause : InsertAt -> Bool -> List Case -> Node Expression -> ( Range, Int, Int )
