@@ -1,4 +1,36 @@
-module Install.Import exposing (..)
+module Install.Import exposing
+    ( Config
+    , CustomError
+    , init
+    , makeRule
+    , withAlias
+    , withExposedValues
+    )
+
+{-| Add import statements to a given module.
+
+Exammples:
+
+    ```
+    Install.Import.init "Frontend" "Foo.Bar"
+       |> Install.Import.makeRule
+    ```
+
+    This adds `import Foo.Bar` to the `Frontend` module.
+
+
+     ```
+    Install.Import.init "Frontend" "Foo.Bar"
+            |> Install.Import.withAlias "FB"
+            |> Install.Import.withExposedValues [ "a", "b", "c" ]
+            |> Install.Import.makeRule
+    ```
+
+    This adds `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module.
+
+    ```
+
+-}
 
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.ModuleName exposing (ModuleName)
@@ -9,6 +41,11 @@ import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
 
 
+{-|
+
+    Configuratioh for  the rule.
+
+-}
 type alias Config =
     { hostModuleName : List String
     , importedModuleName : List String
@@ -36,20 +73,22 @@ init hostModuleName_ importedModuleName_ =
     }
 
 
+{-| Add an alias to the imported module.
+-}
 withAlias : String -> Config -> Config
 withAlias alias config =
     { config | importedModuleAlias = Just alias }
 
 
+{-| Add an exposing list to the imported module.
+-}
 withExposedValues : List String -> Config -> Config
 withExposedValues exposedValues config =
     { config | exposedValues = Just exposedValues }
 
 
-{-| Create a rule that adds an import for a given module in a given module. For example:
-
-     Install.Import.makeRule "Frontend" "Foo.Bar" "add: import module Foo."
-
+{-| Create a rule that adds an import for a given module in a given module.
+See above for examples.
 -}
 makeRule : Config -> Rule
 makeRule config =
