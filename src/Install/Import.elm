@@ -126,7 +126,6 @@ fixError config context =
                 ++ " "
                 |> addAlias config.importedModuleAlias
                 |> addExposing config.exposedValues
-                |> Debug.log "importText"
 
         addAlias : Maybe String -> String -> String
         addAlias mAlias str =
