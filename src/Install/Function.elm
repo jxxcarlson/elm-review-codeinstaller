@@ -18,17 +18,15 @@ Running this rule will insert or replace the function `view` in the module `Fron
 
 -}
 
-import Dict
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
-import Elm.Syntax.Module as Module
-import Elm.Syntax.ModuleName as Module exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Expression exposing (Expression, Function)
+import Elm.Syntax.ModuleName exposing (ModuleName)
+import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
 import Install.Infer as Infer
 import Install.Library
 import Install.Normalize as Normalize
-import Review.Fix as Fix exposing (Fix)
+import Review.Fix as Fix
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
@@ -107,8 +105,7 @@ declarationVisitor context config declaration =
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
-                -- isNotImplemented returns True if the values of the current function expression and the
-                -- replacement expression are different
+                -- isNotImplemented returns True if the values of the current function expression and the replacement expression are different
                 isNotImplemented : Function -> { a | functionImplementation : String } -> Bool
                 isNotImplemented f confg =
                     Maybe.map2 (Normalize.compare resources)
@@ -116,20 +113,6 @@ declarationVisitor context config declaration =
                         (Install.Library.getExpressionFromString context confg.functionImplementation)
                         == Just Normalize.ConfirmedEquality
                         |> not
-                        |> Debug.log "@@isNotImplemented (1)"
-
-                -- isNotImplemented2 returns True if the ranges of the current function expression and the
-                -- replacement expression are different.
-                -- It uses a very weak and clearly incorrect comparison of functions.
-                -- The fact that it behaves the same (in tests so far) as the version above
-                -- is a sign that the version above is also defective.
-                isNotImplemented2 : Function -> { a | functionImplementation : String } -> Bool
-                isNotImplemented2 f confg =
-                    Maybe.map2 (==)
-                        (f.declaration |> Node.value |> .expression |> Just |> Maybe.map Node.range)
-                        (Install.Library.getExpressionFromString context confg.functionImplementation |> Maybe.map Node.range)
-                        |> (\x -> x == Just False)
-                        |> Debug.log "@@isNotImplemented (2)"
             in
             if name == config.functionName && isInCorrectModule then
                 if isNotImplemented function config then
@@ -150,7 +133,7 @@ fixError range config context =
     ( [ Rule.errorWithFix
             { message = "Replace function \"" ++ config.functionName ++ "\"", details = [ "" ] }
             range
-            [ Fix.replaceRangeBy (range |> Debug.log "RANGE") (config.functionImplementation |> Debug.log "IMPLEMENTATION") ]
+            [ Fix.replaceRangeBy range config.functionImplementation ]
       ]
     , context
     )

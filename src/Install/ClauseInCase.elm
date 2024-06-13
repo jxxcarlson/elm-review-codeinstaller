@@ -57,7 +57,6 @@ import List.Extra
 import Maybe.Extra
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
 import String.Extra
 
 
