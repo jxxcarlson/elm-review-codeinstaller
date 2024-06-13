@@ -1,5 +1,6 @@
 module Frontend exposing (Model, app)
 
+import Foo.Bar as FB exposing (a, b, c)
 import Html exposing (Html, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
