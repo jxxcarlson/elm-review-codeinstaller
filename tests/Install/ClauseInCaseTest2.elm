@@ -18,6 +18,9 @@ all =
         , Run.testFix test5
         , Run.testFix test6
         , Run.testFix test7
+        , Run.testFix test8
+        , Run.testFix test9
+        , Run.testFix test10
         ]
 
 
@@ -593,3 +596,251 @@ someFunction condition maybeData =
                 Result.Err "No data"
     else
         Result.Err "Condition not satisfied" """
+
+
+
+-- TEST 8 - Application test
+
+
+test8 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test8 =
+    { description = "Test 8: should add clause when case is inside application"
+    , src = src8
+    , rule = rule8
+    , under = under8
+    , fixed = fixed8
+    , message = "Add handler for Sun"
+    }
+
+
+src8 : String
+src8 =
+    """module WeekShiftForm exposing(..)
+getShiftFormFromWeekday : Weekday -> WeekShiftForm -> ShiftForm
+getShiftFormFromWeekday weekday weekShiftForm =
+    (case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday
+    )
+        weekShiftForm"""
+
+
+rule8 : Rule
+rule8 =
+    Install.ClauseInCase.init "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
+        |> Install.ClauseInCase.withInsertAfter "Sat"
+        |> Install.ClauseInCase.makeRule
+
+
+under8 : String
+under8 =
+    """case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday"""
+
+
+fixed8 : String
+fixed8 =
+    """module WeekShiftForm exposing(..)
+getShiftFormFromWeekday : Weekday -> WeekShiftForm -> ShiftForm
+getShiftFormFromWeekday weekday weekShiftForm =
+    (case weekday of
+        Mon ->
+            .monday
+
+        Tue ->
+            .tuesday
+
+        Wed ->
+            .wednesday
+
+        Thu ->
+            .thursday
+
+        Fri ->
+            .friday
+
+        Sat ->
+            .saturday
+
+        Sun -> .sunday
+    )
+        weekShiftForm"""
+
+
+
+-- TEST 9 - OperatorApplication and LambdaExpression test
+
+
+test9 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test9 =
+    { description = "Test 9: should add clause when case is inside operator application and Lambda Expression"
+    , src = src9
+    , rule = rule9
+    , under = under9
+    , fixed = fixed9
+    , message = "Add handler for Just []"
+    }
+
+
+src9 : String
+src9 =
+    """module Errors exposing (..)
+decodeFieldErrors : Decoder FieldErrors
+decodeFieldErrors =
+    JsonD.field "errors" (JsonD.dict (JsonD.list JsonD.string))
+        |> JsonD.maybe
+        |> JsonD.andThen
+            (\\maybeErrors ->
+                case maybeErrors of
+                    Just errors ->
+                        JsonD.succeed errors
+
+                    Nothing ->
+                        JsonD.field "error_message" JsonD.string
+                            |> JsonD.map
+                                (\\message ->
+                                    Dict.singleton "base" [ message ]
+                                )
+            )"""
+
+
+rule9 : Rule
+rule9 =
+    Install.ClauseInCase.init "Errors" "decodeFieldErrors" "Just []" "Dict.singleton \"base\" []"
+        |> Install.ClauseInCase.withInsertAtBeginning
+        |> Install.ClauseInCase.makeRule
+
+
+under9 : String
+under9 =
+    """case maybeErrors of
+                    Just errors ->
+                        JsonD.succeed errors
+
+                    Nothing ->
+                        JsonD.field "error_message" JsonD.string
+                            |> JsonD.map
+                                (\\message ->
+                                    Dict.singleton "base" [ message ]
+                                )"""
+
+
+fixed9 : String
+fixed9 =
+    """module Errors exposing (..)
+decodeFieldErrors : Decoder FieldErrors
+decodeFieldErrors =
+    JsonD.field "errors" (JsonD.dict (JsonD.list JsonD.string))
+        |> JsonD.maybe
+        |> JsonD.andThen
+            (\\maybeErrors ->
+                case maybeErrors of
+
+                    Just [] -> Dict.singleton "base" []
+                    Just errors ->
+                        JsonD.succeed errors
+
+                    Nothing ->
+                        JsonD.field "error_message" JsonD.string
+                            |> JsonD.map
+                                (\\message ->
+                                    Dict.singleton "base" [ message ]
+                                )
+            )"""
+
+
+
+-- Test 10: ListExpression test
+
+
+test10 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test10 =
+    { description = "Test 10: should add clause when case is inside list expression"
+    , src = src10
+    , rule = rule10
+    , under = under10
+    , fixed = fixed10
+    , message = "Add handler for ModalConfirm"
+    }
+
+
+src10 : String
+src10 =
+    """module Modal exposing (..)
+
+type Modal =
+    ModalAlert
+    | ModalForm
+    | ModalConfirm -- newType
+
+viewModal : Modal -> Html Msg
+viewModal modal =
+    div [class "modal-container"]
+        [case modal of
+            ModalAlert -> div [class "modal-alert"] []
+            ModalForm -> div [class "modal-form"] []
+        ]"""
+
+
+rule10 : Rule
+rule10 =
+    Install.ClauseInCase.init "Modal" "viewModal" "ModalConfirm" "div [class \"modal-confirm\"] []"
+        |> Install.ClauseInCase.makeRule
+
+
+under10 : String
+under10 =
+    """case modal of
+            ModalAlert -> div [class "modal-alert"] []
+            ModalForm -> div [class "modal-form"] []"""
+
+
+fixed10 : String
+fixed10 =
+    """module Modal exposing (..)
+
+type Modal =
+    ModalAlert
+    | ModalForm
+    | ModalConfirm -- newType
+
+viewModal : Modal -> Html Msg
+viewModal modal =
+    div [class "modal-container"]
+        [case modal of
+            ModalAlert -> div [class "modal-alert"] []
+            ModalForm -> div [class "modal-form"] []
+
+            ModalConfirm -> div [class "modal-confirm"] []
+        ]"""
