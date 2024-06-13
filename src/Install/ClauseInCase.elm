@@ -47,13 +47,14 @@ in a specified module. For example, if you put the code below in your
 -}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, Expression(..), Function, FunctionImplementation)
+import Elm.Syntax.Expression exposing (Case, Expression(..), FunctionImplementation)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range exposing (Range)
 import Install.Library
 import List.Extra
+import Maybe.Extra
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
@@ -128,10 +129,6 @@ type alias Context =
     }
 
 
-type alias Ignored =
-    Set String
-
-
 contextCreator : Rule.ContextCreator () { moduleName : ModuleName }
 contextCreator =
     Rule.initContextCreator
@@ -153,10 +150,6 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
                 name =
                     Node.value (Node.value function.declaration).name
 
-                namespace : String
-                namespace =
-                    String.join "." context.moduleName ++ "." ++ name
-
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName context
 
@@ -165,7 +158,7 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
                     Node.value function.declaration
             in
             if name == functionName && isInCorrectModule then
-                visitFunction namespace clause functionCall Set.empty functionDeclaration.expression insertAt customError context
+                visitFunction clause functionCall functionDeclaration.expression insertAt customError context
 
             else
                 ( [], context )
@@ -174,15 +167,27 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
             ( [], context )
 
 
-visitFunction : String -> String -> String -> Ignored -> Node Expression -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
-visitFunction namespace clause functionCall ignored expressionNode insertAt customError context =
+visitFunction : String -> String -> Node Expression -> InsertAt -> CustomError -> Context -> ( List (Rule.Error {}), Context )
+visitFunction clause functionCall expressionNode insertAt customError context =
     let
         couldNotFindCaseError node =
             Rule.error { message = "Could not find the case expression", details = [ "Try to extract the case to a top-level function and call the rule on the new function" ] } (Node.range node)
     in
-    case expressionNode |> Node.value of
-        CaseExpression { expression, cases } ->
+    case findNestedCaseNode expressionNode of
+        Just caseNode ->
             let
+                caseExpression =
+                    Node.value caseNode
+
+                ( allCases, patternMatchNode ) =
+                    case caseExpression of
+                        CaseExpression { cases, expression } ->
+                            ( cases, expression )
+
+                        -- impossible case
+                        _ ->
+                            ( [], Node.empty caseExpression )
+
                 getPatterns : List Case -> List Pattern
                 getPatterns cases_ =
                     cases_
@@ -195,87 +200,20 @@ visitFunction namespace clause functionCall ignored expressionNode insertAt cust
                         (getPatterns cases_)
 
                 isClauseStringPattern =
-                    List.any isStringPattern (getPatterns cases)
+                    List.any isStringPattern (getPatterns allCases)
             in
-            if not (findClause clause cases) then
+            if not (findClause clause allCases) then
                 let
                     rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
-                        rangeToInsertClause insertAt isClauseStringPattern cases expression |> Just
+                        rangeToInsertClause insertAt isClauseStringPattern allCases patternMatchNode |> Just
                 in
-                ( [ errorWithFix customError isClauseStringPattern clause functionCall expressionNode rangeToInsert ], context )
+                ( [ errorWithFix customError isClauseStringPattern clause functionCall caseNode rangeToInsert ], context )
 
             else
                 ( [], context )
 
-        LetExpression { expression } ->
-            visitFunction namespace clause functionCall ignored expression insertAt customError context
-
-        -- ifExpression: try to apply the fix to then and, if it fails, to else
-        IfBlock conditionExpression thenExpression elseExpression ->
-            let
-                ( thenErrors, newContext ) =
-                    visitFunction namespace clause functionCall ignored thenExpression insertAt customError context
-
-                hasAppliedFix =
-                    thenErrors /= [ couldNotFindCaseError elseExpression ]
-
-                ( errors, finalContext ) =
-                    if hasAppliedFix then
-                        ( thenErrors, newContext )
-
-                    else
-                        visitFunction namespace clause functionCall ignored elseExpression insertAt customError newContext
-            in
-            ( errors, finalContext )
-
-        -- TupledExpression: apply fix to the first case expression found. Fail if there are multiple case expressions
-        TupledExpression nodes ->
-            let
-                expressions =
-                    List.map Node.value nodes
-
-                hasMoreThanOneCaseExpression =
-                    List.filter
-                        (\expression ->
-                            case expression of
-                                CaseExpression _ ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
-                        expressions
-                        |> List.length
-                        |> (\x -> x > 1)
-
-                maybeCaseNode =
-                    List.Extra.find
-                        (\node ->
-                            case Node.value node of
-                                CaseExpression _ ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
-                        nodes
-            in
-            if hasMoreThanOneCaseExpression then
-                ( [ Rule.error { message = "This tuple has multiple case expressions", details = [ "To add a clause to the desired case, please extract the other cases to either a let expression or a top-level function" ] } (Node.range expressionNode) ], context )
-
-            else
-                case maybeCaseNode of
-                    Just caseExpression ->
-                        visitFunction namespace clause functionCall ignored caseExpression insertAt customError context
-
-                    Nothing ->
-                        ( [ couldNotFindCaseError expressionNode ], context )
-
-        ParenthesizedExpression node ->
-            visitFunction namespace clause functionCall ignored node insertAt customError context
-
-        _ ->
+        Nothing ->
             ( [ couldNotFindCaseError expressionNode ], context )
 
 
@@ -477,6 +415,43 @@ withCustomErrorMessage errorMessage details (Config config) =
 
 
 -- HELPERS
+
+
+findNestedCaseNode : Node Expression -> Maybe (Node Expression)
+findNestedCaseNode node =
+    case Node.value node of
+        CaseExpression _ ->
+            Just node
+
+        Application nodes ->
+            List.Extra.findMap findNestedCaseNode nodes
+
+        OperatorApplication _ _ first second ->
+            Maybe.Extra.orLazy (findNestedCaseNode first) (\_ -> findNestedCaseNode second)
+
+        IfBlock _ thenNode elseNode ->
+            Maybe.Extra.orLazy (findNestedCaseNode thenNode) (\_ -> findNestedCaseNode elseNode)
+
+        Negation nestedNode ->
+            findNestedCaseNode nestedNode
+
+        TupledExpression nodes ->
+            List.Extra.findMap findNestedCaseNode nodes
+
+        ParenthesizedExpression nestedNode ->
+            findNestedCaseNode nestedNode
+
+        LetExpression { expression } ->
+            findNestedCaseNode expression
+
+        LambdaExpression { expression } ->
+            findNestedCaseNode expression
+
+        ListExpr nodes ->
+            List.Extra.findMap findNestedCaseNode nodes
+
+        _ ->
+            Nothing
 
 
 patternToString : Pattern -> String
