@@ -1,27 +1,17 @@
 module Install.Import exposing (init, makeRule, withAlias, withExposedValues)
 
 {-| Add import statements to a given module.
+For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
 
-Examples:
-
-    ```
     Install.Import.init "Frontend" "Foo.Bar"
-       |> Install.Import.makeRule
-    ```
+        |> Install.Import.makeRule
 
-    This adds `import Foo.Bar` to the `Frontend` module.
+To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
-
-     ```
     Install.Import.init "Frontend" "Foo.Bar"
-            |> Install.Import.withAlias "FB"
-            |> Install.Import.withExposedValues [ "a", "b", "c" ]
-            |> Install.Import.makeRule
-    ```
-
-    This adds `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module.
-
-    ```
+        |> Install.Import.withAlias "FB"
+        |> Install.Import.withExposedValues [ "a", "b", "c" ]
+        |> Install.Import.makeRule
 
 @docs init, makeRule, withAlias, withExposedValues
 
