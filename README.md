@@ -76,7 +76,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Increment ->
-            ( { model | counter = model.counter + 1 }, Cmd.none ) 
+            ( { model | counter = model.counter + 1 }, Cmd.none )
 
         Decrement ->
             ( { model | counter = model.counter - 1 },  Cmd.none )
@@ -93,6 +93,7 @@ update msg model =
 - **Install.Initializer**: Add a field to the body of an initializer function where the return value is of the form `( Model, Cmd msg )`. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Initializer).
 - **Install.TypeVariant**: Add a variant to a specified type in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-TypeVariant).
 - **Install.Function**: Replace a function in a given module with a new implementation or add that function definition if it is not present in the module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function).
+- **Install.Import**: Add import statements to a given module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Import).
 
 ## Try it out
 To test the review code in its current state, try running this in a clean Lamdera project:
