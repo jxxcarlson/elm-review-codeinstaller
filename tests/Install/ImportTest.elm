@@ -11,8 +11,7 @@ all =
     describe "Install.Import"
         [ Run.testFix test1
         , Run.testFix test1a
-
-        -- |> Run.withOnly
+        , Run.testFix test2
         ]
 
 
@@ -91,4 +90,66 @@ fixed1a : String
 fixed1a =
     """module Main exposing (..)
 import Dict
+foo = 1"""
+
+
+
+-- test 2 - add import with alias
+
+
+test2 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2 =
+    { description = "add import with alias"
+    , src = src1
+    , rule = rule2
+    , under = under1
+    , fixed = fixed2
+    , message = "moduleToImport: \"Dict\""
+    }
+
+
+rule2 : Rule
+rule2 =
+    Install.Import.init "Main" "Dict"
+        |> Install.Import.withAlias "D"
+        |> Install.Import.makeRule
+
+
+fixed2 : String
+fixed2 =
+    """module Main exposing (..)
+
+import Set
+import Dict as D
+foo = 1"""
+
+
+
+-- test 3 - add import exposing
+
+
+test3 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test3 =
+    { description = "add import exposing"
+    , src = src1
+    , rule = rule3
+    , under = under1
+    , fixed = fixed3
+    , message = "moduleToImport: \"Dict\""
+    }
+
+
+rule3 : Rule
+rule3 =
+    Install.Import.init "Main" "Dict"
+        |> Install.Import.withExposedValues [ "Dict" ]
+        |> Install.Import.makeRule
+
+
+fixed3 : String
+fixed3 =
+    """module Main exposing (..)
+
+import Set
+import Dict exposing (Dict)
 foo = 1"""
