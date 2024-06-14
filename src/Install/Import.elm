@@ -19,11 +19,10 @@ To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend`
 
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
-import Review.Fix as Fix exposing (Fix)
+import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
 
 
 {-|
@@ -127,7 +126,6 @@ fixError config context =
                 ++ " "
                 |> addAlias config.importedModuleAlias
                 |> addExposing config.exposedValues
-                |> Debug.log "importText"
 
         addAlias : Maybe String -> String -> String
         addAlias mAlias str =

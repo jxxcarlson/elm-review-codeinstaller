@@ -3,6 +3,7 @@ module Run exposing
     , expectNoErrorsTest
     , expectNoErrorsTest_
     , testFix
+    , withOnly
     )
 
 import Review.Rule exposing (Rule)
@@ -35,6 +36,11 @@ expectErrorsTest description src rule =
             src
                 |> Review.Test.run rule
                 |> Review.Test.expectErrors []
+
+
+withOnly : Test -> Test
+withOnly t =
+    t |> Test.only
 
 
 type alias TestData =
