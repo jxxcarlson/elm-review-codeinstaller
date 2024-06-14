@@ -62,8 +62,8 @@ init hostModuleName_ importedModuleName_ =
 {-| Add an alias to the imported module.
 -}
 withAlias : String -> Config -> Config
-withAlias alias config =
-    { config | importedModuleAlias = Just alias }
+withAlias alias_ config =
+    { config | importedModuleAlias = Just alias_ }
 
 
 {-| Add an exposing list to the imported module.
@@ -113,7 +113,7 @@ importVisitor config node context =
 
 moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
 moduleDefinitionVisitor def context =
-    -- visit the module definition to set the module definition as the lastNodeRange in case the module has not imports yet
+    -- visit the module definition to set the module definition as the lastNodeRange in case the module has no imports yet
     ( [], { context | lastNodeRange = Node.range def } )
 
 
