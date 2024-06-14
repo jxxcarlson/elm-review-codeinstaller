@@ -24,6 +24,7 @@ import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
 import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
+import String.Extra
 
 
 {-|
@@ -134,6 +135,7 @@ fixError config context =
                 ++ " "
                 |> addAlias config.importedModuleAlias
                 |> addExposing config.exposedValues
+                |> String.Extra.clean
 
         addAlias : Maybe String -> String -> String
         addAlias mAlias str =
@@ -141,8 +143,8 @@ fixError config context =
                 Nothing ->
                     str
 
-                Just alias ->
-                    str ++ " as " ++ alias
+                Just alias_ ->
+                    str ++ " as " ++ alias_
 
         addExposing : Maybe (List String) -> String -> String
         addExposing mExposedValues str =
