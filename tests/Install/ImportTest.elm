@@ -12,6 +12,7 @@ all =
         [ Run.testFix test1
         , Run.testFix test1a
         , Run.testFix test2
+        , Run.testFix test3
         ]
 
 
