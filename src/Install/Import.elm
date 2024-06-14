@@ -18,6 +18,7 @@ To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend`
 -}
 
 import Elm.Syntax.Import exposing (Import)
+import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
@@ -78,6 +79,7 @@ makeRule : Config -> Rule
 makeRule config =
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Import" initialContext
         |> Rule.withImportVisitor (importVisitor config)
+        |> Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
         |> Rule.withFinalModuleEvaluation (finalEvaluation config)
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -106,6 +108,12 @@ importVisitor config node context =
 
             else
                 ( [], { context | lastNodeRange = Node.range node } )
+
+
+moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
+moduleDefinitionVisitor def context =
+    -- visit the module definition to set the module definition as the lastNodeRange in case the module has not imports yet
+    ( [], { context | lastNodeRange = Node.range def } )
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
