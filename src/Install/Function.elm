@@ -18,7 +18,6 @@ Running this rule will insert or replace the function `view` in the module `Fron
 
 -}
 
-import Elm.Interface exposing (Exposed(..))
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.ModuleName exposing (ModuleName)
