@@ -53,9 +53,6 @@ updateFromFrontend sessionId clientId msg model =
             in
             ( { model | counter = newCounter }, broadcast (CounterNewValue newCounter clientId) )
 
-        CounterReset ->
-            ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
-
 
 subscriptions model =
     Sub.batch
