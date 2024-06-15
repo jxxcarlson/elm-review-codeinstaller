@@ -32,7 +32,7 @@ import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
+{-| Configuration for makeRule: add (or replace if function already exists) a function in a specified module.
 -}
 type Config
     = Config
