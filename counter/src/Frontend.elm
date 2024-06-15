@@ -8,6 +8,12 @@ import Lamdera exposing (sendToBackend)
 import Types exposing (..)
 
 
+type Magic
+    = Inactive
+    | Wizard String
+    | Spell String Int
+
+
 type alias Model =
     FrontendModel
 

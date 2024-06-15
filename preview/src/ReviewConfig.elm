@@ -14,6 +14,7 @@ when inside the directory containing this file.
 import Install.ClauseInCase
 import Install.FieldInTypeAlias
 import Install.Function
+import Install.Type
 import Install.Import
 import Install.Initializer
 import Install.TypeVariant
@@ -35,8 +36,9 @@ config =
       --  |> Install.Import.withAlias "FB"
       --  |> Install.Import.withExposedValues [ "a", "b", "c" ]
       --  |> Install.Import.makeRule
-        Install.Import.init "Frontend" "Foo.Bar" |> Install.Import.makeRule
-      , Install.Import.init "Frontend" "Box.Tux" |> Install.Import.makeRule
+      --  Install.Import.init "Frontend" "Foo.Bar" |> Install.Import.makeRule
+      --, Install.Import.init "Frontend" "Box.Tux" |> Install.Import.makeRule
+       Install.Type.makeRule "Frontend" "Magic" [ "Inactive", "Wizard String", "Spell String Int"]
     ]
 
 
