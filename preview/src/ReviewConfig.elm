@@ -24,8 +24,10 @@ import Review.Rule exposing (Rule)
 config : List Rule
 config =
     [
+     -- TYPES
+           Install.Type.makeRule "Types" "SignInState" [ "SignedOut", "SignUp", "SignedIn" ]
      -- TYPES IMPORTS
-            Install.Import.init "Types" "Auth.Common" |>Install.Import.makeRule
+          , Install.Import.init "Types" "Auth.Common" |>Install.Import.makeRule
           , Install.Import.init "Types" "Url" |>Install.Import.makeRule
           , Install.Import.init "Types" "MagicLink.Types" |>Install.Import.makeRule
           , Install.Import.init "Types" "User" |>Install.Import.makeRule
