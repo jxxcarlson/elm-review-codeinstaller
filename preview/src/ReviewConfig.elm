@@ -35,8 +35,8 @@ config =
       --  |> Install.Import.withAlias "FB"
       --  |> Install.Import.withExposedValues [ "a", "b", "c" ]
       --  |> Install.Import.makeRule
-        Install.Import.init "Frontend" "Foo.Bar" |> Install.Import.makeRule
-      , Install.Import.init "Frontend" "Box.Tux" |> Install.Import.makeRule
+      Install.Import.init "Frontend" "Foo.Bar" |> Install.Import.makeRule
+    , Install.Import.init "Frontend" "Box.Tux" |> Install.Import.makeRule
     ]
 
 
