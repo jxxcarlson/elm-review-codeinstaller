@@ -1,6 +1,5 @@
 module Frontend exposing (Model, app)
 
-
 import Html exposing (Html, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
