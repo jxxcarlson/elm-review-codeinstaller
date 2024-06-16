@@ -1,7 +1,6 @@
 module Types exposing (..)
 
 import Lamdera exposing (ClientId, SessionId)
-import Set exposing (Set)
 
 
 type alias BackendModel =
@@ -19,13 +18,11 @@ type FrontendMsg
     = Increment
     | Decrement
     | FNoop
-    | Reset
 
 
 type ToBackend
     = CounterIncremented
     | CounterDecremented
-    | CounterReset
 
 
 type BackendMsg
