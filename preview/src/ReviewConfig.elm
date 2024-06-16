@@ -14,7 +14,6 @@ when inside the directory containing this file.
 import Install.ClauseInCase
 import Install.FieldInTypeAlias
 import Install.Function
-import Install.Type
 import Install.Import
 import Install.Initializer
 import Install.Type
@@ -80,8 +79,6 @@ config =
     , Install.TypeVariant.makeRule "Types" "ToFrontend" "SignInError String"
     , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserSignedIn (Maybe User.User)"
     ]
-
-
 
 
 viewFunction =
