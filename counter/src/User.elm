@@ -1,4 +1,4 @@
-                                                                                                                                                                             module User exposing
+ module User exposing
     ( EmailString
     , Id
     , LoginData
