@@ -41,11 +41,11 @@ config =
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "currentUserData : Maybe User.LoginData"
           -- Type Frontend, User
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "currentUser : Maybe User.User"
-          , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "signInState : SignInState" -- Need to add this type (OR CHANGE CODE)
+          , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "signInState : SignInState"
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "realname : String"
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "username : String"
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "email : String"
-          -- Type Backend
+          -- Type BackendModel
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "pendingAuths : Dict Lamdera.SessionId Auth.Common.PendingAuth"
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "pendingEmailAuths : Dict Lamdera.SessionId Auth.Common.PendingEmailAuth"
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "sessions : Dict SessionId Auth.Common.UserInfo"
@@ -56,9 +56,25 @@ config =
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "users: Dict.Dict User.EmailString User.User"
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "userNameToEmailString : Dict.Dict User.Username User.EmailString"
           , Install.FieldInTypeAlias.makeRule "Types" "BackendModel" "sessionInfo : Session.SessionInfo"
-          -- EXPERIMENTAL
-          , Install.Type.makeRule "Frontend" "Magic" [ "Inactive", "Wizard String", "Spell String Int"]
+        -- Type ToBackend
+          , Install.TypeVariant.makeRule "Types" "ToBackend" "AuthToBackend Auth.Common.ToBackend"
+          , Install.TypeVariant.makeRule "Types" "ToBackend" "AddUser String String String"
+          , Install.TypeVariant.makeRule "Types" "ToBackend" "RequestSignup String String String"
+        -- Type BackendMsg
+          , Install.TypeVariant.makeRule "Types" "BackendMsg" "AuthBackendMsg Auth.Common.BackendMsg"
+          , Install.TypeVariant.makeRule "Types" "BackendMsg" "AutoLogin SessionId User.LoginData"
+        -- Type ToFrontend
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "AuthToFrontend Auth.Common.ToFrontend"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "AuthSuccess Auth.Common.UserInfo"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserInfoMsg (Maybe Auth.Common.UserInfo)"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "CheckSignInResponse (Result BackendDataStatus User.LoginData)"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "GetLoginTokenRateLimited"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "RegistrationError String"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "SignInError String"
+          , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserSignedIn (Maybe User.User)"
     ]
+
+
 
 
 viewFunction =

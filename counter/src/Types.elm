@@ -1,7 +1,6 @@
 module Types exposing (..)
 
 import Lamdera exposing (ClientId, SessionId)
-import Set exposing (Set)
 
 
 type alias BackendModel =
