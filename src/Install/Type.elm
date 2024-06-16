@@ -3,11 +3,11 @@ module Install.Type exposing (makeRule)
 {-| `Install.Type` provides a rule that checks if a type is present
 in the given module and if not, it adds it right after the imports.
 
-     For example, the rule
+For example, the rule
 
           Install.Type.makeRule "Frontend" "Magic" [ "Inactive", "Wizard String", "Spell String Int"]
 
-     results in insertion the text below in the module "Frontend":
+results in insertion the text below in the module "Frontend":
 
           type Magic
               = Inactive
