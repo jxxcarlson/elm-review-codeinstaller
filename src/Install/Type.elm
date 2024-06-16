@@ -23,10 +23,9 @@ import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
-import Elm.Syntax.Type exposing (Type)
 import Install.Library
 import List.Extra
-import Review.Fix as Fix exposing (Fix)
+import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -131,38 +130,3 @@ initialContext =
     Rule.initContextCreator
         (\moduleName () -> { moduleName = moduleName, typeIsPresent = False, lastNodeRange = Range.empty })
         |> Rule.withModuleName
-
-
-contextCreator : Rule.ContextCreator () { moduleName : ModuleName }
-contextCreator =
-    Rule.initContextCreator
-        (\moduleName () ->
-            { moduleName = moduleName
-
-            -- ...other fields
-            }
-        )
-        |> Rule.withModuleName
-
-
-errorWithFix : String -> String -> String -> Node a -> Maybe Range -> Error {}
-errorWithFix typeName_ variantName_ variantCode_ node errorRange =
-    Rule.errorWithFix
-        { message = "Add " ++ variantName_ ++ " to " ++ typeName_
-        , details =
-            [ ""
-            ]
-        }
-        (Node.range node)
-        (case errorRange of
-            Just range ->
-                [ fixMissingVariant range.end variantCode_ ]
-
-            Nothing ->
-                []
-        )
-
-
-fixMissingVariant : { row : Int, column : Int } -> String -> Fix
-fixMissingVariant { row, column } variantCode =
-    Fix.insertAt { row = row, column = column } variantCode
