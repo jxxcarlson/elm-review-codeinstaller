@@ -1,4 +1,4 @@
-module Install.Type exposing (..)
+module Install.Type exposing (makeRule)
 
 {-| `Install.Type` provides a rule that checks if a type is present
 in the given module and if not, it adds it right after the imports.
@@ -14,6 +14,8 @@ in the given module and if not, it adds it right after the imports.
               | Wizard String
               | Spell String Int
 
+@docs makeRule
+
 -}
 
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
@@ -28,6 +30,8 @@ import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
+{-| Rule to add a type to a module if it is not present
+-}
 makeRule : String -> String -> List String -> Rule
 makeRule hostModuleName typeName_ variants_ =
     let
