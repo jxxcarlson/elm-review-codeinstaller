@@ -27,11 +27,14 @@ config =
       Install.Type.makeRule "Types" "SignInState" [ "SignedOut", "SignUp", "SignedIn" ]
 
     -- TYPES IMPORTS
-    , Install.Import.init "Types" "Auth.Common" |> Install.Import.makeRule
-    , Install.Import.init "Types" "Url" |> Install.Import.makeRule
-    , Install.Import.init "Types" "MagicLink.Types" |> Install.Import.makeRule
-    , Install.Import.init "Types" "User" |> Install.Import.makeRule
-    , Install.Import.init "Types" "Session" |> Install.Import.makeRule
+    , Install.Import.init "Types"
+        [ { moduleToImport = "Auth.Common", alias_ = Nothing, exposedValues = Nothing }
+        , { moduleToImport = "Url", alias_ = Nothing, exposedValues = Nothing }
+        , { moduleToImport = "MagicLink.Types", alias_ = Nothing, exposedValues = Nothing }
+        , { moduleToImport = "User", alias_ = Nothing, exposedValues = Nothing }
+        , { moduleToImport = "Session", alias_ = Nothing, exposedValues = Nothing }
+        ]
+        |> Install.Import.makeRule
 
     -- Type Frontend, MagicLink
     , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "authFlow : Auth.Common.Flow"
