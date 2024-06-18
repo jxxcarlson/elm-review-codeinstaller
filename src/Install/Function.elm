@@ -13,6 +13,14 @@ add that function definition if it is not present in the module.
             |> Install.Function.makeRule
 
 Running this rule will insert or replace the function `view` in the module `Frontend` with the new implementation.
+The form of the rule is the same for nested modules:
+
+    rule =
+        Install.Function.init
+            "Foo.Bar"
+            "earnInterest"
+            "hoho model = { model | interest = 1.03 * model.interest }"
+            |> Install.Function.makeRule
 
 @docs makeRule, init, Config, CustomError, withInsertAfter
 
@@ -64,13 +72,13 @@ withInsertAfter previousDeclaration (Config config) =
 
 {-| Initialize the configuration for the rule.
 -}
-init : List String -> String -> String -> Config
-init moduleNameList functionName functionImplementation =
+init : String -> String -> String -> Config
+init moduleNaeme functionName functionImplementation =
     Config
-        { moduleName = String.join "." moduleNameList
+        { moduleName = moduleNaeme
         , functionName = functionName
         , functionImplementation = functionImplementation
-        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = moduleNameList } functionImplementation
+        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleNaeme } functionImplementation
         , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
         , insertAt = AtEnd
         }

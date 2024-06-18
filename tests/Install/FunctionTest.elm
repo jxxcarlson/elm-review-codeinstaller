@@ -15,6 +15,7 @@ all =
         , Run.testFix test4
         , Run.testFix test4a
         , Run.testFix test4b
+        , Run.testFix test4c
         ]
 
 
@@ -36,7 +37,7 @@ test1 =
 rule1 : Rule
 rule1 =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "view"
         """view model =
     Html.text "This is a test\""""
@@ -103,7 +104,7 @@ test2 =
 rule2 : Rule
 rule2 =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
@@ -168,7 +169,7 @@ type alias Model =
 rule3 : Rule
 rule3 =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
@@ -212,7 +213,7 @@ test4 =
 rule4 : Rule
 rule4 =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
@@ -259,7 +260,7 @@ test4a =
 rule4a : Rule
 rule4a =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
@@ -305,7 +306,7 @@ test4b =
 rule4b : Rule
 rule4b =
     Install.Function.init
-        [ "Frontend" ]
+        "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
@@ -322,6 +323,47 @@ under4b =
 fixed4b : String
 fixed4b =
     """module Frontend exposing(..)
+
+import Html exposing (Html)
+import Html.Attributes exposing (class)
+
+type alias Model =
+    {counter : Int}
+newFunction model =
+    Html.text "This is a test\""""
+
+
+test4c : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4c =
+    { description = "Test 4c, add a new function after a specific type alias"
+    , src = src3
+    , rule = rule4b
+    , under = under4b
+    , fixed = fixed4b
+    , message = "Add function \"newFunction\""
+    }
+
+
+rule4c : Rule
+rule4c =
+    Install.Function.init
+        "Frontend.Utilities"
+        "newFunction"
+        """newFunction model =
+    Html.text "This is a test\""""
+        |> Install.Function.withInsertAfter "Model"
+        |> Install.Function.makeRule
+
+
+under4c : String
+under4c =
+    """type alias Model =
+    {counter : Int}"""
+
+
+fixed4c : String
+fixed4c =
+    """module Frontend.Utilities exposing(..)
 
 import Html exposing (Html)
 import Html.Attributes exposing (class)
