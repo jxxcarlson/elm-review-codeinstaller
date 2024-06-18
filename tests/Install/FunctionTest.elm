@@ -342,33 +342,3 @@ test4c =
     , fixed = fixed4b
     , message = "Add function \"newFunction\""
     }
-
-
-rule4c : Rule
-rule4c =
-    Install.Function.init
-        "Frontend.Utilities"
-        "newFunction"
-        """newFunction model =
-    Html.text "This is a test\""""
-        |> Install.Function.withInsertAfter "Model"
-        |> Install.Function.makeRule
-
-
-under4c : String
-under4c =
-    """type alias Model =
-    {counter : Int}"""
-
-
-fixed4c : String
-fixed4c =
-    """module Frontend.Utilities exposing(..)
-
-import Html exposing (Html)
-import Html.Attributes exposing (class)
-
-type alias Model =
-    {counter : Int}
-newFunction model =
-    Html.text "This is a test\""""
