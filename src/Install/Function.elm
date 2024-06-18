@@ -140,7 +140,7 @@ declarationVisitor context (Config config) declaration =
                     getDeclarationName declaration
 
                 isInCorrectModule =
-                    Install.Library.isInCorrectModule (config.moduleName |> Debug.log "MODULE_NAME") context
+                    Install.Library.isInCorrectModule config.moduleName context
 
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
