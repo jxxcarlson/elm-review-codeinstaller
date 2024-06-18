@@ -1,10 +1,11 @@
 module ReviewConfig exposing (config)
 
-import Review.Rule exposing (Rule)
 import NoDebug.Log
-import NoUnused.Dependencies
 import NoDebug.TodoOrToString
+import NoUnused.Dependencies
 import NoUnused.Variables
+import Review.Rule exposing (Rule)
+
 
 config : List Rule
 config =
