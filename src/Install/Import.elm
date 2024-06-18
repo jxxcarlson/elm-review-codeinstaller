@@ -1,14 +1,23 @@
-module Install.Import exposing (init, makeRule)
+module Install.Import exposing
+    ( init, makeRule
+    , initSimple
+    )
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
 
-    Install.Import.init "Frontend" [ { moduleToImport = "Foo.Bar", alias_ = Nothing, exposedValues = Nothing } ]
+    Install.Import.init "Frontend"
+        [ { moduleToImport = "Foo.Bar", alias_ = Nothing, exposedValues = Nothing } ]
         |> Install.Import.makeRule
 
 To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
     Install.Import.init "Frontend" [ { moduleToImport = "Foo.Bar", alias_ = Just "FB", exposedValues = Just [ "a", "b", "c" ] } ]
+        |> Install.Import.makeRule
+
+There is a short cut for importing modules with no alias or exposed values:
+
+    Install.Import.initSimple "Frontend" [ "Foo.Bar", "Baz.Qux" ]
         |> Install.Import.makeRule
 
 @docs init, makeRule
@@ -26,7 +35,7 @@ import Review.Rule as Rule exposing (Error, Rule)
 
 {-|
 
-    Configuratioh for  the rule.
+    Configuration for  the rule.
 
 -}
 type Config
@@ -57,6 +66,17 @@ init hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\{ moduleToImport, alias_, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias_ = alias_, exposedValues = exposedValues }) imports
+        , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
+        }
+
+
+{-| Initialize the configuration for the rule.
+-}
+initSimple : String -> List String -> Config
+initSimple hostModuleName_ imports =
+    Config
+        { hostModuleName = String.split "." hostModuleName_
+        , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias_ = Nothing, exposedValues = Nothing }) imports
         , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
         }
 
