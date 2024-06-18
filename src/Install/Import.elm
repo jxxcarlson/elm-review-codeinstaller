@@ -1,7 +1,4 @@
-module Install.Import exposing
-    ( init, makeRule
-    , initSimple
-    )
+module Install.Import exposing (init, initSimple, makeRule)
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
@@ -20,7 +17,7 @@ There is a short cut for importing modules with no alias or exposed values:
     Install.Import.initSimple "Frontend" [ "Foo.Bar", "Baz.Qux" ]
         |> Install.Import.makeRule
 
-@docs init, makeRule
+@docs init, initSimple, makeRule
 
 -}
 
