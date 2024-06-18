@@ -16,6 +16,7 @@ all =
         , Run.testFix test4
         , Run.expectNoErrorsTest test5.description test5.src test5.rule
         , Run.testFix test6
+        , Run.testFix test7
         ]
 
 
@@ -243,6 +244,31 @@ rule6 =
 
 fixed6 : String
 fixed6 =
+    """module Main exposing (..)
+
+import Set
+import Dict
+foo = 1"""
+
+
+test7 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test7 =
+    { description = "Should show correct number of imports to add when repeated imports are ignored"
+    , src = src1
+    , rule = rule7
+    , under = under1
+    , fixed = fixed7
+    , message = "add 1 import to module Main" --"Add Set and Dict to module Main using initSimple"
+    }
+
+
+rule7 : Rule
+rule7 =
+    Install.Import.initSimple "Main" [ "Set", "Dict" ] |> Install.Import.makeRule
+
+
+fixed7 : String
+fixed7 =
     """module Main exposing (..)
 
 import Set
