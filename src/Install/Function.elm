@@ -153,8 +153,14 @@ declarationVisitor context (Config config) declaration =
                         (Install.Library.getExpressionFromString context confg.functionImplementation)
                         == Just Normalize.ConfirmedEquality
                         |> not
+
+                isImplemented =
+                    not (isNotImplemented function config)
             in
-            if name == config.functionName && isInCorrectModule && isNotImplemented function config then
+            if isImplemented then
+                ( [], { contextWithLastDeclarationRange | appliedFix = True } )
+
+            else if name == config.functionName && isInCorrectModule && isNotImplemented function config then
                 replaceFunction { range = Node.range declaration, functionName = config.functionName, functionImplementation = config.functionImplementation } context
 
             else
