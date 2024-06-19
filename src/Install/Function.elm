@@ -161,7 +161,7 @@ declarationVisitor context (Config config) declaration =
                 ( [], { contextWithLastDeclarationRange | appliedFix = True } )
 
             else if name == config.functionName && isInCorrectModule && isNotImplemented function config then
-                replaceFunction { range = Node.range declaration, functionName = config.functionName, functionImplementation = config.functionImplementation } context
+                replaceFunction { range = Node.range declaration |> Debug.log "DECL RANGE", functionName = config.functionName, functionImplementation = config.functionImplementation } context
 
             else
                 ( [], contextWithLastDeclarationRange )
@@ -188,6 +188,10 @@ finalEvaluation (Config config) context =
 
 replaceFunction : FixConfig -> Context -> ( List (Error {}), Context )
 replaceFunction fixConfig context =
+    let
+        _ =
+            Debug.log "FIXCONFIG RANGE" fixConfig.range
+    in
     ( [ Rule.errorWithFix
             { message = "Replace function \"" ++ fixConfig.functionName ++ "\"", details = [ "" ] }
             fixConfig.range
