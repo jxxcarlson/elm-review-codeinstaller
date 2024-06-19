@@ -120,6 +120,9 @@ initialContext =
 declarationVisitor : Context -> Config -> Node Declaration -> ( List (Rule.Error {}), Context )
 declarationVisitor context (Config config) declaration =
     let
+        _ =
+            Debug.log "HELLO!!" True
+
         contextWithLastDeclarationRange =
             case config.insertAt of
                 After previousDeclaration ->
@@ -203,6 +206,10 @@ replaceFunction fixConfig context =
 
 addFunction : FixConfig -> List (Error {})
 addFunction fixConfig =
+    let
+        _ =
+            Debug.log "Add Function" fixConfig.range
+    in
     [ Rule.errorWithFix
         { message = "Add function \"" ++ fixConfig.functionName ++ "\"", details = [ "" ] }
         fixConfig.range

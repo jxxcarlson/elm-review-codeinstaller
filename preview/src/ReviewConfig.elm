@@ -28,15 +28,14 @@ config1 =
     [
        Install.TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
      , Install.TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
-     , Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
+     , Install.ClauseInCase.init "Frontend" "updateLoaded" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
         |> Install.ClauseInCase.makeRule
      , Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
-     , Install.Function.init "Frontend" "view" viewFunction |>Install.Function.makeRule
+     , Install.Function.init "Pages.Counter" "viewFunction" viewFunction |>Install.Function.makeRule
 
     ]
-
 
 viewFunction = """view model =
     Html.div [ style "padding" "50px" ]
@@ -47,25 +46,6 @@ viewFunction = """view model =
         , Html.button [ onClick Reset ] [ text "Reset" ]
         ]"""
 
-viewFunction2 = """view model =
-Html.div [ style "padding" "50px" ]
-    [ Html.button [ onClick Increment ] [ text "+" ]
-    , Html.div [ style "padding" "10px" ] [ Html.text (String.fromInt model.counter) ]
-    , Html.button [ onClick Decrement ] [ text "-" ]
-    , Html.div [ style "padding-top" "15px", style "padding-bottom" "15px" ] [ Html.text "Click me then refresh me!" ]
-    , Html.button [ onClick Reset ] [ text "Reset" ]
-    ]"""
-
-viewFunction3 = """view model =
-  Html.div [ style "padding" "50px" ]
-    [ Html.button [ onClick Increment ] [ text "+" ]
-    , Html.div [ style "padding" "10px" ] [ Html.text (String.fromInt model.counter) ]
-    , Html.button [ onClick Decrement ] [ text "-" ]
-    , Html.div [ style "padding-top" "15px", style "padding-bottom" "15px" ] [ Html.text "Click me then refresh me!" ]
-    , Html.button [ onClick Reset ] [ text "Reset" ]
-    ]"""
-
-
 
 config2 : List Rule
 config2 =
@@ -74,9 +54,9 @@ config2 =
            Install.Type.makeRule "Types" "SignInState" [ "SignedOut", "SignUp", "SignedIn" ]
          , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData" ]
      -- TYPES IMPORTS
-          , Install.Import.initSimple "Types" ["Auth.Common", "MagicLink.Types", "User", "Session",  "Dict", "AssocList"] |>Install.Import.makeRule
-          , Install.Import.init "Types" [{moduleToImport = "Url", alias_ = Nothing, exposedValues = Just ["Url"] }] |>Install.Import.makeRule
-            -- Type Frontend, MagicLink
+          , Install.Import.initSimple  "Types" ["Auth.Common", "Url", "MagicLink.Types", "User"
+             , "Session", "Dict", "AssocList"] |>Install.Import.makeRule
+          -- Type Frontend, MagicLink
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "authFlow : Auth.Common.Flow"
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "authRedirectBaseUrl : Url"
           , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "signinForm : MagicLink.Types.SigninForm"
@@ -132,11 +112,9 @@ config2 =
           , Install.Initializer.makeRule "Backend" "init" "sessionDict" "AssocList.empty"
           , Install.Initializer.makeRule "Backend" "init" "log" "[]"
           -- Backend import
-          , Install.Import.initSimple "Backend"
-             ["Auth.Common", "AssocList", "Auth.Flow" , "Dict", "Helper",  "LocalUUID",
-               "MagicLink.Auth", "Process", "Task", "Time", "User"]
-               |>Install.Import.makeRule
-          , Install.Import.init "Backend" [{moduleToImport = "Lamdera", alias_ = Nothing, exposedValues = Just ["ClientId", "SessionId"]}] |>Install.Import.makeRule
+          , Install.Import.initSimple "Backend" ["Auth.Common","AssocList","Auth.Flow","Dict"
+             , "Helper", "Lamdera","LocalUUID", "MagicLink.Auth" , "Process"
+              ,  "Task",  "Time", "User" ] |>Install.Import.makeRule
           ---
           , Install.ClauseInCase.init
              "Frontend" "updateFromBacked"
