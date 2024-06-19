@@ -33,7 +33,7 @@ config1 =
         |> Install.ClauseInCase.makeRule
      , Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
-     , Install.Function.init "Pages.Counter" "viewFunction" viewFunction |>Install.Function.makeRule
+     , Install.Function.init "Pages.Counter" "view" viewFunction |>Install.Function.makeRule
 
     ]
 
