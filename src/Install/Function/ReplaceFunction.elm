@@ -107,7 +107,7 @@ declarationVisitor context (Config config) declaration =
             let
                 name : String
                 name =
-                    getDeclarationName declaration
+                    Install.Library.getDeclarationName declaration
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule config.moduleName context
@@ -147,29 +147,6 @@ replaceFunction fixConfig context =
       ]
     , context
     )
-
-
-getDeclarationName : Node Declaration -> String
-getDeclarationName declaration =
-    let
-        getName declaration_ =
-            declaration_ |> .name >> Node.value
-    in
-    case Node.value declaration of
-        FunctionDeclaration function ->
-            getName (Node.value function.declaration)
-
-        AliasDeclaration alias_ ->
-            getName alias_
-
-        CustomTypeDeclaration customType ->
-            getName customType
-
-        PortDeclaration port_ ->
-            getName port_
-
-        _ ->
-            ""
 
 
 type alias FixConfig =
