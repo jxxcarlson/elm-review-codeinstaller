@@ -92,7 +92,8 @@ update msg model =
 - **Install.FieldInTypeAlias**: Add a field to a specified type alias in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-FieldInTypeAlias).
 - **Install.Initializer**: Add a field to the body of an initializer function where the return value is of the form `( Model, Cmd msg )`. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Initializer).
 - **Install.TypeVariant**: Add a variant to a specified type in a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-TypeVariant).
-- **Install.Function**: Replace a function in a given module with a new implementation or add that function definition if it is not present in the module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function).
+- **Install.Function.ReplaceFunction**: Replace a function in a given module with a new implementation. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function-ReplaceFunction).
+- **Install.Function.InsertFunction**: Add a function in a given module if it is not present. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function-InsertFunction).
 - **Install.Import**: Add import statements to a given module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Import).
 
 ## Try it out

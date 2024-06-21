@@ -9,7 +9,8 @@
         "Install.FieldInTypeAlias",
         "Install.Initializer",
         "Install.TypeVariant",
-        "Install.Function",
+        "Install.Function.InsertFunction",
+        "Install.Function.ReplaceFunction",
         "Install.Import",
         "Install.Type"
     ],
