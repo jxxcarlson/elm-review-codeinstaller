@@ -4,13 +4,12 @@ module Install.Function.ReplaceFunction exposing (makeRule, init, Config, Custom
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.ReplaceFunction.init
+        Install.Function.InsertFunction.init
             "Frontend"
             "view"
             """view model =
-
-Html.text "This is a test""""
-|> Install.Function.ReplaceFunction.makeRule
+            Html.text "This is a test\""""
+            |> Install.Function.InsertFunction.makeRule
 
 Running this rule will replace the function `view` in the module `Frontend` with the provided implementation.
 
@@ -31,7 +30,7 @@ import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
-import Elm.Syntax.Range as Range exposing (Range)
+import Elm.Syntax.Range exposing (Range)
 import Install.Infer as Infer
 import Install.Library
 import Install.Normalize as Normalize
