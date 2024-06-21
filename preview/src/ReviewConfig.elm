@@ -23,7 +23,7 @@ import Review.Rule exposing (Rule)
 
 
 config =
-    createModal
+    config1
 
 
 config1 : List Rule
@@ -229,47 +229,3 @@ config2 =
          ]
      )
 -}
-
-
-createModal : List Rule
-createModal =
-    let
-        toParentMsgName =
-            "Got" ++ modalConfig.alias ++ "Msg"
-    in
-    [ addModalExtMsgInParent toParentMsgName ]
-
-
-type alias ModalConfig =
-    { moduleName : String
-    , parentModuleName : String
-    , alias : String
-    }
-
-
-modalConfig : ModalConfig
-modalConfig =
-    { moduleName = "Pages.Notification.List"
-    , parentModuleName = "Frontend"
-    , alias = "NotificationList"
-    }
-
-
-addModalExtMsgInParent : String -> Rule
-addModalExtMsgInParent toParentMsgName =
-    let
-        functionName =
-            "update" ++ modalConfig.alias ++ "ExtMsg"
-
-        closeModalBranch =
-            modalConfig.alias ++ ".ClosedModal"
-    in
-    Install.Function.InsertFunction.init
-        modalConfig.parentModuleName
-        functionName
-        (functionName ++ """ extMsg ({ model } as uResult) =
-    case extMsg of
-        """ ++ closeModalBranch ++ """ ->
-            closeModal uResult""")
-        |> Install.Function.InsertFunction.withInsertAfter "update"
-        |> Install.Function.InsertFunction.makeRule
