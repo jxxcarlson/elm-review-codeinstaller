@@ -1,6 +1,6 @@
 module Install.Function.InsertFunction exposing (makeRule, init, Config, CustomError, withInsertAfter)
 
-{-| Add a function definition in a given module if it is not present.
+{-| Add a function in a given module if it is not present.
 
     -- code for ReviewConfig.elm:
     rule =
@@ -8,9 +8,8 @@ module Install.Function.InsertFunction exposing (makeRule, init, Config, CustomE
             "Frontend"
             "view"
             """view model =
-
-Html.text "This is a test""""
-|> Install.Function.InsertFunction.makeRule
+            Html.text "This is a test\""""
+            |> Install.Function.InsertFunction.makeRule
 
 Running this rule will insert the function `view` in the module `Frontend` with the provided implementation.
 
@@ -27,14 +26,12 @@ The form of the rule is the same for nested modules:
 
 -}
 
-import Elm.Syntax.Declaration exposing (Declaration(..))
+import Elm.Syntax.Declaration exposing (Declaration)
 import Elm.Syntax.Expression exposing (Expression)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
-import Install.Infer as Infer
 import Install.Library
-import Install.Normalize as Normalize
 import Review.Fix as Fix
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
@@ -105,13 +102,14 @@ type alias Context =
     { moduleName : ModuleName
     , lookupTable : ModuleNameLookupTable
     , lastDeclarationRange : Range
+    , appliedFix : Bool
     }
 
 
 initialContext : Rule.ContextCreator () Context
 initialContext =
     Rule.initContextCreator
-        (\lookupTable moduleName () -> { lookupTable = lookupTable, moduleName = moduleName, lastDeclarationRange = Range.empty })
+        (\lookupTable moduleName () -> { lookupTable = lookupTable, moduleName = moduleName, lastDeclarationRange = Range.empty, appliedFix = False })
         |> Rule.withModuleNameLookupTable
         |> Rule.withModuleName
 
@@ -119,6 +117,9 @@ initialContext =
 declarationVisitor : Context -> Config -> Node Declaration -> ( List (Rule.Error {}), Context )
 declarationVisitor context (Config config) declaration =
     let
+        declarationName =
+            Install.Library.getDeclarationName declaration
+
         contextWithLastDeclarationRange =
             case config.insertAt of
                 After previousDeclaration ->
@@ -131,12 +132,16 @@ declarationVisitor context (Config config) declaration =
                 AtEnd ->
                     { context | lastDeclarationRange = Node.range declaration }
     in
-    ( [], contextWithLastDeclarationRange )
+    if declarationName == config.functionName then
+        ( [], { context | appliedFix = True } )
+
+    else
+        ( [], contextWithLastDeclarationRange )
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
 finalEvaluation (Config config) context =
-    if Install.Library.isInCorrectModule config.moduleName context then
+    if not context.appliedFix && Install.Library.isInCorrectModule config.moduleName context then
         addFunction { range = context.lastDeclarationRange, functionName = config.functionName, functionImplementation = config.functionImplementation }
 
     else
