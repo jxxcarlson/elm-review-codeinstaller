@@ -33,7 +33,7 @@ config1 =
     , Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
         |> Install.ClauseInCase.makeRule
-     , Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    , Install.ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
     , Install.Function.ReplaceFunction.init "Frontend" "view" viewFunction |> Install.Function.ReplaceFunction.makeRule
     ]
@@ -170,64 +170,62 @@ config2 =
         |> Install.ClauseInCase.makeRule
     ]
 
-    ]
+
 
 {-
 
 
-  updateFromBackendLoaded : ToFrontend -> LoadedModel -> ( LoadedModel, Cmd msg )
-  updateFromBackendLoaded msg model =
-      case msg of
-          AuthToFrontend authToFrontendMsg ->
-              MagicLink.Auth.updateFromBackend authToFrontendMsg model
+   updateFromBackendLoaded : ToFrontend -> LoadedModel -> ( LoadedModel, Cmd msg )
+   updateFromBackendLoaded msg model =
+       case msg of
+           AuthToFrontend authToFrontendMsg ->
+               MagicLink.Auth.updateFromBackend authToFrontendMsg model
 
-          GotBackendModel beModel ->
-              ( { model | backendModel = Just beModel }, Cmd.none )
+           GotBackendModel beModel ->
+               ( { model | backendModel = Just beModel }, Cmd.none )
 
-          -- MAGICLINK
-          AuthSuccess userInfo ->
-              -- TODO (placholder)
-              case userInfo.username of
-                  Just username ->
-                      ( { model | authFlow = Auth.Common.Authorized userInfo.email username }, Cmd.none )
+           -- MAGICLINK
+           AuthSuccess userInfo ->
+               -- TODO (placholder)
+               case userInfo.username of
+                   Just username ->
+                       ( { model | authFlow = Auth.Common.Authorized userInfo.email username }, Cmd.none )
 
-                  Nothing ->
-                      ( model, Cmd.none )
+                   Nothing ->
+                       ( model, Cmd.none )
 
-          UserInfoMsg _ ->
-              -- TODO (placholder)
-              ( model, Cmd.none )
+           UserInfoMsg _ ->
+               -- TODO (placholder)
+               ( model, Cmd.none )
 
-          SignInError message ->
-              MagicLink.Frontend.handleSignInError model message
+           SignInError message ->
+               MagicLink.Frontend.handleSignInError model message
 
-          RegistrationError str ->
-              MagicLink.Frontend.handleRegistrationError model str
+           RegistrationError str ->
+               MagicLink.Frontend.handleRegistrationError model str
 
-          CheckSignInResponse _ ->
-              ( model, Cmd.none )
+           CheckSignInResponse _ ->
+               ( model, Cmd.none )
 
-          GetLoginTokenRateLimited ->
-              ( model, Cmd.none )
+           GetLoginTokenRateLimited ->
+               ( model, Cmd.none )
 
-          UserRegistered user ->
-              MagicLink.Frontend.userRegistered model user
+           UserRegistered user ->
+               MagicLink.Frontend.userRegistered model user
 
-          UserSignedIn maybeUser ->
-              ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
+           UserSignedIn maybeUser ->
+               ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
 
-          GotMessage message ->
-              ( { model | message = message }, Cmd.none )
+           GotMessage message ->
+               ( { model | message = message }, Cmd.none )
 
-          AdminInspectResponse backendModel ->
-              ( { model | backendModel = Just backendModel }, Cmd.none )
+           AdminInspectResponse backendModel ->
+               ( { model | backendModel = Just backendModel }, Cmd.none )
 
 
-    , Cmd.batch
-        [ Time.now |> Task.perform GotFastTick
-        , Helper.getAtmosphericRandomNumbers
-        ]
-    )
+     , Cmd.batch
+         [ Time.now |> Task.perform GotFastTick
+         , Helper.getAtmosphericRandomNumbers
+         ]
+     )
 -}
-
-
