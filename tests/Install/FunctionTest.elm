@@ -1,6 +1,7 @@
 module Install.FunctionTest exposing (all)
 
-import Install.Function
+import Install.Function.InsertFunction as InsertFunction
+import Install.Function.ReplaceFunction as ReplaceFunction
 import Review.Rule exposing (Rule)
 import Run
 import Test exposing (Test, describe)
@@ -36,12 +37,12 @@ test1 =
 
 rule1 : Rule
 rule1 =
-    Install.Function.init
+    ReplaceFunction.init
         "Frontend"
         "view"
         """view model =
     Html.text "This is a test\""""
-        |> Install.Function.makeRule
+        |> ReplaceFunction.makeRule
 
 
 src1 : String
@@ -103,12 +104,12 @@ test2 =
 
 rule2 : Rule
 rule2 =
-    Install.Function.init
+    InsertFunction.init
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.Function.makeRule
+        |> InsertFunction.makeRule
 
 
 under2 : String
@@ -168,12 +169,12 @@ type alias Model =
 
 rule3 : Rule
 rule3 =
-    Install.Function.init
+    InsertFunction.init
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.Function.makeRule
+        |> InsertFunction.makeRule
 
 
 under3 : String
@@ -212,13 +213,13 @@ test4 =
 
 rule4 : Rule
 rule4 =
-    Install.Function.init
+    InsertFunction.init
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.Function.withInsertAfter "view"
-        |> Install.Function.makeRule
+        |> InsertFunction.withInsertAfter "view"
+        |> InsertFunction.makeRule
 
 
 under4 : String
@@ -259,13 +260,13 @@ test4a =
 
 rule4a : Rule
 rule4a =
-    Install.Function.init
+    InsertFunction.init
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.Function.withInsertAfter "Model"
-        |> Install.Function.makeRule
+        |> InsertFunction.withInsertAfter "Model"
+        |> InsertFunction.makeRule
 
 
 under4a : String
@@ -305,13 +306,13 @@ test4b =
 
 rule4b : Rule
 rule4b =
-    Install.Function.init
+    InsertFunction.init
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.Function.withInsertAfter "Model"
-        |> Install.Function.makeRule
+        |> InsertFunction.withInsertAfter "Model"
+        |> InsertFunction.makeRule
 
 
 under4b : String

@@ -254,3 +254,26 @@ isInCorrectModule moduleName context =
     context.moduleName
         |> String.join "."
         |> (==) moduleName
+
+
+getDeclarationName : Node Declaration -> String
+getDeclarationName declaration =
+    let
+        getName declaration_ =
+            declaration_ |> .name >> Node.value
+    in
+    case Node.value declaration of
+        FunctionDeclaration function ->
+            getName (Node.value function.declaration)
+
+        AliasDeclaration alias_ ->
+            getName alias_
+
+        CustomTypeDeclaration customType ->
+            getName customType
+
+        PortDeclaration port_ ->
+            getName port_
+
+        _ ->
+            ""
