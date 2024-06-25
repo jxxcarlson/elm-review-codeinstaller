@@ -8,6 +8,7 @@
         "Install.ClauseInCase",
         "Install.FieldInTypeAlias",
         "Install.Initializer",
+        "Install.InitializerCmd",
         "Install.TypeVariant",
         "Install.Function.InsertFunction",
         "Install.Function.ReplaceFunction",

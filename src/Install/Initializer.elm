@@ -6,9 +6,9 @@ the `ReviewConfig` item below, you specify the module name, the function
 name, as well as the field name and value to be added to the function:
 
     -- code for ReviewConfig.elm:
-    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
+    gcd
 
-Thus we will have
+Thus we will have/.l
 
      init : ( Model, Cmd BackendMsg )
      init =
