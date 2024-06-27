@@ -77,7 +77,7 @@ declarationVisitor moduleName item (Node _ declaration) context =
                     implementation.expression |> Debug.log "EXPRESSION"
 
                 endOfRange =
-                    (Node.range expr).end |> Debug.log "\n\nRANGE.END"
+                    (Node.range expr).end |> Debug.log "\nRANGE.END"
 
                 name : String
                 name =
@@ -104,7 +104,7 @@ declarationVisitor moduleName item (Node _ declaration) context =
                             FunctionOrValue [ "Sub" ] "batch" ->
                                 let
                                     _ =
-                                        Debug.log "\n\nXX, SUB LIST" rest
+                                        Debug.log "\nSUBSCRIPTION LIST" rest
 
                                     foo : List (Node Expression)
                                     foo =
@@ -123,7 +123,7 @@ errorWithFix : String -> Location -> List (Node Expression) -> Error {}
 errorWithFix replacementCode endRange subList =
     let
         _ =
-            Debug.log "ERROR WITH FIX, LOCATION" endRange
+            Debug.log "\nERROR WITH FIX, LOCATION" endRange
     in
     Rule.errorWithFix
         { message = "Add to subscriptions: " ++ replacementCode
@@ -133,4 +133,4 @@ errorWithFix replacementCode endRange subList =
         }
         Range.empty
         [ Fix.insertAt { endRange | column = endRange.column - 2 } replacementCode ]
-        |> Debug.log "FIX"
+        |> Debug.log "\nFIX"
