@@ -27,5 +27,5 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [ foo model, bar model ]
 """
-    , message = "Add to subscriptions: bar model"
+    , message = "Add to subscriptions: , bar model"
     }
