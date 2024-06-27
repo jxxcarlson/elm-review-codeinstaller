@@ -105,25 +105,17 @@ visitCmd namespace moduleName functionName cmds ignored function context =
                         [ _, oldCmds ] ->
                             let
                                 val_ =
-                                    Debug.log "oldCmds, value" (Node.value oldCmds)
+                                    Node.value oldCmds
 
                                 range_ =
-                                    Debug.log "oldCmds, range" (Node.range oldCmds)
+                                    Node.range oldCmds
                             in
                             ( Just val_, range_ )
 
                         _ ->
-                            let
-                                _ =
-                                    Debug.log "Tupled, bad" True
-                            in
                             ( Nothing, Elm.Syntax.Range.empty )
 
                 _ ->
-                    let
-                        _ =
-                            Debug.log "NOT Tupled" True
-                    in
                     ( Nothing, Elm.Syntax.Range.empty )
     in
     if isInCorrectModule then
@@ -168,6 +160,6 @@ replaceCmds : Range -> List String -> Fix
 replaceCmds rangeToReplace cmds =
     let
         replacement =
-            "Cmd.batch [ " ++ String.join ", " cmds ++ " ]" |> Debug.log "REPLACEMENT"
+            "Cmd.batch [ " ++ String.join ", " cmds ++ " ]"
     in
     Fix.replaceRangeBy rangeToReplace replacement
