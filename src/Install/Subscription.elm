@@ -1,8 +1,6 @@
-module Install.Subscription exposing (..)
+module Install.Subscription exposing (makeRule)
 
-{-| Consider a function whose return value is of the form `( _, Cmd.none )`.
-Suppose given a list of commands, e.g. `[foo, bar]`. The function
-`makeRule` described below replaces `Cmd.none` by `Cmd.batch [ foo, bar ]`.
+{-| Use this rule to add to the list of subscriptions.
 
 @docs makeRule
 
@@ -23,16 +21,19 @@ type alias Ignored =
     Set String
 
 
-{-| Consider a function whose return value is of the form `( _, Cmd.none )`.
-Suppose given a list of commands, e.g. `[foo, bar]`. The function
-`makeRule` creates a rule that replaces `Cmd.none` by `Cmd.batch [ foo, bar ]`.
-For example, the rule
+{-| Suppose that you have
 
-    Install.InitializerCmd.makeRule "A.B" "init" [ "foo", "bar" ]
+    subscriptions =
+        Sub.batch [ foo, bar ]
 
-results in the following fix for function `A.B.init`:
+and that you want to add `baz` to the list. To do this, say
 
-    Cmd.none -> (Cmd.batch [ foo, bar ])
+    Insall.Subscription.makeRule "Badkend" "baz"
+
+The result is
+
+    subscriptions =
+        Sub.batch [ foo, bar, baz ]
 
 -}
 makeRule : String -> String -> Rule
