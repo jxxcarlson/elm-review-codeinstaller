@@ -7,18 +7,14 @@ module Install.Subscription exposing (makeRule)
 -}
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation)
+import Elm.Syntax.Expression exposing (Expression(..))
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
-import Elm.Syntax.Range as Range exposing (Location, Range)
+import Elm.Syntax.Range exposing (Location, Range)
 import Install.Library
-import Review.Fix as Fix exposing (Fix)
+import Review.Fix as Fix
+import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
-
-
-type alias Ignored =
-    Set String
 
 
 {-| Suppose that you have
@@ -54,7 +50,7 @@ type alias Context =
     }
 
 
-contextCreator : Rule.ContextCreator () { moduleName : ModuleName }
+contextCreator : Rule.ContextCreator () Context
 contextCreator =
     Rule.initContextCreator
         (\moduleName () ->
@@ -68,65 +64,79 @@ contextCreator =
 
 declarationVisitor : String -> String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
 declarationVisitor moduleName item (Node _ declaration) context =
-    case declaration of
-        FunctionDeclaration function ->
-            let
-                functionRange =
-                    Node.range function.declaration |> Debug.log "\nFUNCTION RANGE"
+    if Install.Library.isInCorrectModule moduleName context then
+        case declaration of
+            FunctionDeclaration function ->
+                let
+                    implementation =
+                        Node.value function.declaration
 
-                implementation =
-                    Node.value function.declaration
+                    expr =
+                        implementation.expression |> Debug.log "\nEXPRESSION"
 
-                expr =
-                    implementation.expression |> Debug.log "\nEXPRESSION"
+                    endOfRange =
+                        (Node.range expr).end |> Debug.log "\nRANGE.END"
 
-                range =
-                    Node.range expr |> Debug.log "\nRANGE"
+                    name : String
+                    name =
+                        Node.value implementation.name
 
-                endOfRange =
-                    (Node.range expr).end |> Debug.log "\nRANGE.END"
+                    nameRange =
+                        Node.range implementation.name |> Debug.log "\nNAME RANGE"
 
-                name : String
-                name =
-                    Node.value implementation.name
-
-                nameRange =
-                    Node.range implementation.name |> Debug.log "\nNAME RANGE"
-
-                data =
-                    case Node.value implementation.expression of
-                        Application (head :: rest) ->
-                            Just ( head, rest )
-
-                        _ ->
-                            Nothing
-            in
-            if name /= "subscriptions" then
-                ( [], context )
-
-            else
-                case data of
-                    Nothing ->
-                        ( [], context )
-
-                    Just ( head, rest ) ->
-                        case Node.value head of
-                            FunctionOrValue [ "Sub" ] "batch" ->
-                                let
-                                    _ =
-                                        Debug.log "\nSUBSCRIPTION LIST" rest
-
-                                    foo : List (Node Expression)
-                                    foo =
-                                        rest
-                                in
-                                ( [ errorWithFix (", " ++ item) nameRange endOfRange rest ], context )
+                    data =
+                        case Node.value implementation.expression of
+                            Application (head :: rest) ->
+                                Just ( head, rest )
 
                             _ ->
-                                ( [], context )
+                                Nothing
+                in
+                if name /= "subscriptions" then
+                    ( [], context )
 
-        _ ->
-            ( [], context )
+                else
+                    case data of
+                        Nothing ->
+                            ( [], context )
+
+                        Just ( head, rest ) ->
+                            case Node.value head of
+                                FunctionOrValue [ "Sub" ] "batch" ->
+                                    let
+                                        listElements =
+                                            rest
+                                                |> List.head
+                                                |> Maybe.map Node.value
+                                                |> (\expression ->
+                                                        case expression of
+                                                            Just (ListExpr exprs) ->
+                                                                exprs
+
+                                                            _ ->
+                                                                []
+                                                   )
+
+                                        stringifiedExprs =
+                                            listElements |> List.map Install.Library.expressionToString
+
+                                        isAlreadyImplemented =
+                                            List.member item stringifiedExprs
+                                    in
+                                    if isAlreadyImplemented then
+                                        ( [], context )
+
+                                    else
+                                        ( [ errorWithFix (", " ++ item) nameRange endOfRange rest ], context )
+
+                                _ ->
+                                    ( [], context )
+
+            _ ->
+                ( [], context )
+
+    else
+        ( [], context )
 
 
 errorWithFix : String -> Range -> Location -> List (Node Expression) -> Error {}
