@@ -74,7 +74,7 @@ declarationVisitor moduleName item (Node _ declaration) context =
                     Node.value function.declaration
 
                 expr =
-                    implementation.expression |> Debug.log "EXPRESSION"
+                    implementation.expression |> Debug.log "\nEXPRESSION"
 
                 endOfRange =
                     (Node.range expr).end |> Debug.log "\nRANGE.END"
