@@ -278,7 +278,9 @@ getDeclarationName declaration =
         _ ->
             ""
 
-{-| Converts an expression to a string. Not fully implemented yet, so check if it covers your case before using. -}
+
+{-| Converts an expression to a string. Not fully implemented yet, so check if it covers your case before using.
+-}
 expressionToString : Node Expression -> String
 expressionToString (Node _ expression) =
     case expression of
