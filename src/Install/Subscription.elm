@@ -70,11 +70,17 @@ declarationVisitor moduleName item (Node _ declaration) context =
     case declaration of
         FunctionDeclaration function ->
             let
+                functionRange =
+                    Node.range function.declaration |> Debug.log "\nFUNCTION RANGE"
+
                 implementation =
                     Node.value function.declaration
 
                 expr =
                     implementation.expression |> Debug.log "\nEXPRESSION"
+
+                range =
+                    Node.range expr |> Debug.log "\nRANGE"
 
                 endOfRange =
                     (Node.range expr).end |> Debug.log "\nRANGE.END"
@@ -82,6 +88,9 @@ declarationVisitor moduleName item (Node _ declaration) context =
                 name : String
                 name =
                     Node.value implementation.name
+
+                nameRange =
+                    Node.range implementation.name |> Debug.log "\nNAME RANGE"
 
                 data =
                     case Node.value implementation.expression of
@@ -110,7 +119,7 @@ declarationVisitor moduleName item (Node _ declaration) context =
                                     foo =
                                         rest
                                 in
-                                ( [ errorWithFix (", " ++ item) endOfRange rest ], context )
+                                ( [ errorWithFix (", " ++ item) nameRange endOfRange rest ], context )
 
                             _ ->
                                 ( [], context )
@@ -119,11 +128,11 @@ declarationVisitor moduleName item (Node _ declaration) context =
             ( [], context )
 
 
-errorWithFix : String -> Location -> List (Node Expression) -> Error {}
-errorWithFix replacementCode endRange subList =
+errorWithFix : String -> Range -> Location -> List (Node Expression) -> Error {}
+errorWithFix replacementCode range endRange subList =
     let
         _ =
-            Debug.log "\nERROR WITH FIX, LOCATION" endRange
+            Debug.log "\nERROR WITH FIX, RANGE" range
     in
     Rule.errorWithFix
         { message = "Add to subscriptions: " ++ replacementCode
@@ -131,6 +140,6 @@ errorWithFix replacementCode endRange subList =
             [ ""
             ]
         }
-        Range.empty
+        range
         [ Fix.insertAt { endRange | column = endRange.column - 2 } replacementCode ]
         |> Debug.log "\nFIX"

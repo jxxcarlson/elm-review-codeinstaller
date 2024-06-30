@@ -15,15 +15,13 @@ test1 =
     { description = "should not report an error when the item already is in the Sub.batch list"
     , src = """module Backend exposing (..)
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [ foo model ]
 """
     , rule = Install.Subscription.makeRule "Backend" "bar model"
-    , under = """subscriptions model ="""
+    , under = """subscriptions"""
     , fixed = """module Backend exposing (..)
 
-subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [ foo model, bar model ]
 """
