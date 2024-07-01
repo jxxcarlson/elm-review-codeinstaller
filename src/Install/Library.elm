@@ -277,3 +277,51 @@ getDeclarationName declaration =
 
         _ ->
             ""
+
+
+{-| Converts an expression to a string. Not fully implemented yet, so check if it covers your case before using.
+-}
+expressionToString : Node Expression -> String
+expressionToString (Node _ expression) =
+    case expression of
+        FunctionOrValue moduleName name ->
+            case moduleName of
+                [] ->
+                    name
+
+                _ ->
+                    String.join "." moduleName ++ "." ++ name
+
+        IfBlock c t f ->
+            "if " ++ expressionToString c ++ " then " ++ expressionToString t ++ " else " ++ expressionToString f
+
+        -- OperatorApplication op l r ->
+        --     expressionToString l ++ " " ++ op ++ " " ++ expressionToString r
+        Application children ->
+            String.join " " (List.map expressionToString children)
+
+        TupledExpression children ->
+            "(" ++ String.join ", " (List.map expressionToString children) ++ ")"
+
+        ListExpr children ->
+            "[" ++ String.join ", " (List.map expressionToString children) ++ "]"
+
+        Negation child ->
+            "-" ++ expressionToString child
+
+        ParenthesizedExpression child ->
+            "(" ++ expressionToString child ++ ")"
+
+        RecordAccess child field ->
+            expressionToString child ++ "." ++ Node.value field
+
+        -- CaseExpression caseBlock ->
+        --     "case " ++ expressionToString caseBlock.expression ++ " of " ++ String.join " " (List.map caseToString caseBlock.cases)
+        -- LambdaExpression lambda ->
+        --     "\\" ++ String.join " " (List.map patternToString lambda.args) ++ " -> " ++ expressionToString lambda.expression
+        -- RecordExpr recordSetters ->
+        --     "{ " ++ String.join ", " (List.map recordSetterToString recordSetters) ++ " }"
+        -- RecordUpdateExpression record recordSetters ->
+        --     "{ " ++ expressionToString record ++ " | " ++ String.join ", " (List.map recordSetterToString recordSetters) ++ " }"
+        _ ->
+            ""
