@@ -28,6 +28,8 @@ import Elm.Syntax.TypeAnnotation as TypeAnnotation
 import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
+import Set exposing (Set)
+import Set.Extra
 
 
 {-| Create a rule that adds a field to a type alias in a specified module. Example usage:
@@ -50,22 +52,16 @@ After running the rule with the following code:
             }
 
 -}
-makeRule : String -> String -> String -> Rule
-makeRule moduleName_ typeName_ fieldDefinition_ =
+makeRule : String -> String -> List String -> Rule
+makeRule moduleName_ typeName_ fieldsDefinition_ =
     let
-        fieldName =
-            fieldDefinition_
-                |> String.split ":"
-                |> List.head
-                |> Maybe.withDefault ""
-                |> String.trim
-
-        fieldCode =
-            "    , " ++ fieldDefinition_ ++ "\n    }"
+        fieldsName =
+            List.map getFieldName fieldsDefinition_
+                |> Set.fromList
 
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
-            declarationVisitor moduleName_ typeName_ fieldName fieldCode
+            declarationVisitor moduleName_ typeName_ fieldsName fieldsDefinition_
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.FieldInTypeAlias" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -90,8 +86,20 @@ contextCreator =
         |> Rule.withModuleName
 
 
-errorWithFix : String -> String -> String -> Node a -> Maybe Range -> Error {}
-errorWithFix typeName_ fieldName fieldCode node errorRange =
+errorWithFix : String -> Set String -> String -> Node a -> Maybe Range -> Error {}
+errorWithFix typeName_ fieldsName fieldCode node errorRange =
+    let
+        fieldsNameList =
+            Set.toList fieldsName
+
+        fieldName =
+            case fieldsNameList of
+                [ field ] ->
+                    field
+
+                _ ->
+                    "fields " ++ String.join ", " fieldsNameList
+    in
     Rule.errorWithFix
         { message = "Add " ++ fieldName ++ " to " ++ typeName_
         , details =
@@ -116,36 +124,62 @@ fixMissingField { row, column } fieldCode =
     Fix.replaceRangeBy range fieldCode
 
 
-declarationVisitor : String -> String -> String -> String -> Node Declaration -> Context -> ( List (Error {}), Context )
-declarationVisitor moduleName_ typeName_ fieldName_ fieldValueCode_ node context =
+declarationVisitor : String -> String -> Set String -> List String -> Node Declaration -> Context -> ( List (Error {}), Context )
+declarationVisitor moduleName_ typeName_ fieldsName_ fieldsDefinition_ node context =
     case Node.value node of
         Declaration.AliasDeclaration type_ ->
             let
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName_ context
 
-                shouldFix : Node Declaration -> Context -> Bool
-                shouldFix node_ context_ =
-                    let
-                        fieldsOfNode : List String
-                        fieldsOfNode =
-                            case Node.value node_ of
-                                Declaration.AliasDeclaration typeAlias ->
-                                    case typeAlias.typeAnnotation |> Node.value of
-                                        TypeAnnotation.Record fields ->
-                                            fields
-                                                |> List.map (Node.value >> Tuple.first >> Node.value)
-
-                                        _ ->
-                                            []
+                fieldsOfNode : Node Declaration -> List String
+                fieldsOfNode node_ =
+                    case Node.value node_ of
+                        Declaration.AliasDeclaration typeAlias ->
+                            case typeAlias.typeAnnotation |> Node.value of
+                                TypeAnnotation.Record fields ->
+                                    fields
+                                        |> List.map (Node.value >> Tuple.first >> Node.value)
 
                                 _ ->
                                     []
+
+                        _ ->
+                            []
+
+                shouldFix : Node Declaration -> Bool
+                shouldFix node_ =
+                    let
+                        fieldsOfNode_ =
+                            fieldsOfNode node_
                     in
-                    not <| List.member fieldName_ fieldsOfNode
+                    not <| Set.Extra.isSubsetOf (Set.fromList fieldsOfNode_) fieldsName_
             in
-            if isInCorrectModule && Node.value type_.name == typeName_ && shouldFix node context then
-                ( [ errorWithFix typeName_ fieldName_ fieldValueCode_ node (Just <| Node.range node) ]
+            if isInCorrectModule && Node.value type_.name == typeName_ && shouldFix node then
+                let
+                    fieldsToAdd : Set String
+                    fieldsToAdd =
+                        Set.diff fieldsName_ (Set.fromList <| fieldsOfNode node)
+
+                    getFieldCode field =
+                        "    , " ++ field ++ "\n"
+
+                    closeRecord =
+                        "    }"
+
+                    -- filter out the fields that are already in the type alias
+                    newFields : List String
+                    newFields =
+                        fieldsDefinition_
+                            |> List.filter (\field -> Set.member (getFieldName field) fieldsToAdd)
+
+                    fieldsCode =
+                        newFields
+                            |> List.map getFieldCode
+                            |> String.concat
+                            |> (\fields -> fields ++ closeRecord)
+                in
+                ( [ errorWithFix typeName_ fieldsToAdd fieldsCode node (Just <| Node.range node) ]
                 , context
                 )
 
@@ -154,3 +188,12 @@ declarationVisitor moduleName_ typeName_ fieldName_ fieldValueCode_ node context
 
         _ ->
             ( [], context )
+
+
+getFieldName : String -> String
+getFieldName field =
+    field
+        |> String.split ":"
+        |> List.head
+        |> Maybe.withDefault ""
+        |> String.trim
