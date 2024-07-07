@@ -14,16 +14,18 @@ import Elm.Syntax.Range exposing (Location, Range)
 import Install.Library
 import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
+import Set exposing (Set)
+import Set.Extra
 
 
-{-| Suppose that you have
+{-| Suppose that you have the following code in your `Backend.elm` file:
 
     subscriptions =
         Sub.batch [ foo, bar ]
 
 and that you want to add `baz` to the list. To do this, say
 
-    Insall.Subscription.makeRule "Badkend" "baz"
+    Insall.Subscription.makeRule "Backend" ["baz"]
 
 The result is
 
@@ -31,12 +33,12 @@ The result is
         Sub.batch [ foo, bar, baz ]
 
 -}
-makeRule : String -> String -> Rule
-makeRule moduleName item =
+makeRule : String -> List String -> Rule
+makeRule moduleName subscriptions =
     let
         --visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
-            declarationVisitor moduleName item
+            declarationVisitor moduleName (Set.fromList subscriptions)
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Subscription" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -61,8 +63,8 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
-declarationVisitor moduleName item (Node _ declaration) context =
+declarationVisitor : String -> Set String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
+declarationVisitor moduleName items (Node _ declaration) context =
     if Install.Library.isInCorrectModule moduleName context then
         case declaration of
             FunctionDeclaration function ->
@@ -71,17 +73,17 @@ declarationVisitor moduleName item (Node _ declaration) context =
                         Node.value function.declaration
 
                     expr =
-                        implementation.expression |> Debug.log "\nEXPRESSION"
+                        implementation.expression
 
                     endOfRange =
-                        (Node.range expr).end |> Debug.log "\nRANGE.END"
+                        (Node.range expr).end
 
                     name : String
                     name =
                         Node.value implementation.name
 
                     nameRange =
-                        Node.range implementation.name |> Debug.log "\nNAME RANGE"
+                        Node.range implementation.name
 
                     data =
                         case Node.value implementation.expression of
@@ -120,13 +122,20 @@ declarationVisitor moduleName item (Node _ declaration) context =
                                             listElements |> List.map Install.Library.expressionToString
 
                                         isAlreadyImplemented =
-                                            List.member item stringifiedExprs
+                                            Set.Extra.isSubsetOf (Set.fromList stringifiedExprs) items
                                     in
                                     if isAlreadyImplemented then
                                         ( [], context )
 
                                     else
-                                        ( [ errorWithFix (", " ++ item) nameRange endOfRange rest ], context )
+                                        let
+                                            replacementCode =
+                                                items
+                                                    |> Set.toList
+                                                    |> List.map (\item -> (", ") ++ item)
+                                                    |> String.concat
+                                        in
+                                        ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
 
                                 _ ->
                                     ( [], context )
@@ -140,10 +149,6 @@ declarationVisitor moduleName item (Node _ declaration) context =
 
 errorWithFix : String -> Range -> Location -> List (Node Expression) -> Error {}
 errorWithFix replacementCode range endRange subList =
-    let
-        _ =
-            Debug.log "\nERROR WITH FIX, RANGE" range
-    in
     Rule.errorWithFix
         { message = "Add to subscriptions: " ++ replacementCode
         , details =
@@ -152,4 +157,3 @@ errorWithFix replacementCode range endRange subList =
         }
         range
         [ Fix.insertAt { endRange | column = endRange.column - 2 } replacementCode ]
-        |> Debug.log "\nFIX"

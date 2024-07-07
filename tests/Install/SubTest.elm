@@ -10,6 +10,7 @@ all =
     describe "Install.Initializer"
         [ Run.testFix test1
         , Run.expectNoErrorsTest test2.description test2.src test2.rule
+        , Run.testFix test3
         ]
 
 
@@ -20,7 +21,7 @@ test1 =
 subscriptions model =
   Sub.batch [ foo model ]
 """
-    , rule = Install.Subscription.makeRule "Backend" "bar model"
+    , rule = Install.Subscription.makeRule "Backend" ["bar model"]
     , under = """subscriptions"""
     , fixed = """module Backend exposing (..)
 
@@ -38,5 +39,25 @@ test2 =
 subscriptions model =
   Sub.batch [ foo model, bar model ]
 """
-    , rule = Install.Subscription.makeRule "Backend" "bar model"
+    , rule = Install.Subscription.makeRule "Backend" ["bar model"]
+    }
+
+
+-- test3 - should add multiple items
+
+test3 =
+    { description = "should add multiple items to subscriptions"
+    , src = """module Backend exposing (..)
+
+subscriptions model =
+  Sub.batch [ foo model ]
+"""
+    , rule = Install.Subscription.makeRule "Backend" ["bar model", "baz model"]
+    , under = """subscriptions"""
+    , fixed = """module Backend exposing (..)
+
+subscriptions model =
+  Sub.batch [ foo model, bar model, baz model ]
+"""
+    , message = "Add to subscriptions: , bar model, baz model"
     }
