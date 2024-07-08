@@ -37,7 +37,7 @@ test1 =
 
 rule1 : Rule
 rule1 =
-    Install.Import.init "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Nothing } ]
+    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Nothing } ]
         |> Install.Import.makeRule
 
 
@@ -115,7 +115,7 @@ test2 =
 
 rule2 : Rule
 rule2 =
-    Install.Import.init "Main" [ { moduleToImport = "Dict", alias_ = Just "D", exposedValues = Nothing } ]
+    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Just "D", exposedValues = Nothing } ]
         |> Install.Import.makeRule
 
 
@@ -145,7 +145,7 @@ test3 =
 
 rule3 : Rule
 rule3 =
-    Install.Import.init "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Just [ "Dict" ] } ]
+    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Just [ "Dict" ] } ]
         |> Install.Import.makeRule
 
 
@@ -175,7 +175,7 @@ test4 =
 
 rule4 : Rule
 rule4 =
-    Install.Import.init "Main"
+    Install.Import.config "Main"
         [ { moduleToImport = "Dict", alias_ = Just "D", exposedValues = Just [ "Dict" ] }
         , { moduleToImport = "Html", alias_ = Nothing, exposedValues = Just [ "div" ] }
         , { moduleToImport = "Html.Attributes", alias_ = Just "Attributes", exposedValues = Just [ "class, style, disabled, href, title, type_, name, novalidate, pattern, readonly, required, size, for, form, max, min, step, cols, rows, wrap" ] }
@@ -212,7 +212,7 @@ test5 =
 
 rule5 : Rule
 rule5 =
-    Install.Import.init "Main"
+    Install.Import.config "Main"
         [ { moduleToImport = "Set", alias_ = Nothing, exposedValues = Nothing }
         ]
         |> Install.Import.makeRule
@@ -235,7 +235,7 @@ test6 =
 
 rule6 : Rule
 rule6 =
-    Install.Import.init "Main"
+    Install.Import.config "Main"
         [ { moduleToImport = "Set", alias_ = Nothing, exposedValues = Nothing }
         , { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Nothing }
         ]

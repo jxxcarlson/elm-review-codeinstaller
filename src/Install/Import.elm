@@ -1,4 +1,7 @@
-module Install.Import exposing (init, initSimple, makeRule)
+module Install.Import exposing
+    ( initSimple, makeRule
+    , config
+    )
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
@@ -58,8 +61,8 @@ type CustomError
 
 {-| Initialize the configuration for the rule.
 -}
-init : String -> List { moduleToImport : String, alias_ : Maybe String, exposedValues : Maybe (List String) } -> Config
-init hostModuleName_ imports =
+config : String -> List { moduleToImport : String, alias_ : Maybe String, exposedValues : Maybe (List String) } -> Config
+config hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\{ moduleToImport, alias_, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias_ = alias_, exposedValues = exposedValues }) imports
@@ -82,11 +85,11 @@ initSimple hostModuleName_ imports =
 See above for examples.
 -}
 makeRule : Config -> Rule
-makeRule config =
+makeRule config_ =
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Import" initialContext
-        |> Rule.withImportVisitor (importVisitor config)
+        |> Rule.withImportVisitor (importVisitor config_)
         |> Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
-        |> Rule.withFinalModuleEvaluation (finalEvaluation config)
+        |> Rule.withFinalModuleEvaluation (finalEvaluation config_)
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
 
@@ -107,12 +110,12 @@ initialContext =
 
 
 importVisitor : Config -> Node Import -> Context -> ( List (Error {}), Context )
-importVisitor (Config config) node context =
+importVisitor (Config config_) node context =
     case Node.value node |> .moduleName |> Node.value of
         currentModuleName ->
             let
                 allModuleNames =
-                    List.map .moduleToImport config.imports
+                    List.map .moduleToImport config_.imports
 
                 foundImports =
                     context.foundImports ++ [ currentModuleName ]
@@ -120,7 +123,7 @@ importVisitor (Config config) node context =
                 areAllImportsFound =
                     List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
             in
-            if areAllImportsFound && config.hostModuleName == context.moduleName then
+            if areAllImportsFound && config_.hostModuleName == context.moduleName then
                 ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
 
             else
@@ -134,9 +137,9 @@ moduleDefinitionVisitor def context =
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
-finalEvaluation (Config config) context =
-    if context.moduleWasImported == False && config.hostModuleName == context.moduleName then
-        fixError config.imports context
+finalEvaluation (Config config_) context =
+    if context.moduleWasImported == False && config_.hostModuleName == context.moduleName then
+        fixError config_.imports context
 
     else
         []

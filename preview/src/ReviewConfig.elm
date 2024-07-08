@@ -80,7 +80,7 @@ config2 =
 
     -- TYPES IMPORTS
     , Install.Import.initSimple "Types" [ "Auth.Common", "MagicLink.Types", "User", "Session", "Dict", "AssocList" ] |> Install.Import.makeRule
-    , Install.Import.init "Types" [ { moduleToImport = "Url", alias_ = Nothing, exposedValues = Just [ "Url" ] } ] |> Install.Import.makeRule
+    , Install.Import.config "Types" [ { moduleToImport = "Url", alias_ = Nothing, exposedValues = Just [ "Url" ] } ] |> Install.Import.makeRule
 
     -- Type Frontend, MagicLink
     , Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" "authFlow : Auth.Common.Flow"
@@ -159,7 +159,7 @@ config2 =
         , "User"
         ]
         |> Install.Import.makeRule
-    , Install.Import.init "Backend" [ { moduleToImport = "Lamdera", alias_ = Nothing, exposedValues = Just [ "ClientId", "SessionId" ] } ] |> Install.Import.makeRule
+    , Install.Import.config "Backend" [ { moduleToImport = "Lamdera", alias_ = Nothing, exposedValues = Just [ "ClientId", "SessionId" ] } ] |> Install.Import.makeRule
 
     ---
     , Install.ClauseInCase.init
