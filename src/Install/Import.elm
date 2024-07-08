@@ -1,26 +1,23 @@
-module Install.Import exposing
-    ( initSimple, makeRule
-    , config
-    )
+module Install.Import exposing (config, module_, withAlias, withExposedValues, qualified, makeRule)
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
 
-    Install.Import.init "Frontend"
-        [ { moduleToImport = "Foo.Bar", alias_ = Nothing, exposedValues = Nothing } ]
+    Install.Import.config "Frontend"
+        [ module_ "Foo.Bar" ]
         |> Install.Import.makeRule
 
 To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
-    Install.Import.init "Frontend" [ { moduleToImport = "Foo.Bar", alias_ = Just "FB", exposedValues = Just [ "a", "b", "c" ] } ]
+    Install.Import.config "Frontend" [ module_ "Foo.Bar" |> withAlias "FB" |> withExposedValues =  [ "a", "b", "c" ] ]
         |> Install.Import.makeRule
 
-There is a short cut for importing modules with no alias or exposed values:
+There is a short cut for importing modules with no alias or exposed values
 
-    Install.Import.initSimple "Frontend" [ "Foo.Bar", "Baz.Qux" ]
+    Install.Import.qualified "Frontend" [ module_ "Foo.Bar", module_ "Baz.Qux" ]
         |> Install.Import.makeRule
 
-@docs init, initSimple, makeRule
+@docs config, module_, withAlias, withExposedValues, qualified, makeRule
 
 -}
 
@@ -70,10 +67,38 @@ config hostModuleName_ imports =
         }
 
 
+type alias ImportData =
+    { moduleToImport : String
+    , alias_ : Maybe String
+    , exposedValues : Maybe (List String)
+    }
+
+
+{-| Create a module to import with no alias or exposed values
+-}
+module_ : String -> ImportData
+module_ name =
+    { moduleToImport = name, alias_ = Nothing, exposedValues = Nothing }
+
+
+{-| Add an alias to a module to import
+-}
+withAlias : String -> ImportData -> ImportData
+withAlias alias_ importData =
+    { importData | alias_ = Just alias_ }
+
+
+{-| Add exposed values to a module to import
+-}
+withExposedValues : List String -> ImportData -> ImportData
+withExposedValues exposedValues importData =
+    { importData | exposedValues = Just exposedValues }
+
+
 {-| Initialize the configuration for the rule.
 -}
-initSimple : String -> List String -> Config
-initSimple hostModuleName_ imports =
+qualified : String -> List String -> Config
+qualified hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias_ = Nothing, exposedValues = Nothing }) imports

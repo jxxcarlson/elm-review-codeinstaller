@@ -1,6 +1,6 @@
 module Install.ImportTest exposing (..)
 
-import Install.Import
+import Install.Import exposing (module_, withAlias, withExposedValues)
 import Review.Rule exposing (Rule)
 import Run
 import Test exposing (Test, describe)
@@ -37,7 +37,7 @@ test1 =
 
 rule1 : Rule
 rule1 =
-    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Nothing } ]
+    Install.Import.config "Main" [ module_ "Dict" ]
         |> Install.Import.makeRule
 
 
@@ -115,7 +115,7 @@ test2 =
 
 rule2 : Rule
 rule2 =
-    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Just "D", exposedValues = Nothing } ]
+    Install.Import.config "Main" [ module_ "Dict" |> withAlias "D" ]
         |> Install.Import.makeRule
 
 
@@ -145,7 +145,7 @@ test3 =
 
 rule3 : Rule
 rule3 =
-    Install.Import.config "Main" [ { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Just [ "Dict" ] } ]
+    Install.Import.config "Main" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
         |> Install.Import.makeRule
 
 
@@ -176,11 +176,11 @@ test4 =
 rule4 : Rule
 rule4 =
     Install.Import.config "Main"
-        [ { moduleToImport = "Dict", alias_ = Just "D", exposedValues = Just [ "Dict" ] }
-        , { moduleToImport = "Html", alias_ = Nothing, exposedValues = Just [ "div" ] }
-        , { moduleToImport = "Html.Attributes", alias_ = Just "Attributes", exposedValues = Just [ "class, style, disabled, href, title, type_, name, novalidate, pattern, readonly, required, size, for, form, max, min, step, cols, rows, wrap" ] }
-        , { moduleToImport = "Pages.NestedModule.EvenMoreNested.MyPage", alias_ = Just "MyPage", exposedValues = Nothing }
-        , { moduleToImport = "Array", alias_ = Nothing, exposedValues = Just [ "Array" ] }
+        [ module_ "Dict" |> withAlias "D" |> withExposedValues [ "Dict" ]
+        , module_ "Html" |> withExposedValues [ "div" ]
+        , module_ "Html.Attributes" |> withAlias "Attributes" |> withExposedValues [ "class, style, disabled, href, title, type_, name, novalidate, pattern, readonly, required, size, for, form, max, min, step, cols, rows, wrap" ]
+        , module_ "Pages.NestedModule.EvenMoreNested.MyPage" |> withAlias "MyPage"
+        , module_ "Array" |> withExposedValues [ "Array" ]
         ]
         |> Install.Import.makeRule
 
@@ -213,8 +213,7 @@ test5 =
 rule5 : Rule
 rule5 =
     Install.Import.config "Main"
-        [ { moduleToImport = "Set", alias_ = Nothing, exposedValues = Nothing }
-        ]
+        [ module_ "Set" ]
         |> Install.Import.makeRule
 
 
@@ -236,8 +235,8 @@ test6 =
 rule6 : Rule
 rule6 =
     Install.Import.config "Main"
-        [ { moduleToImport = "Set", alias_ = Nothing, exposedValues = Nothing }
-        , { moduleToImport = "Dict", alias_ = Nothing, exposedValues = Nothing }
+        [ module_ "Set"
+        , module_ "Dict"
         ]
         |> Install.Import.makeRule
 
@@ -258,13 +257,13 @@ test7 =
     , rule = rule7
     , under = under1
     , fixed = fixed7
-    , message = "add 1 import to module Main" --"Add Set and Dict to module Main using initSimple"
+    , message = "add 2 imports to module Main" --"Add Set and Dict to module Main using initSimple"
     }
 
 
 rule7 : Rule
 rule7 =
-    Install.Import.initSimple "Main" [ "Set", "Dict" ] |> Install.Import.makeRule
+    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.Import.makeRule
 
 
 fixed7 : String
@@ -273,4 +272,5 @@ fixed7 =
 
 import Set
 import Dict
+import Foo.Bar
 foo = 1"""

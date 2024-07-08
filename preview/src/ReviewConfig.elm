@@ -79,7 +79,7 @@ config2 =
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData" ]
 
     -- TYPES IMPORTS
-    , Install.Import.initSimple "Types" [ "Auth.Common", "MagicLink.Types", "User", "Session", "Dict", "AssocList" ] |> Install.Import.makeRule
+    , Install.Import.qualified "Types" [ "Auth.Common", "MagicLink.Types", "User", "Session", "Dict", "AssocList" ] |> Install.Import.makeRule
     , Install.Import.config "Types" [ { moduleToImport = "Url", alias_ = Nothing, exposedValues = Just [ "Url" ] } ] |> Install.Import.makeRule
 
     -- Type Frontend, MagicLink
@@ -145,7 +145,7 @@ config2 =
     , Install.Initializer.makeRule "Backend" "init" "log" "[]"
 
     -- Backend import
-    , Install.Import.initSimple "Backend"
+    , Install.Import.qualified "Backend"
         [ "Auth.Common"
         , "AssocList"
         , "Auth.Flow"
