@@ -83,16 +83,6 @@ fixError typeName_ variants_ context =
     ]
 
 
-
---
---type alias Type =
---    { documentation : Maybe (Node Documentation)
---    , name : Node String
---    , generics : List (Node String)
---    , constructors : List (Node ValueConstructor)
---    }
-
-
 declarationVisitor : String -> String -> Node Declaration -> Context -> ( List (Error {}), Context )
 declarationVisitor moduleName_ typeName_ node context =
     let
