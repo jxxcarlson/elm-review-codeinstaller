@@ -1,4 +1,4 @@
-module Install.Import exposing (config, module_, withAlias, withExposedValues, qualified, makeRule)
+module Install.Import exposing (config, ImportData, module_, withAlias, withExposedValues, qualified, makeRule)
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
@@ -17,7 +17,7 @@ There is a short cut for importing modules with no alias or exposed values
     Install.Import.qualified "Frontend" [ module_ "Foo.Bar", module_ "Baz.Qux" ]
         |> Install.Import.makeRule
 
-@docs config, module_, withAlias, withExposedValues, qualified, makeRule
+@docs config, ImportData, module_, withAlias, withExposedValues, qualified, makeRule
 
 -}
 
@@ -45,7 +45,7 @@ type Config
 
 type alias ImportedModule =
     { moduleToImport : ModuleName
-    , alias_ : Maybe String
+    , alias : Maybe String
     , exposedValues : Maybe (List String)
     }
 
@@ -58,34 +58,41 @@ type CustomError
 
 {-| Initialize the configuration for the rule.
 -}
-config : String -> List { moduleToImport : String, alias_ : Maybe String, exposedValues : Maybe (List String) } -> Config
+config : String -> List { moduleToImport : String, alias : Maybe String, exposedValues : Maybe (List String) } -> Config
 config hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
-        , imports = List.map (\{ moduleToImport, alias_, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias_ = alias_, exposedValues = exposedValues }) imports
+        , imports = List.map (\{ moduleToImport, alias, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias = alias, exposedValues = exposedValues }) imports
         , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
         }
 
 
+{-| The functions config and module\_ returns values of this type; The functions
+withAlias and withExposedValues transform values of this type.
+-}
 type alias ImportData =
     { moduleToImport : String
-    , alias_ : Maybe String
+    , alias : Maybe String
     , exposedValues : Maybe (List String)
     }
+
+
+
+--{ moduleToImport : String, alias : Maybe String, exposedValues : Maybe (List String) }
 
 
 {-| Create a module to import with no alias or exposed values
 -}
 module_ : String -> ImportData
 module_ name =
-    { moduleToImport = name, alias_ = Nothing, exposedValues = Nothing }
+    { moduleToImport = name, alias = Nothing, exposedValues = Nothing }
 
 
 {-| Add an alias to a module to import
 -}
 withAlias : String -> ImportData -> ImportData
-withAlias alias_ importData =
-    { importData | alias_ = Just alias_ }
+withAlias alias importData =
+    { importData | alias = Just alias }
 
 
 {-| Add exposed values to a module to import
@@ -101,7 +108,7 @@ qualified : String -> List String -> Config
 qualified hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
-        , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias_ = Nothing, exposedValues = Nothing }) imports
+        , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias = Nothing, exposedValues = Nothing }) imports
         , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
         }
 
@@ -183,7 +190,7 @@ fixError imports context =
             List.filter (\importedModule -> not (List.member importedModule.moduleToImport context.foundImports)) imports
 
         allImports =
-            List.map (\{ moduleToImport, alias_, exposedValues } -> importText moduleToImport alias_ exposedValues) uniqueImports
+            List.map (\{ moduleToImport, alias, exposedValues } -> importText moduleToImport alias exposedValues) uniqueImports
                 |> String.join "\n"
 
         addAlias : Maybe String -> String -> String
@@ -192,8 +199,8 @@ fixError imports context =
                 Nothing ->
                     str
 
-                Just alias_ ->
-                    str ++ " as " ++ alias_
+                Just alias ->
+                    str ++ " as " ++ alias
 
         addExposing : Maybe (List String) -> String -> String
         addExposing mExposedValues str =
