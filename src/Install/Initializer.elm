@@ -41,16 +41,18 @@ type alias Ignored =
     Set String
 
 
-{-| Create a rule that adds a field to the body of a function like
+{-| Create a rule that adds fields to the body of a function like
 `init` in which the return value is of the form `( Model, Cmd msg )`.
 As in the `ReviewConfig` item below, you specify
 the module name, the function name, as well as the
 field name and value to be added to the function:
 
-    Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
+    Install.Initializer.makeRule "Main"
+        "init"
+        [ { field = "message", value = "\"hohoho!\"" }, { field = "counter", value = "0" } ]
 
 -}
-makeRule : String -> String -> List Data -> Rule
+makeRule : String -> String -> List { field : String, value : String } -> Rule
 makeRule moduleName functionName data =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
@@ -61,10 +63,6 @@ makeRule moduleName functionName data =
         |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
-
-
-type alias Data =
-    { field : String, value : String }
 
 
 type alias Context =
@@ -84,7 +82,7 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> String -> List Data -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
+declarationVisitor : String -> String -> List { field : String, value : String } -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
 declarationVisitor moduleName functionName data (Node _ declaration) context =
     case declaration of
         FunctionDeclaration function ->
@@ -110,7 +108,7 @@ declarationVisitor moduleName functionName data (Node _ declaration) context =
             ( [], context )
 
 
-visitFunction : List Data -> Ignored -> Function -> Context -> ( List (Rule.Error {}), Context )
+visitFunction : List { field : String, value : String } -> Ignored -> Function -> Context -> ( List (Rule.Error {}), Context )
 visitFunction data ignored function context =
     let
         declaration : FunctionImplementation
@@ -156,7 +154,7 @@ visitFunction data ignored function context =
         ( [], context )
 
 
-errorWithFix : List Data -> Node a -> Maybe Range -> Error {}
+errorWithFix : List { field : String, value : String } -> Node a -> Maybe Range -> Error {}
 errorWithFix data node errorRange =
     Rule.errorWithFix
         { message = "Add fields to the model"
@@ -178,7 +176,7 @@ errorWithFix data node errorRange =
         )
 
 
-addMissingCases : { row : Int, column : Int } -> List Data -> Fix
+addMissingCases : { row : Int, column : Int } -> List { field : String, value : String } -> Fix
 addMissingCases insertionPoint data =
     let
         insertion =
