@@ -19,7 +19,7 @@ test1 =
     , rule = rule1
     , under = under1
     , fixed = fixed1
-    , message = "Add Admin to Role"
+    , message = "Add variants [Admin, Assistant] to Role"
     }
 
 
@@ -29,12 +29,12 @@ test2 =
     , rule = rule2
     , under = under2
     , fixed = fixed2
-    , message = "Add TO to BrazilianStates"
+    , message = "Add variants [TO] to BrazilianStates"
     }
 
 
 rule1 =
-    Install.TypeVariant.makeRule "User" "Role" "Admin"
+    Install.TypeVariant.makeRule "User" "Role" [ "Admin", "Assistant Int" ]
 
 
 src1 =
@@ -54,11 +54,12 @@ fixed1 =
 type Role
    = Standard
     | Admin
+    | Assistant Int
 """
 
 
 rule2 =
-    Install.TypeVariant.makeRule "Data.States" "BrazilianStates" "TO"
+    Install.TypeVariant.makeRule "Data.States" "BrazilianStates" [ "TO" ]
 
 
 src2 =

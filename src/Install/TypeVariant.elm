@@ -4,7 +4,7 @@ module Install.TypeVariant exposing (makeRule)
 the `ReviewConfig` item below, you specify the module name, the type
 name, and the type of the new variant.
 
-    Install.TypeVariant.makeRule "Types" "ToBackend" "ResetCounter"
+    Install.TypeVariant.makeRule "Types" "ToBackend" [ "ResetCounter" "SetCounter Int" ]
 
 Then you will have
 
@@ -12,8 +12,9 @@ Then you will have
          = CounterIncremented
          | CounterDecremented
          | ResetCounter
+         | SetCounter Int
 
-where the last variant is the one added.
+where the last two variants are the ones added.
 
 @docs makeRule
 
@@ -26,29 +27,21 @@ import Elm.Syntax.Range exposing (Range)
 import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
+import Set exposing (Set)
+import Set.Extra
 
 
-{-| Create a rule that adds a variant to a type in a specified module:
+{-| Create a rule that adds variants to a type in a specified module:
 
-    Install.TypeVariant.makeRule "Types" "ToBackend" "ResetCounter"
+    Install.TypeVariant.makeRule "Types" "ToBackend" [ "ResetCounter", "SetCounter: Int" ]
 
 -}
-makeRule : String -> String -> String -> Rule
-makeRule moduleName typeName_ variant_ =
+makeRule : String -> String -> List String -> Rule
+makeRule moduleName typeName_ variantList =
     let
-        variantName_ =
-            variant_
-                |> String.split " "
-                |> List.head
-                |> Maybe.withDefault ""
-                |> String.trim
-
-        variantCode_ =
-            "\n    | " ++ variant_
-
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
-            declarationVisitor moduleName typeName_ variantName_ variantCode_
+            declarationVisitor moduleName typeName_ variantList
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.TypeVariant" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -73,10 +66,10 @@ contextCreator =
         |> Rule.withModuleName
 
 
-errorWithFix : String -> String -> String -> Node a -> Maybe Range -> Error {}
-errorWithFix typeName_ variantName_ variantCode_ node errorRange =
+errorWithFix : String -> List String -> String -> Node a -> Maybe Range -> Error {}
+errorWithFix typeName_ variantNames variantCode node errorRange =
     Rule.errorWithFix
-        { message = "Add " ++ variantName_ ++ " to " ++ typeName_
+        { message = "Add variants [" ++ String.join ", " variantNames ++ "] to " ++ typeName_
         , details =
             [ ""
             ]
@@ -84,7 +77,7 @@ errorWithFix typeName_ variantName_ variantCode_ node errorRange =
         (Node.range node)
         (case errorRange of
             Just range ->
-                [ fixMissingVariant range.end variantCode_ ]
+                [ fixMissingVariant range.end variantCode ]
 
             Nothing ->
                 []
@@ -96,30 +89,45 @@ fixMissingVariant { row, column } variantCode =
     Fix.insertAt { row = row, column = column } variantCode
 
 
-declarationVisitor : String -> String -> String -> String -> Node Declaration -> Context -> ( List (Error {}), Context )
-declarationVisitor moduleName_ typeName_ variantName_ variantCode_ node context =
+declarationVisitor : String -> String -> List String -> Node Declaration -> Context -> ( List (Error {}), Context )
+declarationVisitor moduleName typeName variantList node context =
     case Node.value node of
         Declaration.CustomTypeDeclaration type_ ->
             let
                 isInCorrectModule =
-                    Install.Library.isInCorrectModule moduleName_ context
+                    Install.Library.isInCorrectModule moduleName context
+
+                variantName : String -> Maybe String
+                variantName variantString =
+                    variantString |> String.split " " |> List.head |> Maybe.map String.trim
+
+                variantCodeItem variantString =
+                    "\n    | " ++ variantString
+
+                variantNames =
+                    List.map variantName variantList |> List.filterMap identity
+
+                variantCode =
+                    List.map variantCodeItem variantList |> String.join ""
 
                 shouldFix : Node Declaration -> Context -> Bool
                 shouldFix node_ context_ =
                     let
-                        variantsOfNode : List String
+                        variantsOfNode : Set String
                         variantsOfNode =
                             case Node.value node_ of
                                 Declaration.CustomTypeDeclaration type__ ->
-                                    type__.constructors |> List.map (Node.value >> .name >> Node.value)
+                                    type__.constructors
+                                        |> List.map (Node.value >> .name >> Node.value)
+                                        |> Set.fromList
 
                                 _ ->
-                                    []
+                                    Set.empty
                     in
-                    not <| List.member variantName_ variantsOfNode
+                    not <| Set.Extra.isSubsetOf variantsOfNode (Set.fromList variantNames)
             in
-            if isInCorrectModule && Node.value type_.name == typeName_ && shouldFix node context then
-                ( [ errorWithFix typeName_ variantName_ variantCode_ node (Just <| Node.range node) ]
+            if isInCorrectModule && Node.value type_.name == typeName && shouldFix node context then
+                ( [ errorWithFix typeName variantNames variantCode node (Just <| Node.range node) ]
                 , context
                 )
 
