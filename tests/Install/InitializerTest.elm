@@ -8,7 +8,7 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.Initializer"
-        [ Run.testFix test1 ]
+        [ Run.testFix test1, Run.testFix test2 ]
 
 
 test1 =
@@ -21,7 +21,7 @@ init =
     , Cmd.none
     )
 """
-    , rule = Install.Initializer.makeRule "Client" "init" "name" "\"Nancy\""
+    , rule = Install.Initializer.makeRule "Client" "init" [ { field = "name", value = "\"Nancy\"" } ]
     , under = """init =
     ( { age = 30
       }
@@ -30,11 +30,41 @@ init =
     , fixed = """module Client exposing (..)
 init : (Model, Cmd Msg)
 init =
-    ( { age = 30, name = "Nancy"
-
+    ( { age = 30
+      , name = "Nancy"
       }
     , Cmd.none
     )
 """
-    , message = "Add field name with value \"Nancy\" to the model"
+    , message = "Add fields to the model"
+    }
+
+
+test2 =
+    { description = "should insert multiple fields"
+    , src = """module Client exposing (..)
+init : (Model, Cmd Msg)
+init =
+    ( { age = 30
+      }
+    , Cmd.none
+    )
+"""
+    , rule = Install.Initializer.makeRule "Client" "init" [ { field = "name", value = "\"Nancy\"" }, { field = "count", value = "0" } ]
+    , under = """init =
+    ( { age = 30
+      }
+    , Cmd.none
+    )"""
+    , fixed = """module Client exposing (..)
+init : (Model, Cmd Msg)
+init =
+    ( { age = 30
+      , name = "Nancy"
+      , count = 0
+      }
+    , Cmd.none
+    )
+"""
+    , message = "Add fields to the model"
     }

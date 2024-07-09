@@ -1,19 +1,22 @@
 module Install.Initializer exposing (makeRule)
 
-{-| Add a field to the body of a function like `init` in which the
-the return value is of the form `( Model, Cmd msg )`. As in
+{-| Add field = value pairs to the body of a function like `init` in which the
+the return value is of the form `( SomeTypeAlias, Cmd msg )`. As in
 the `ReviewConfig` item below, you specify the module name, the function
-name, as well as the field name and value to be added to the function:
+name, as well as a list of item `{field = <fieldName>, value = <value>}`
+to be added to the function.
 
-    -- code for ReviewConfig.elm:
-    gcd
+    Install.Initializer.makeRule "Main"
+        "init"
+        [ { field = "message", value = "\"hohoho!\"" }, { field = "counter", value = "0" } ]
 
-Thus we will have/.l
+Thus we will have
 
      init : ( Model, Cmd BackendMsg )
      init =
          ( { counter = 0
            , message = "hohoho!"
+           , counter = 0
            }
          , Cmd.none
          )
@@ -31,6 +34,7 @@ import Install.Library
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
+import Set.Extra
 
 
 type alias Ignored =
@@ -46,17 +50,21 @@ field name and value to be added to the function:
     Install.Initializer.makeRule "Backend" "init" "message" "\"hohoho!\""
 
 -}
-makeRule : String -> String -> String -> String -> Rule
-makeRule moduleName functionName fieldName fieldValue =
+makeRule : String -> String -> List Data -> Rule
+makeRule moduleName functionName data =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
-            declarationVisitor moduleName functionName fieldName fieldValue
+            declarationVisitor moduleName functionName data
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Initializer" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
+
+
+type alias Data =
+    { field : String, value : String }
 
 
 type alias Context =
@@ -76,8 +84,8 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> String -> String -> String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
-declarationVisitor moduleName functionName fieldName fieldValue (Node _ declaration) context =
+declarationVisitor : String -> String -> List Data -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
+declarationVisitor moduleName functionName data (Node _ declaration) context =
     case declaration of
         FunctionDeclaration function ->
             let
@@ -85,12 +93,15 @@ declarationVisitor moduleName functionName fieldName fieldValue (Node _ declarat
                 name =
                     Node.value (Node.value function.declaration).name
 
+                isInCorrectModule =
+                    Install.Library.isInCorrectModule moduleName context
+
                 namespace : String
                 namespace =
                     String.join "." context.moduleName ++ "." ++ name
             in
-            if name == functionName then
-                visitFunction namespace moduleName functionName fieldName fieldValue Set.empty function context
+            if name == functionName && isInCorrectModule then
+                visitFunction data Set.empty function context
 
             else
                 ( [], context )
@@ -99,15 +110,12 @@ declarationVisitor moduleName functionName fieldName fieldValue (Node _ declarat
             ( [], context )
 
 
-visitFunction : String -> String -> String -> String -> String -> Ignored -> Function -> Context -> ( List (Rule.Error {}), Context )
-visitFunction namespace moduleName functionName fieldName fieldValue ignored function context =
+visitFunction : List Data -> Ignored -> Function -> Context -> ( List (Rule.Error {}), Context )
+visitFunction data ignored function context =
     let
         declaration : FunctionImplementation
         declaration =
             Node.value function.declaration
-
-        isInCorrectModule =
-            Install.Library.isInCorrectModule moduleName context
 
         ( fieldNames, lastRange ) =
             case declaration.expression |> Node.value of
@@ -134,21 +142,24 @@ visitFunction namespace moduleName functionName fieldName fieldValue ignored fun
 
                 _ ->
                     ( [], Elm.Syntax.Range.empty )
+
+        existingFields =
+            Set.fromList fieldNames
+
+        newFields =
+            List.map .field data |> Set.fromList
     in
-    if
-        isInCorrectModule
-            && (not <| List.member fieldName fieldNames)
-    then
-        ( [ errorWithFix fieldName fieldValue function.declaration (Just lastRange) ], context )
+    if not <| Set.Extra.isSubsetOf existingFields newFields then
+        ( [ errorWithFix data function.declaration (Just lastRange) ], context )
 
     else
         ( [], context )
 
 
-errorWithFix : String -> String -> Node a -> Maybe Range -> Error {}
-errorWithFix fieldName fieldValue node errorRange =
+errorWithFix : List Data -> Node a -> Maybe Range -> Error {}
+errorWithFix data node errorRange =
     Rule.errorWithFix
-        { message = "Add field " ++ fieldName ++ " with value " ++ fieldValue ++ " to the model"
+        { message = "Add fields to the model"
         , details =
             [ ""
             ]
@@ -160,17 +171,21 @@ errorWithFix fieldName fieldValue node errorRange =
                     insertionPoint =
                         { row = range.end.row, column = range.end.column }
                 in
-                [ addMissingCase insertionPoint fieldName fieldValue ]
+                [ addMissingCases insertionPoint data ]
 
             Nothing ->
                 []
         )
 
 
-addMissingCase : { row : Int, column : Int } -> String -> String -> Fix
-addMissingCase insertionPoint fieldName fieldValue =
+addMissingCases : { row : Int, column : Int } -> List Data -> Fix
+addMissingCases insertionPoint data =
     let
         insertion =
-            ", " ++ fieldName ++ " = " ++ fieldValue ++ "\n"
+            "\n      , " ++ (List.map (\{ field, value } -> field ++ " = " ++ value) data |> String.join "\n      , ")
     in
-    Fix.insertAt { row = insertionPoint.row, column = insertionPoint.column } insertion
+    Fix.insertAt
+        { row = insertionPoint.row
+        , column = insertionPoint.column + 4
+        }
+        insertion
