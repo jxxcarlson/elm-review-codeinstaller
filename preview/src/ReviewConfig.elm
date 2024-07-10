@@ -35,20 +35,16 @@ NOTES.
    See InitializerCmd.makeRule "Backend" "init" below
    The error is a false positive, but it needs to be fixed.
 
+2.  Infinite loop: see comments labeled XX.
+
 
 -}
 
 config =
-    configAtmospheric ++ configUsers ++ configAuthTypes ++ configAuthFrontend ++ configAuthBackend
+    configAtmospheric ++ configUsers ++ configAuthTypes
+      ++ configAuthFrontend ++ configAuthBackend ++ configRoute ++ configView
 
 
-
--- ++ configRoute -- ++ configView
-
-
---configAuth =
---    configAuthTypes ++ configAuthBackend ++ configAuthFrontend ++ configRoute
---
 
 configAtmospheric : List Rule
 configAtmospheric =
@@ -66,7 +62,7 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix" ]
 
---
+     --
     , Initializer.makeRule "Backend" "init" [
         { field = "randomAtmosphericNumbers", value =  "Just [ 235880, 700828, 253400, 602641 ]" }
       , { field = "time", value = "Time.millisToPosix 0" } ]
@@ -82,7 +78,7 @@ configAtmospheric =
 
 configUsers : List Rule
 configUsers =
-    -- 13 rules, follows configA
+
     [ Import.qualified "Types" [ "User" ] |> Import.makeRule
     , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ]  ] |> Import.makeRule
     , FieldInTypeAlias.makeRule "Types" "BackendModel"
@@ -100,7 +96,7 @@ configUsers =
 
     --
 
-    --
+
     , Initializer.makeRule "Frontend" "initLoaded" [{field = "users", value = "Dict.empty"}]
     , Initializer.makeRule "Backend" "init"
        [ {field = "userNameToEmailString", value = "Dict.empty"}, {field = "users", value =  "Dict.empty"}]
@@ -113,7 +109,7 @@ configUsers =
 --
 configAuthTypes : List Rule
 configAuthTypes =
-    -- 22 rules
+
     [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ] |> Import.makeRule
 
     -- FRONTEND MSG
@@ -138,8 +134,9 @@ configAuthTypes =
     --
     , FieldInTypeAlias.makeRule "Types" "LoadedModel" ["magicLinkModel : MagicLink.Types.Model"]
     ]
---
---
+
+
+
 configAuthFrontend : List Rule
 configAuthFrontend =
     -- 22 rules
@@ -185,7 +182,7 @@ configAuthFrontend =
     --    |> ReplaceFunction.makeRule
     ]
 --
---
+
 configAuthBackend : List Rule
 configAuthBackend =
     -- 19 rules
@@ -206,10 +203,10 @@ configAuthBackend =
 
     -- Init
     , Initializer.makeRule "Backend" "init"
-        [ {field  = "sessions", value = "Dict.empty"} , {field = "sessionInfo", value = "Dict.empty"},
+        [ {field  = "sessions", value = "Dict.empty"} , {field = "sessionInfo", value = "Dict.empty"}
          , {field = "pendingAuths", value = "Dict.empty"}
          , {field = "??", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]"}
-         , {field = "pendingEmailAuths", value = "Dict.empty"}, {field = "secretCounter", value = "0"} ,
+         , {field = "pendingEmailAuths", value = "Dict.empty"}, {field = "secretCounter", value = "0"}
          , {field = "sessionDict", value = "AssocList.empty"}, {field =  "pendingLogins", value = "AssocList.empty"}
          , {field = "log", value = "[]"}]
 
@@ -220,37 +217,33 @@ configAuthBackend =
     , ClauseInCase.init "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )" |> ClauseInCase.makeRule
 
     -- SUBSCRIPTION
-    ,                                                                                                                                   Subscription.makeRule "Backend" "Lamdera.onConnect OnConnected"
+    , Subscription.makeRule "Backend" ["Lamdera.onConnect OnConnected"]
     ]
+
+
 --
+configRoute : List Rule
+configRoute =
+    [ -- ROUTE
+      TypeVariant.makeRule "Route" "Route" ["TermsOfServiceRoute", "Notes", "SignInRoute", "AdminRoute"]
+    , ReplaceFunction.init "Route" "decode" decode |> ReplaceFunction.makeRule
+    , ReplaceFunction.init "Route" "encode" encode |> ReplaceFunction.makeRule
+    ]
+
 --
---configRoute : List Rule
---configRoute =
---    -- 6 rules
---    [ -- ROUTE
---      TypeVariant.makeRule "Route" "Route" "TermsOfServiceRoute"
---    , TypeVariant.makeRule "Route" "Route" "Notes"
---    , TypeVariant.makeRule "Route" "Route" "SignInRoute"
---    , TypeVariant.makeRule "Route" "Route" "AdminRoute"
---    , Function.ReplaceFunction.init "Route" "decode" decode |> Function.ReplaceFunction.makeRule
---    , Function.ReplaceFunction.init "Route" "encode" encode |> Function.ReplaceFunction.makeRule
---    ]
---
---
---configView =
---    -- 8 rules
---    [ -- VIEW.MAIN
---      ClauseInCase.init "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
---    , ClauseInCase.init "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
---    , ClauseInCase.init "View.Main" "loadedView" "Notes" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
---    , ClauseInCase.init "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
---    , ClauseInCase.init "View.Main" "loadedView" "CounterPageRoute" "generic model (generic model Pages.Counter.view)" |> ClauseInCase.makeRule
---    , Function.InsertFunction.init "View.Main" "generic" generic |> Function.InsertFunction.makeRule
---
---    --
---    , Import.initSimple "View.Main" [ "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
---    , Function.ReplaceFunction.init "View.Main" "headerRow" (asOneLine headerRow) |> Function.ReplaceFunction.makeRule
---    ]
+configView =
+    [ -- VIEW.MAIN
+      ClauseInCase.init "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
+    , ClauseInCase.init "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
+    , ClauseInCase.init "View.Main" "loadedView" "Notes" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
+    , ClauseInCase.init "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
+    , ClauseInCase.init "View.Main" "loadedView" "CounterPageRoute" "generic model (generic model Pages.Counter.view)" |> ClauseInCase.makeRule
+    , InsertFunction.init "View.Main" "generic" generic |> InsertFunction.makeRule
+
+    --
+    , Import.qualified "View.Main" [ "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
+    , ReplaceFunction.init "View.Main" "headerRow" (asOneLine headerRow) |> ReplaceFunction.makeRule
+    ]
 --
 
 headerRow =
@@ -355,7 +348,7 @@ decode url =
 --        |> ClauseInCase.withInsertAfter "Increment"
 --        |> ClauseInCase.makeRule
 --    , ClauseInCase.init "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )" |> ClauseInCase.makeRule
---    , Function.ReplaceFunction.init "Pages.Counter" "view" viewFunction |> Function.ReplaceFunction.makeRule
+--    , ReplaceFunction.init "Pages.Counter" "view" viewFunction |> ReplaceFunction.makeRule
 --    ]
 
 
