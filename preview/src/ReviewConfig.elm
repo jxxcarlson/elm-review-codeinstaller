@@ -25,8 +25,21 @@ import Regex
 import Review.Rule exposing (Rule)
 
 
+{-
+
+NOTES.
+
+1. (FIX FAILED) Install.Initializer: Add cmds Time.now |> Task.perform GotFastTick,
+   MagicLink.Helper.getAtmosphericRandomNumbers to the model
+   (( I failed to apply the automatic fix because it resulted in the same source code. ))
+   See InitializerCmd.makeRule "Backend" "init" below
+   The error is a false positive, but it needs to be fixed.
+
+
+-}
+
 config =
-    configAtmospheric
+    configAtmospheric ++ configUsers
 
 
 
@@ -54,10 +67,10 @@ configAtmospheric =
         , "GotFastTick Time.Posix" ]
 
 --
---    , Initializer.makeRule "Backend" "init" [
---        { field = "randomAtmosphericNumbers", value =  "Just [ 235880, 700828, 253400, 602641 ]" }
---      , { field = "time", value = "Time.millisToPosix 0" } ]
---    , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
+    , Initializer.makeRule "Backend" "init" [
+        { field = "randomAtmosphericNumbers", value =  "Just [ 235880, 700828, 253400, 602641 ]" }
+      , { field = "time", value = "Time.millisToPosix 0" } ]
+    , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
 
 
     --
