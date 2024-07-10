@@ -39,7 +39,7 @@ NOTES.
 -}
 
 config =
-    configAtmospheric ++ configUsers ++ configAuthTypes
+    configAtmospheric ++ configUsers ++ configAuthTypes ++ configAuthFrontend ++ configAuthBackend
 
 
 
@@ -159,10 +159,8 @@ configAuthFrontend =
     , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "GotMessage message" "({model | message = message}, Cmd.none)"
         |> ClauseInCase.withInsertAtBeginning
         |> ClauseInCase.makeRule
+    --
 
-    -- PROBLEM IF THE CODE AT (XX) IS MOVED HERE:
-    -- If both of the two rules are active, we get an infinite loop.
-    -- If just one is, all is fine.
     , ClauseInCase.init "Frontend" "updateLoaded" "SetRoute_ route" "( { model | route = route }, Cmd.none )" |> ClauseInCase.makeRule
     , ClauseInCase.init "Frontend" "updateLoaded" "AuthFrontendMsg authToFrontendMsg" "MagicLink.Auth.update authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })" |> ClauseInCase.makeRule
     , ClauseInCase.init "Frontend" "updateLoaded" "SignInUser userData" "MagicLink.Frontend.signIn model userData" |> ClauseInCase.makeRule
@@ -175,53 +173,55 @@ configAuthFrontend =
 
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
 
-    -- (XX):
-    , Import.qualified "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
+    -- XX, WARNING!
+    -- If both of the two rules are active, we get an infinite loop.
+    -- If just one is, all is fine.
+    --, Import.qualified "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
     , ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
 
     --
-    -- Causes infinite loop
-    , ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
-        |> ReplaceFunction.makeRule
+    -- XX, WARNING! Causes infinite loop:
+    --, ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
+    --    |> ReplaceFunction.makeRule
     ]
 --
 --
---configAuthBackend : List Rule
---configAuthBackend =
---    -- 19 rules
---    [ ClauseInCase.init "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "update" "ClientConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
---    , Import.initSimple "Backend"
---        [ "AssocList"
---        , "Auth.Common"
---        , "Auth.Flow"
---        , "MagicLink.Auth"
---        , "MagicLink.Backend"
---        , "Reconnect"
---        , "User"
---        ]
---        |> Import.makeRule
---
---    -- Init
---    , Initializer.makeRule "Backend" "init"
---        [ {field  = "sessions", value = "Dict.empty"} , {field = "sessionInfo", value = "Dict.empty"},
---         , {field = "pendingAuths", value = "Dict.empty"}
---         , {field = "??", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]"}
---         , {field = "pendingEmailAuths", value = "Dict.empty"}, {field = "secretCounter", value = "0"} ,
---         , {field = "sessionDict", value = "AssocList.empty"}, {field =  "pendingLogins", value = "AssocList.empty"}
---         , {field = "log", value = "[]"}]
---
---    -- updateFromFrontend
---    , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "updateFromFrontend" "AddUser realname username email" "MagicLink.Backend.addUser model clientId email realname username" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "updateFromFrontend" "RequestSignUp realname username email" "MagicLink.Backend.requestSignUp model clientId realname username email" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )" |> ClauseInCase.makeRule
---
---    -- SUBSCRIPTION
---    ,                                                                                                                                   Subscription.makeRule "Backend" "Lamdera.onConnect OnConnected"
---    ]
+configAuthBackend : List Rule
+configAuthBackend =
+    -- 19 rules
+    [ ClauseInCase.init "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "update" "ClientConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
+    , Import.qualified "Backend"
+        [ "AssocList"
+        , "Auth.Common"
+        , "Auth.Flow"
+        , "MagicLink.Auth"
+        , "MagicLink.Backend"
+        , "Reconnect"
+        , "User"
+        ]
+        |> Import.makeRule
+
+    -- Init
+    , Initializer.makeRule "Backend" "init"
+        [ {field  = "sessions", value = "Dict.empty"} , {field = "sessionInfo", value = "Dict.empty"},
+         , {field = "pendingAuths", value = "Dict.empty"}
+         , {field = "??", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]"}
+         , {field = "pendingEmailAuths", value = "Dict.empty"}, {field = "secretCounter", value = "0"} ,
+         , {field = "sessionDict", value = "AssocList.empty"}, {field =  "pendingLogins", value = "AssocList.empty"}
+         , {field = "log", value = "[]"}]
+
+    -- updateFromFrontend
+    , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "updateFromFrontend" "AddUser realname username email" "MagicLink.Backend.addUser model clientId email realname username" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "updateFromFrontend" "RequestSignUp realname username email" "MagicLink.Backend.requestSignUp model clientId realname username email" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )" |> ClauseInCase.makeRule
+
+    -- SUBSCRIPTION
+    ,                                                                                                                                   Subscription.makeRule "Backend" "Lamdera.onConnect OnConnected"
+    ]
 --
 --
 --configRoute : List Rule
