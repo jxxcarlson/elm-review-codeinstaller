@@ -18,13 +18,15 @@ scripts:
 
   install:
     - git co counter/
-    - cp -r counter-original/src/. counter /
-    - cp vendor-secret/Env.elm src/
-    - npx elm-review --fix-all
+    - cp -r counter-original/src/. counter/
+    - cp vendor-secret/Env.elm counter/
+    - npx elm-review --config preview counter/src --debug --fix
 
-  uninstall: cp -r counter-original/src/. src/
+  uninstall: cp -r counter-original/src/. counter/src/
 
   commit:
-    - cp -r counter-original/src/. src/
+    - cp -r counter-original/src/. counter/src/
     - git co vendor/magic-link/Config.elm
     - git ci -a
+
+  live: lam live --port=8007
