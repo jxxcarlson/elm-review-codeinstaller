@@ -39,7 +39,7 @@ NOTES.
 -}
 
 config =
-    configAtmospheric ++ configUsers
+    configAtmospheric ++ configUsers ++ configAuthTypes
 
 
 
@@ -111,94 +111,79 @@ configUsers =
     ]
 
 --
---configAuthTypes : List Rule
---configAuthTypes =
---    -- 22 rules
---    [ Import.initSimple "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ] |> Import.makeRule
---
---    -- FRONTEND MSG
---    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "SignInUser User.SignInData"
---    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "AuthFrontendMsg MagicLink.Types.Msg"
---    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "SetRoute_ Route"
---    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "LiftMsg MagicLink.Types.Msg"
---
---    -- BACKEND MSG
---    , Install.TypeVariant.makeRule "Types" "BackendMsg" "AuthBackendMsg Auth.Common.BackendMsg"
---    , Install.TypeVariant.makeRule "Types" "BackendMsg" "AutoLogin SessionId User.SignInData"
---    , Install.TypeVariant.makeRule "Types" "BackendMsg" "OnConnected SessionId ClientId"
---
---    -- BackendModel
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "localUuidData : Maybe LocalUUID.Data"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "pendingAuths : Dict Lamdera.SessionId Auth.Common.PendingAuth"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "pendingEmailAuths : Dict Lamdera.SessionId Auth.Common.PendingEmailAuth"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "sessions : Dict SessionId Auth.Common.UserInfo"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "secretCounter : Int"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "sessionDict : AssocList.Dict SessionId String"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "pendingLogins : MagicLink.Types.PendingLogins"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "log : MagicLink.Types.Log"
---    , FieldInTypeAlias.makeRule "Types" "BackendModel" "sessionInfo : Session.SessionInfo"
---
---    --  ToBackend
---    , Install.TypeVariant.makeRule "Types" "ToBackend" "AuthToBackend Auth.Common.ToBackend"
---    , Install.TypeVariant.makeRule "Types" "ToBackend" "AddUser String String String"
---    , Install.TypeVariant.makeRule "Types" "ToBackend" "RequestSignUp String String String"
---    , Install.TypeVariant.makeRule "Types" "ToBackend" "GetUserDictionary"
---
---    --
---    , FieldInTypeAlias.makeRule "Types" "LoadedModel" "magicLinkModel : MagicLink.Types.Model"
---    ]
+configAuthTypes : List Rule
+configAuthTypes =
+    -- 22 rules
+    [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ] |> Import.makeRule
+
+    -- FRONTEND MSG
+    , TypeVariant.makeRule "Types" "FrontendMsg" ["SignInUser User.SignInData"
+     , "AuthFrontendMsg MagicLink.Types.Msg", "SetRoute_ Route",  "LiftMsg MagicLink.Types.Msg"]
+
+    -- BACKEND MSG
+    , TypeVariant.makeRule "Types" "BackendMsg" ["AuthBackendMsg Auth.Common.BackendMsg"
+        , "AutoLogin SessionId User.SignInData", "OnConnected SessionId ClientId"]
+
+    -- BackendModel
+    , FieldInTypeAlias.makeRule "Types" "BackendModel"
+        ["localUuidData : Maybe LocalUUID.Data", "pendingAuths : Dict Lamdera.SessionId Auth.Common.PendingAuth"
+        , "pendingEmailAuths : Dict Lamdera.SessionId Auth.Common.PendingEmailAuth"
+        , "sessions : Dict SessionId Auth.Common.UserInfo",  "secretCounter : Int", "sessionDict : AssocList.Dict SessionId String"
+        , "pendingLogins : MagicLink.Types.PendingLogins", "log : MagicLink.Types.Log",  "sessionInfo : Session.SessionInfo"]
+
+    --  ToBackend
+    , TypeVariant.makeRule "Types" "ToBackend" ["AuthToBackend Auth.Common.ToBackend","AddUser String String String"
+        , "RequestSignUp String String String", "GetUserDictionary"]
+
+    --
+    , FieldInTypeAlias.makeRule "Types" "LoadedModel" ["magicLinkModel : MagicLink.Types.Model"]
+    ]
 --
 --
---configAuthFrontend : List Rule
---configAuthFrontend =
---    -- 22 rules
---    [ Import.initSimple "Frontend" [ "MagicLink.Types", "Auth.Common" ] |> Import.makeRule
---
---    -- Loaded Model
---    , Initializer.makeRule "Frontend" "initLoaded" "magicLinkModel" "Pages.SignIn.init loadingModel.initUrl"
---    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
---        |> ClauseInCase.withInsertAtBeginning
---        |> ClauseInCase.makeRule
---    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "GotUserDictionary users" "( { model | users = users }, Cmd.none )"
---        |> ClauseInCase.withInsertAtBeginning
---        |> ClauseInCase.makeRule
---    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "UserRegistered user" "MagicLink.Frontend.userRegistered model.magicLinkModel user |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
---        |> ClauseInCase.withInsertAtBeginning
---        |> ClauseInCase.makeRule
---    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "GotMessage message" "({model | message = message}, Cmd.none)"
---        |> ClauseInCase.withInsertAtBeginning
---        |> ClauseInCase.makeRule
---
---    -- PROBLEM IF THE CODE AT (XX) IS MOVED HERE:
---    -- If both of the two rules are active, we get an infinite loop.
---    -- If just one is, all is fine.
---    , ClauseInCase.init "Frontend" "updateLoaded" "SetRoute_ route" "( { model | route = route }, Cmd.none )" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Frontend" "updateLoaded" "AuthFrontendMsg authToFrontendMsg" "MagicLink.Auth.update authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })" |> ClauseInCase.makeRule
---    , ClauseInCase.init "Frontend" "updateLoaded" "SignInUser userData" "MagicLink.Frontend.signIn model userData" |> ClauseInCase.makeRule
---
---    -- To Frontend
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "AuthToFrontend Auth.Common.ToFrontend"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "AuthSuccess Auth.Common.UserInfo"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserInfoMsg (Maybe Auth.Common.UserInfo)"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "GetLoginTokenRateLimited"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "RegistrationError String"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "SignInError String"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserSignedIn (Maybe User.User)"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "UserRegistered User.User"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "GotUserDictionary (Dict.Dict User.EmailString User.User)"
---    , Install.TypeVariant.makeRule "Types" "ToFrontend" "GotMessage String"
---    , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
---
---    -- (XX):
---    , Import.initSimple "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
---    , ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
---
---    --
---    -- Causes infinite loop
---    , Function.ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
---        |> Function.ReplaceFunction.makeRule
---    ]
+configAuthFrontend : List Rule
+configAuthFrontend =
+    -- 22 rules
+    [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common" ] |> Import.makeRule
+
+    -- Loaded Model
+    , Initializer.makeRule "Frontend" "initLoaded" [{ field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl"}]
+    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
+        |> ClauseInCase.withInsertAtBeginning
+        |> ClauseInCase.makeRule
+    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "GotUserDictionary users" "( { model | users = users }, Cmd.none )"
+        |> ClauseInCase.withInsertAtBeginning
+        |> ClauseInCase.makeRule
+    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "UserRegistered user" "MagicLink.Frontend.userRegistered model.magicLinkModel user |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
+        |> ClauseInCase.withInsertAtBeginning
+        |> ClauseInCase.makeRule
+    , ClauseInCase.init "Frontend" "updateFromBackendLoaded" "GotMessage message" "({model | message = message}, Cmd.none)"
+        |> ClauseInCase.withInsertAtBeginning
+        |> ClauseInCase.makeRule
+
+    -- PROBLEM IF THE CODE AT (XX) IS MOVED HERE:
+    -- If both of the two rules are active, we get an infinite loop.
+    -- If just one is, all is fine.
+    , ClauseInCase.init "Frontend" "updateLoaded" "SetRoute_ route" "( { model | route = route }, Cmd.none )" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Frontend" "updateLoaded" "AuthFrontendMsg authToFrontendMsg" "MagicLink.Auth.update authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Frontend" "updateLoaded" "SignInUser userData" "MagicLink.Frontend.signIn model userData" |> ClauseInCase.makeRule
+
+    -- To Frontend
+    , TypeVariant.makeRule "Types" "ToFrontend" ["AuthToFrontend Auth.Common.ToFrontend", "AuthSuccess Auth.Common.UserInfo"
+      , "UserInfoMsg (Maybe Auth.Common.UserInfo)", "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
+      , "GetLoginTokenRateLimited", "RegistrationError String", "SignInError String", "UserSignedIn (Maybe User.User)"
+      , "UserRegistered User.User", "GotUserDictionary (Dict.Dict User.EmailString User.User)", "GotMessage String"]
+
+    , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
+
+    -- (XX):
+    , Import.qualified "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
+    , ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
+
+    --
+    -- Causes infinite loop
+    , ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
+        |> ReplaceFunction.makeRule
+    ]
 --
 --
 --configAuthBackend : List Rule
@@ -243,10 +228,10 @@ configUsers =
 --configRoute =
 --    -- 6 rules
 --    [ -- ROUTE
---      Install.TypeVariant.makeRule "Route" "Route" "TermsOfServiceRoute"
---    , Install.TypeVariant.makeRule "Route" "Route" "Notes"
---    , Install.TypeVariant.makeRule "Route" "Route" "SignInRoute"
---    , Install.TypeVariant.makeRule "Route" "Route" "AdminRoute"
+--      TypeVariant.makeRule "Route" "Route" "TermsOfServiceRoute"
+--    , TypeVariant.makeRule "Route" "Route" "Notes"
+--    , TypeVariant.makeRule "Route" "Route" "SignInRoute"
+--    , TypeVariant.makeRule "Route" "Route" "AdminRoute"
 --    , Function.ReplaceFunction.init "Route" "decode" decode |> Function.ReplaceFunction.makeRule
 --    , Function.ReplaceFunction.init "Route" "encode" encode |> Function.ReplaceFunction.makeRule
 --    ]
@@ -364,8 +349,8 @@ decode url =
 
 --configReset : List Rule
 --configReset =
---    [ Install.TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
---    , Install.TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
+--    [ TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
+--    , TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
 --    , ClauseInCase.init "Frontend" "updateLoaded" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
 --        |> ClauseInCase.withInsertAfter "Increment"
 --        |> ClauseInCase.makeRule
