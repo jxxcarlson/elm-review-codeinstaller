@@ -14,3 +14,17 @@ scripts:
   review-debug: npx elm-review --ignore-dirs vendor,src/Evergreen/ --fix-all --rules NoDebug.Log
   cloc: cloc --by-file --exclude-dir=Evergreen,Pages src/
   cgraph: npx elm-review --template miniBill/elm-review-call-graph/example --extract --report=json | jq ".extracts.ExtractCallGraph" > call-graph.json
+
+
+  install:
+    - git co counter/
+    - cp -r counter-original/src/. counter /
+    - cp vendor-secret/Env.elm src/
+    - npx elm-review --fix-all
+
+  uninstall: cp -r counter-original/src/. src/
+
+  commit:
+    - cp -r counter-original/src/. src/
+    - git co vendor/magic-link/Config.elm
+    - git ci -a
