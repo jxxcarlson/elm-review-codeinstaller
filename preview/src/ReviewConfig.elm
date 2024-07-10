@@ -205,7 +205,7 @@ configAuthBackend =
     , Initializer.makeRule "Backend" "init"
         [ {field  = "sessions", value = "Dict.empty"} , {field = "sessionInfo", value = "Dict.empty"}
          , {field = "pendingAuths", value = "Dict.empty"}
-         , {field = "??", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]"}
+         , {field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]"}
          , {field = "pendingEmailAuths", value = "Dict.empty"}, {field = "secretCounter", value = "0"}
          , {field = "sessionDict", value = "AssocList.empty"}, {field =  "pendingLogins", value = "AssocList.empty"}
          , {field = "log", value = "[]"}]
