@@ -6,7 +6,7 @@ in a specified module. For example, if you put the code below in your
 `quot: String` to the type alias `FrontendModel` in the `Types` module.
 
     -- code for ReviewConfig.elm:
-    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" [clientName: String, "quot: String"]
+    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" [ "clientName: String", "quot: String" ]
 
 Thus we will have
 
@@ -44,7 +44,7 @@ import Set.Extra
 
 After running the rule with the following code:
 
-    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" [clientName: String, "quot: String"]
+    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" ["clientName: String", "quot: String"]
 
         type alias FrontendModel =
             { counter : Int
