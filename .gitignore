@@ -8,4 +8,5 @@ ElmjutsuDumMyM0DuL3.elm
 
 ###
 vendor-secret/
-counter/
+counter/src
+counter/elm-stuff
