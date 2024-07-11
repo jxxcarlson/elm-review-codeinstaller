@@ -41,8 +41,9 @@ import Review.Rule exposing (Rule)
 
 -}
 
+config = configMagicLinkMinimal
 
-config =
+configAll =
     configAtmospheric
         ++ configUsers
         ++ configAuthTypes
@@ -108,6 +109,32 @@ configUsers =
     --, ReplaceFunction.init "Frontend" "tryLoading" tryLoading1
     --    |> ReplaceFunction.makeRule
     ]
+
+configMagicLinkMinimal : List Rule
+configMagicLinkMinimal =
+    [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ] |> Import.makeRule
+    , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
+    , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
+    , TypeVariant.makeRule "Types" "ToBackend"  [ "AuthToBackend Auth.Common.ToBackend" ]
+    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
+    , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
+    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
+    , TypeVariant.makeRule "Types"
+            "ToFrontend"
+            [ "AuthToFrontend Auth.Common.ToFrontend"
+            , "AuthSuccess Auth.Common.UserInfo"
+            , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
+            , "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
+            , "GetLoginTokenRateLimited"
+            , "RegistrationError String"
+            , "SignInError String"
+            , "UserSignedIn (Maybe User.User)"
+            , "UserRegistered User.User"
+            , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
+            , "GotMessage String"
+            ]
+    ]
+
 
 
 configAuthTypes : List Rule
