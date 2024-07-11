@@ -68,11 +68,12 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix"
         ]
-    , Initializer.makeRule "Backend"
-        "init"
-        [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
-        , { field = "time", value = "Time.millisToPosix 0" }
-        ]
+
+    --, Initializer.makeRule "Backend"
+    --    "init"
+    --    [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
+    --    , { field = "time", value = "Time.millisToPosix 0" }
+    --    ]
     , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
     , ClauseInCase.init "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString" |> ClauseInCase.makeRule
     , ClauseInCase.init "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)" |> ClauseInCase.makeRule
@@ -98,10 +99,10 @@ configUsers =
         |> Import.makeRule
     , Import.qualified "Frontend" [ "Dict" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
-    , Initializer.makeRule "Backend"
-        "init"
-        [ { field = "userNameToEmailString", value = "Dict.empty" }, { field = "users", value = "Dict.empty" } ]
 
+    --, Initializer.makeRule "Backend"
+    --    "init"
+    --    [ { field = "userNameToEmailString", value = "Dict.empty" }, { field = "users", value = "Dict.empty" } ]
     -- XX: enable the below only if you are not using ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
     -- later on.  If you enable both, you will get an infinite loop.
     --, ReplaceFunction.init "Frontend" "tryLoading" tryLoading1
@@ -210,7 +211,11 @@ configAuthBackend =
         |> Import.makeRule
     , Initializer.makeRule "Backend"
         "init"
-        [ { field = "sessions", value = "Dict.empty" }
+        [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
+        , { field = "time", value = "Time.millisToPosix 0" }
+        , { field = "sessions", value = "Dict.empty" }
+        , { field = "userNameToEmailString", value = "Dict.empty" }
+        , { field = "users", value = "Dict.empty" }
         , { field = "sessionInfo", value = "Dict.empty" }
         , { field = "pendingAuths", value = "Dict.empty" }
         , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }
