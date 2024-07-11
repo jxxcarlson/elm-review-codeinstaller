@@ -173,8 +173,9 @@ configAuthFrontend =
     -- XX, WARNING!
     -- If both of the two rules are active, we get an infinite loop.
     -- If just one is, all is fine.
-    --, Import.qualified "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
-    , ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
+    , Import.qualified "Frontend" [ "MagicLink.Frontend", "MagicLink.Auth", "Dict", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
+    --, Import.qualified "Frontend" [ "MagicLink.Frontend" ] |> Import.makeRule
+    --, ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
 
     --
     -- XX, WARNING! Causes infinite loop:
