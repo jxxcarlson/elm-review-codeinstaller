@@ -41,7 +41,7 @@ import Review.Rule exposing (Rule)
 
 -}
 
-config = configMagicLinkMinimal
+config = configAll
 
 configAll =
     configAtmospheric
