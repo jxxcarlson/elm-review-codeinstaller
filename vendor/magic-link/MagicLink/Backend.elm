@@ -1,8 +1,6 @@
 module MagicLink.Backend exposing
     ( addUser
-    , checkLogin
     , getLoginCode
-    , requestSignUp
     , sendLoginEmail_
     , signInWithMagicToken
     )
@@ -22,7 +20,7 @@ import Lamdera exposing (ClientId, SessionId)
 import List.Extra
 import List.Nonempty
 import LocalUUID
-import MagicLink.LoginForm
+import MagicLink.Config
 import Postmark
 import Quantity
 import Sha256
@@ -40,26 +38,6 @@ addUser model clientId email realname username =
 
         Just validEmail ->
             addUser1 model clientId email validEmail realname username
-
-
-checkLogin : BackendModel -> ClientId -> SessionId -> ( BackendModel, Cmd BackendMsg )
-checkLogin model clientId sessionId =
-    ( model
-    , if Dict.isEmpty model.users then
-        Cmd.batch
-            [ Err Types.Sunny |> CheckSignInResponse |> Lamdera.sendToFrontend clientId
-            ]
-
-      else
-        case getUserFromSessionId sessionId model of
-            Just ( userId, user ) ->
-                getLoginData userId user model
-                    |> CheckSignInResponse
-                    |> Lamdera.sendToFrontend clientId
-
-            Nothing ->
-                CheckSignInResponse (Err Types.LoadedBackendData) |> Lamdera.sendToFrontend clientId
-    )
 
 
 {-|
@@ -81,41 +59,6 @@ signInWithMagicToken time sessionId clientId magicToken model =
 
         Nothing ->
             handleNoSession model time sessionId clientId magicToken
-
-
-requestSignUp : BackendModel -> ClientId -> String -> String -> String -> ( BackendModel, Cmd BackendMsg )
-requestSignUp model clientId fullname username email =
-    case model.localUuidData of
-        Nothing ->
-            ( model, Lamdera.sendToFrontend clientId (UserSignedIn Nothing) )
-
-        -- TODO, need to signal & handle error
-        Just uuidData ->
-            case EmailAddress.fromString email of
-                Nothing ->
-                    ( model, Lamdera.sendToFrontend clientId (UserSignedIn Nothing) )
-
-                Just validEmail ->
-                    let
-                        user =
-                            { fullname = fullname
-                            , username = username
-                            , email = validEmail
-                            , emailString = email
-                            , created_at = model.time
-                            , updated_at = model.time
-                            , id = LocalUUID.extractUUIDAsString uuidData
-                            , roles = [ User.UserRole ]
-                            , recentLoginEmails = []
-                            , verified = Nothing
-                            }
-                    in
-                    ( { model
-                        | localUuidData = model.localUuidData |> Maybe.map LocalUUID.step
-                      }
-                        |> addNewUser email user
-                    , Lamdera.sendToFrontend clientId (UserSignedIn (Just user))
-                    )
 
 
 addNewUser email user model =
@@ -158,7 +101,7 @@ handleNoSession model time sessionId clientId magicToken =
     case AssocList.get sessionId model.pendingLogins of
         Just pendingLogin ->
             if
-                (pendingLogin.loginAttempts < MagicLink.LoginForm.maxLoginAttempts)
+                (pendingLogin.loginAttempts < MagicLink.Config.maxLoginAttempts)
                     && (Duration.from pendingLogin.creationTime time |> Quantity.lessThan Duration.hour)
             then
                 if magicToken == pendingLogin.loginCode then
@@ -235,7 +178,8 @@ addUser1 model clientId emailString emailAddress realname username =
 addUser2 model clientId emailString emailAddress realname username =
     case model.localUuidData of
         Nothing ->
-            ( model, Lamdera.sendToFrontend clientId (GotMessage "Error: no model.localUuidData") )
+            -- TODO: send error message
+            ( model, Cmd.none )
 
         Just uuidData ->
             let
@@ -283,9 +227,9 @@ getLoginCode time model =
 
 loginCodeFromId : Id String -> Result () Int
 loginCodeFromId id =
-    case Id.toString id |> String.left MagicLink.LoginForm.loginCodeLength |> Hex.fromString of
+    case Id.toString id |> String.left MagicLink.Config.loginCodeLength |> Hex.fromString of
         Ok int ->
-            case String.fromInt int |> String.left MagicLink.LoginForm.loginCodeLength |> String.toInt of
+            case String.fromInt int |> String.left MagicLink.Config.loginCodeLength |> String.toInt of
                 Just int2 ->
                     Ok int2
 
@@ -355,7 +299,7 @@ loginEmailContent loginCode =
                             [ Email.Html.text (String.fromChar char) ]
                     )
                 |> (\a ->
-                        List.take (MagicLink.LoginForm.loginCodeLength // 2) a
+                        List.take (MagicLink.Config.loginCodeLength // 2) a
                             ++ [ Email.Html.span
                                     [ Email.Html.Attributes.backgroundColor "black"
                                     , Email.Html.Attributes.padding "0px 4px 0px 5px"
@@ -364,7 +308,7 @@ loginEmailContent loginCode =
                                     ]
                                     []
                                ]
-                            ++ List.drop (MagicLink.LoginForm.loginCodeLength // 2) a
+                            ++ List.drop (MagicLink.Config.loginCodeLength // 2) a
                    )
             )
         , Email.Html.text "Please type it in the login page you were previously on."

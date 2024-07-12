@@ -1,6 +1,5 @@
 module MagicLink.Helper exposing
-    ( getAtmosphericRandomNumbers
-    , testUserDictionary
+    ( testUserDictionary
     , trigger
     )
 
@@ -56,11 +55,3 @@ testUserDictionary =
             }
           )
         ]
-
-
-getAtmosphericRandomNumbers : Cmd Types.BackendMsg
-getAtmosphericRandomNumbers =
-    Http.get
-        { url = LocalUUID.randomNumberUrl 4 9
-        , expect = Http.expectString Types.GotAtmosphericRandomNumbers
-        }
