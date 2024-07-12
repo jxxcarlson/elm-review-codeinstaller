@@ -4,3 +4,6 @@ To Implement:
 
 - MagicLink.Auth, clause Auth.Common.AuthSignInWithTokenResponse result in 
   updateFromBackend
+  
+- MagicLink.Frontend:
+   - submitEmailForSignin

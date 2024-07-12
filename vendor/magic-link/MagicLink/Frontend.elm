@@ -3,6 +3,7 @@ module MagicLink.Frontend exposing
     , handleRegistrationError
     , handleSignInError
     , signIn
+    , signInWithCode
     , submitEmailForSignin
     , updateMagicLinkModelInModel
     )
@@ -33,37 +34,14 @@ updateMagicLinkModelInModel model =
 
 submitEmailForSignin : Model -> ( Model, Cmd FrontendMsg )
 submitEmailForSignin model =
-    case model.signInForm of
-        EnterEmail signInForm_ ->
-            case EmailAddress.fromString signInForm_.email of
-                Just email ->
-                    let
-                        model2 =
-                            { model | signInForm = EnterSigninCode { sentTo = email, loginCode = "", attempts = Dict.empty } }
-                    in
-                    ( model2, Helper.trigger <| AuthFrontendMsg <| MagicLink.Types.AuthSigninRequested { methodId = "EmailMagicLink", email = Just signInForm_.email } )
-
-                Nothing ->
-                    ( { model | signInForm = EnterEmail { signInForm_ | pressedSubmitEmail = True } }, Cmd.none )
-
-        EnterSigninCode _ ->
-            ( model, Cmd.none )
+    -- TODO: implement
+    ( model, Cmd.none )
 
 
 enterEmail : Model -> String -> ( Model, Cmd msg )
 enterEmail model email =
-    case model.signInForm of
-        EnterEmail signinForm_ ->
-            let
-                signinForm =
-                    { signinForm_ | email = email }
-            in
-            ( { model | signInForm = EnterEmail signinForm }, Cmd.none )
-
-        EnterSigninCode loginCode_ ->
-            -- TODO: complete this
-            --  EnterLoginCode{ sentTo : EmailAddress, loginCode : String, attempts : Dict Int LoginCodeStatus }
-            ( model, Cmd.none )
+    -- TODO: implement
+    ( model, Cmd.none )
 
 
 handleRegistrationError : Model -> String -> ( Model, Cmd msg )
@@ -86,6 +64,16 @@ signIn model userData =
       }
     , Cmd.none
     )
+
+
+signInWithCode : Model -> String -> ( Model, Cmd msg )
+signInWithCode model signInCode =
+    -- TODO: Implement
+    -- The signInCode is the string the user received via Postmark via email
+    -- This string must be converted to an integer and then sent to the backend
+    -- as loginCode to complete the sign in process
+    -- Lamdera.sendToBackend ((AuthToBackend << Auth.Common.AuthSigInWithToken) loginCode)
+    ( model, Cmd.none )
 
 
 

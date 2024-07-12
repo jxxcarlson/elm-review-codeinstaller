@@ -28,7 +28,8 @@ type alias Model =
     , signInStatus : SignInStatus
     , currentUser : Maybe User.User
     , currentUserData : Maybe User.SignInData
-    , signInForm : SigninFormState
+
+    --, signInForm : SigninFormState
     , signInState : SignInState
     , loginErrorMessage : Maybe String
     , realname : String
@@ -50,12 +51,9 @@ type Msg
     = SubmitEmailForSignIn
     | AuthSigninRequested { methodId : Auth.Common.MethodId, email : Maybe String }
     | ReceivedSigninCode String
-    | CancelSignIn
     | CancelSignUp
     | OpenSignUp
     | TypedEmailInSignInForm String
-    | SubmitSignUp
-    | SignOut
     | InputRealname String
     | InputUsername String
     | InputEmail String

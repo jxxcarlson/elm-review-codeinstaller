@@ -120,13 +120,14 @@ configUsers =
 
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
-    [ Import.qualified "Types" [ "Dict", "AssocList", "LocalUUID", "Auth.Common", "MagicLink.Types", "Session", "User" ] |> Import.makeRule
-    , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth" ] |> Import.makeRule
-    , Import.qualified "Backend" [ "Auth.Flow", "MagicLink.Auth", "User" ] |> Import.makeRule
+    [ Import.qualified "Types" [ "Dict", "AssocList", "EmailAddress", "LocalUUID", "Auth.Common", "MagicLink.Types", "Session", "User" ] |> Import.makeRule
+    , Import.qualified "Frontend" [ "Dict", "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth" , "Pages.SignIn"] |> Import.makeRule
+    , Import.qualified "Backend" [ "Dict", "AssocList", "Time", "Auth.Flow", "MagicLink.Auth", "User", "LocalUUID" ] |> Import.makeRule
+
     , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
     , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
     , TypeVariant.makeRule "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
-    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
+    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model", "users: Dict.Dict User.EmailString User.User" ]
     , TypeVariant.makeRule "Types"
         "ToFrontend"
         [ "AuthToFrontend Auth.Common.ToFrontend"
@@ -138,6 +139,7 @@ configMagicLinkMinimal =
         , "SignInError String"
         --, "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
         ]
+
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"
         [ "localUuidData : Maybe LocalUUID.Data"
@@ -146,17 +148,38 @@ configMagicLinkMinimal =
         , "sessions : Dict.Dict SessionId Auth.Common.UserInfo"
         , "secretCounter : Int"
         , "sessionDict : AssocList.Dict SessionId String"
-        , "pendingLogins : MagicLink.Types.PendingLogins"
-        , "log : MagicLink.Types.Log"
-        , "sessionInfo : Session.SessionInfo"
+        , "pendingLogins : AssocList.Dict Lamdera.SessionId  {loginAttempts : Int , emailAddress : EmailAddress.EmailAddress , creationTime : Time.Posix , loginCode : Int  }"
+        , "log : List ( Time.Posix, MagicLink.Types.LogItem )"
+        , "sessionInfo : Dict.Dict SessionId Session.Interaction"
         , "users: Dict.Dict User.EmailString User.User"
         , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
         , "time: Time.Posix"
+        , "randomAtmosphericNumbers: Maybe (List Int)"
 
 
         ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
+    , Initializer.makeRule "Backend"
+            "init"
+            [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
+            , { field = "time", value = "Time.millisToPosix 0" }
+            , { field = "sessions", value = "Dict.empty" }
+            , { field = "userNameToEmailString", value = "Dict.empty" }
+            , { field = "users", value = "Dict.empty" }
+            , { field = "sessionInfo", value = "Dict.empty" }
+            , { field = "pendingAuths", value = "Dict.empty" }
+            , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }
+            , { field = "pendingEmailAuths", value = "Dict.empty" }
+            , { field = "secretCounter", value = "0" }
+            , { field = "sessionDict", value = "AssocList.empty" }
+            , { field = "pendingLogins", value = "AssocList.empty" }
+            , { field = "log", value = "[]" }
+            ]
+    , ClauseInCase.init "Frontend" "updateLoaded" "AuthFrontendMsg authToFrontendMsg" "MagicLink.Auth.update authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })" |> ClauseInCase.makeRule
     , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
+    , ClauseInCase.init "Backend" "update" "AuthBackendMsg _" "(model, Cmd.none)" |> ClauseInCase.makeRule
+    , ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
+              |> ReplaceFunction.makeRule
     ]
 
 
