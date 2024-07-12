@@ -1,5 +1,6 @@
 module MagicLink.Backend exposing
     ( addUser
+    , checkLogin
     , getLoginCode
     , sendLoginEmail_
     , signInWithMagicToken
@@ -72,6 +73,26 @@ getUserWithUsername : BackendModel -> User.Username -> Maybe User.User
 getUserWithUsername model username =
     Dict.get username model.userNameToEmailString
         |> Maybe.andThen (\email -> Dict.get email model.users)
+
+
+checkLogin : BackendModel -> ClientId -> SessionId -> ( BackendModel, Cmd BackendMsg )
+checkLogin model clientId sessionId =
+    ( model
+    , if Dict.isEmpty model.users then
+        Cmd.batch
+            [ Err Types.Sunny |> CheckSignInResponse |> Lamdera.sendToFrontend clientId
+            ]
+
+      else
+        case getUserFromSessionId sessionId model of
+            Just ( userId, user ) ->
+                getLoginData userId user model
+                    |> CheckSignInResponse
+                    |> Lamdera.sendToFrontend clientId
+
+            Nothing ->
+                CheckSignInResponse (Err Types.LoadedBackendData) |> Lamdera.sendToFrontend clientId
+    )
 
 
 
