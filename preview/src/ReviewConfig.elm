@@ -136,6 +136,7 @@ configMagicLinkMinimal =
         , "RegistrationError String"
         , "UserRegistered User.User"
         , "SignInError String"
+        --, "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
         ]
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"

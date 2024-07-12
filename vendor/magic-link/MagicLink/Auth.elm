@@ -36,9 +36,8 @@ update msg model =
         MagicLink.Types.ReceivedSigninCode loginCode ->
             MagicLink.Frontend.signInWithCode model loginCode
 
-        MagicLink.Types.CancelSignIn ->
-            ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Helper.trigger (Types.SetRoute_ Route.HomepageRoute) )
-
+        --MagicLink.Types.CancelSignIn ->
+        --    ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Helper.trigger (Types.SetRoute_ Route.HomepageRoute) )
         MagicLink.Types.CancelSignUp ->
             ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
 
@@ -48,12 +47,11 @@ update msg model =
         MagicLink.Types.TypedEmailInSignInForm email ->
             MagicLink.Frontend.enterEmail model email
 
-        MagicLink.Types.SubmitSignUp ->
-            MagicLink.Frontend.submitSignUp model
-
-        MagicLink.Types.SignOut ->
-            MagicLink.Frontend.signOut model
-
+        --MagicLink.Types.SubmitSignUp ->
+        --    MagicLink.Frontend.submitSignUp model
+        --
+        --MagicLink.Types.SignOut ->
+        --    MagicLink.Frontend.signOut model
         MagicLink.Types.InputRealname str ->
             ( { model | realname = str }, Cmd.none )
 
@@ -93,7 +91,7 @@ updateFromBackend authToFrontendMsg model =
         Auth.Common.AuthSignInWithTokenResponse result ->
             case result of
                 Ok userData ->
-                    { model
+                    ( { model
                         | currentUserData = Just userData
                         , authFlow =
                             Auth.Common.Done
@@ -103,10 +101,12 @@ updateFromBackend authToFrontendMsg model =
                                 }
 
                         -- TODO, disable as test:, signInStatus = MagicLink.Types.SignedIn
-                    }
-                        |> MagicLink.Frontend.signInWithTokenResponseM userData
-                        |> (\( m, c ) -> ( m, Cmd.batch [ c, MagicLink.Frontend.signInWithTokenResponseC userData, Helper.trigger <| SetRoute_ Route.HomepageRoute ] ))
+                      }
+                    , Cmd.none
+                    )
 
+                --|> MagicLink.Frontend.signInWithTokenResponseM userData
+                -- |> (\( m, c ) -> ( m, Cmd.batch [ c, MagicLink.Frontend.signInWithTokenResponseC userData, Helper.trigger <| SetRoute_ Route.HomepageRoute ] ))
                 Err _ ->
                     ( model, Cmd.none )
 

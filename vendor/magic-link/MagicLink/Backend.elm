@@ -77,21 +77,18 @@ getUserWithUsername model username =
 
 checkLogin : BackendModel -> ClientId -> SessionId -> ( BackendModel, Cmd BackendMsg )
 checkLogin model clientId sessionId =
+    -- TODO: Implement this
     ( model
     , if Dict.isEmpty model.users then
-        Cmd.batch
-            [ Err Types.Sunny |> CheckSignInResponse |> Lamdera.sendToFrontend clientId
-            ]
+        Cmd.none
 
       else
         case getUserFromSessionId sessionId model of
             Just ( userId, user ) ->
-                getLoginData userId user model
-                    |> CheckSignInResponse
-                    |> Lamdera.sendToFrontend clientId
+                Cmd.none
 
             Nothing ->
-                CheckSignInResponse (Err Types.LoadedBackendData) |> Lamdera.sendToFrontend clientId
+                Cmd.none
     )
 
 
