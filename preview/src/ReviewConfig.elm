@@ -110,6 +110,7 @@ configUsers =
     --    |> ReplaceFunction.makeRule
     ]
 
+-- HERE
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
     [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ] |> Import.makeRule
@@ -118,21 +119,19 @@ configMagicLinkMinimal =
     , TypeVariant.makeRule "Types" "ToBackend"  [ "AuthToBackend Auth.Common.ToBackend" ]
     , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
     , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
+    , Import.qualified "Backend" ["Auth.Flow"] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , TypeVariant.makeRule "Types"
             "ToFrontend"
             [ "AuthToFrontend Auth.Common.ToFrontend"
             , "AuthSuccess Auth.Common.UserInfo"
             , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
-            , "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
             , "GetLoginTokenRateLimited"
             , "RegistrationError String"
             , "SignInError String"
-            , "UserSignedIn (Maybe User.User)"
-            , "UserRegistered User.User"
-            , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
-            , "GotMessage String"
             ]
+      , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
+
     ]
 
 
