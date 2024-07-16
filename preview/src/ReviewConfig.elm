@@ -113,11 +113,7 @@ configUsers =
     --    |> ReplaceFunction.makeRule
     ]
 
-
-
 -- HERE
-
-
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
     [ Import.qualified "Types" [ "Dict", "AssocList", "EmailAddress", "LocalUUID", "Auth.Common", "MagicLink.Types", "Session", "User" ] |> Import.makeRule
@@ -178,6 +174,7 @@ configMagicLinkMinimal =
     , ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
         |> ReplaceFunction.makeRule
     ]
+
 
 
 configAuthTypes : List Rule
