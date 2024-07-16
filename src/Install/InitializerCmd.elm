@@ -104,21 +104,21 @@ visitCmd namespace moduleName functionName cmds ignored function context =
                     case expressions of
                         [ _, oldCmds ] ->
                             let
-                                val_ =
-                                    Node.value oldCmds
-
                                 range_ =
                                     Node.range oldCmds
                             in
-                            ( Just val_, range_ )
+                            ( Just oldCmds, range_ )
 
                         _ ->
                             ( Nothing, Elm.Syntax.Range.empty )
 
                 _ ->
                     ( Nothing, Elm.Syntax.Range.empty )
+
+        stringifiedCmds =
+            Maybe.map Install.Library.expressionToString val
     in
-    if isInCorrectModule then
+    if isInCorrectModule && stringifiedCmds == Just "Cmd.none" then
         ( [ errorWithFix cmds function.declaration (Just range) ], context )
 
     else
