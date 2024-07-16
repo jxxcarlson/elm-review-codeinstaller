@@ -21,7 +21,7 @@ test1 =
 subscriptions model =
   Sub.batch [ foo model ]
 """
-    , rule = Install.Subscription.makeRule "Backend" ["bar model"]
+    , rule = Install.Subscription.makeRule "Backend" [ "bar model" ]
     , under = """subscriptions"""
     , fixed = """module Backend exposing (..)
 
@@ -39,11 +39,13 @@ test2 =
 subscriptions model =
   Sub.batch [ foo model, bar model ]
 """
-    , rule = Install.Subscription.makeRule "Backend" ["bar model"]
+    , rule = Install.Subscription.makeRule "Backend" [ "bar model" ]
     }
 
 
+
 -- test3 - should add multiple items
+
 
 test3 =
     { description = "should add multiple items to subscriptions"
@@ -52,7 +54,7 @@ test3 =
 subscriptions model =
   Sub.batch [ foo model ]
 """
-    , rule = Install.Subscription.makeRule "Backend" ["bar model", "baz model"]
+    , rule = Install.Subscription.makeRule "Backend" [ "bar model", "baz model" ]
     , under = """subscriptions"""
     , fixed = """module Backend exposing (..)
 

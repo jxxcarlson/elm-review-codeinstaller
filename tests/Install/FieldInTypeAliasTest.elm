@@ -23,7 +23,7 @@ type alias Client =
     , age : Int
     }
     """
-    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" ["name : String"]
+    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" [ "name : String" ]
     }
 
 
@@ -34,7 +34,7 @@ type alias Client =
     { age : Int
     }
     """
-    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" ["name : String"]
+    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" [ "name : String" ]
     , under = """type alias Client =
     { age : Int
     }"""
@@ -55,7 +55,7 @@ type alias Client =
     { age : Int
     }
     """
-    , rule = Install.FieldInTypeAlias.makeRule "Data.Client" "Client" ["name : String"]
+    , rule = Install.FieldInTypeAlias.makeRule "Data.Client" "Client" [ "name : String" ]
     , under = """type alias Client =
     { age : Int
     }"""
@@ -68,7 +68,10 @@ type alias Client =
     , message = "Add name to Client"
     }
 
+
+
 -- Test 4: should add multiple fields
+
 
 test4 =
     { description = "should add multiple fields"
@@ -77,7 +80,7 @@ type alias Client =
     { age : Int
     }
     """
-    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" ["name : String", "email : String", "age : Int", "lastName : String", "favoriteColor : String"]
+    , rule = Install.FieldInTypeAlias.makeRule "Client" "Client" [ "name : String", "email : String", "age : Int", "lastName : String", "favoriteColor : String" ]
     , under = """type alias Client =
     { age : Int
     }"""
@@ -92,4 +95,3 @@ type alias Client =
     """
     , message = "Add fields email, favoriteColor, lastName, name to Client"
     }
-

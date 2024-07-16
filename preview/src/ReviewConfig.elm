@@ -41,7 +41,10 @@ import Review.Rule exposing (Rule)
 
 -}
 
-config = configAll
+
+config =
+    configAll
+
 
 configAll =
     configAtmospheric
@@ -110,30 +113,32 @@ configUsers =
     --    |> ReplaceFunction.makeRule
     ]
 
+
+
 -- HERE
+
+
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
     [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ] |> Import.makeRule
     , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
     , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
-    , TypeVariant.makeRule "Types" "ToBackend"  [ "AuthToBackend Auth.Common.ToBackend" ]
+    , TypeVariant.makeRule "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
     , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
     , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
-    , Import.qualified "Backend" ["Auth.Flow"] |> Import.makeRule
+    , Import.qualified "Backend" [ "Auth.Flow" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , TypeVariant.makeRule "Types"
-            "ToFrontend"
-            [ "AuthToFrontend Auth.Common.ToFrontend"
-            , "AuthSuccess Auth.Common.UserInfo"
-            , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
-            , "GetLoginTokenRateLimited"
-            , "RegistrationError String"
-            , "SignInError String"
-            ]
-      , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
-
+        "ToFrontend"
+        [ "AuthToFrontend Auth.Common.ToFrontend"
+        , "AuthSuccess Auth.Common.UserInfo"
+        , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
+        , "GetLoginTokenRateLimited"
+        , "RegistrationError String"
+        , "SignInError String"
+        ]
+    , ClauseInCase.init "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model" |> ClauseInCase.makeRule
     ]
-
 
 
 configAuthTypes : List Rule

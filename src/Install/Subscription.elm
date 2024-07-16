@@ -25,7 +25,7 @@ import Set.Extra
 
 and that you want to add `baz` to the list. To do this, say
 
-    Insall.Subscription.makeRule "Backend" ["baz"]
+    Insall.Subscription.makeRule "Backend" [ "baz" ]
 
 The result is
 
@@ -132,7 +132,7 @@ declarationVisitor moduleName items (Node _ declaration) context =
                                             replacementCode =
                                                 items
                                                     |> Set.toList
-                                                    |> List.map (\item -> (", ") ++ item)
+                                                    |> List.map (\item -> ", " ++ item)
                                                     |> String.concat
                                         in
                                         ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
