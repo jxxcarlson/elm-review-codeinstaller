@@ -3,7 +3,7 @@
     "name": "jxxcarlson/elm-review-codeinstaller",
     "summary": "A set of rules for installing code in an existing Elm project.",
     "license": "MIT",
-    "version": "11.0.0",
+    "version": "11.0.1",
     "exposed-modules": [
         "Install.ClauseInCase",
         "Install.FieldInTypeAlias",
