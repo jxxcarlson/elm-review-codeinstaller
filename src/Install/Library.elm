@@ -7,6 +7,7 @@ import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range as Range exposing (Range)
+import List.Extra
 import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule
 import Set exposing (Set)
@@ -28,6 +29,9 @@ fieldNames expr =
         RecordExpr fields ->
             List.map (\(Node _ ( name, _ )) -> Node.value name) fields
 
+        Application children ->
+            List.concatMap (Node.value >> fieldNames) children
+
         _ ->
             []
 
@@ -36,9 +40,33 @@ lastRange : Expression -> Range
 lastRange expr =
     case expr of
         RecordExpr fields ->
-            List.map (\(Node rg _) -> rg) fields
+            fields
                 |> List.reverse
                 |> List.head
+                |> Maybe.map
+                    (\setter ->
+                        Node.value setter
+                            |> Tuple.second
+                            |> Node.range
+                    )
+                |> Maybe.withDefault Range.empty
+
+        Application children ->
+            List.Extra.findMap
+                (\child ->
+                    let
+                        expression =
+                            Node.value child
+                    in
+                    case expression of
+                        RecordExpr _ ->
+                            Just expression
+
+                        _ ->
+                            Nothing
+                )
+                children
+                |> Maybe.map lastRange
                 |> Maybe.withDefault Range.empty
 
         _ ->

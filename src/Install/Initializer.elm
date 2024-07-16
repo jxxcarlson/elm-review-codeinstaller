@@ -31,6 +31,7 @@ import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
 import Install.Library
+import List.Extra
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 import Set exposing (Set)
@@ -93,10 +94,6 @@ declarationVisitor moduleName functionName data (Node _ declaration) context =
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName context
-
-                namespace : String
-                namespace =
-                    String.join "." context.moduleName ++ "." ++ name
             in
             if name == functionName && isInCorrectModule then
                 visitFunction data Set.empty function context
@@ -116,30 +113,7 @@ visitFunction data ignored function context =
             Node.value function.declaration
 
         ( fieldNames, lastRange ) =
-            case declaration.expression |> Node.value of
-                TupledExpression expressions ->
-                    let
-                        lastRange_ =
-                            case expressions |> List.map Node.value |> List.head of
-                                Just recordExpr ->
-                                    Install.Library.lastRange recordExpr
-
-                                Nothing ->
-                                    Elm.Syntax.Range.empty
-
-                        fieldNames_ : List String
-                        fieldNames_ =
-                            case expressions |> List.map Node.value |> List.head of
-                                Just recordExpr ->
-                                    Install.Library.fieldNames recordExpr
-
-                                Nothing ->
-                                    []
-                    in
-                    ( fieldNames_, lastRange_ )
-
-                _ ->
-                    ( [], Elm.Syntax.Range.empty )
+            getFieldNamesAndLastRange (Node.value declaration.expression)
 
         existingFields =
             Set.fromList fieldNames
@@ -180,10 +154,56 @@ addMissingCases : { row : Int, column : Int } -> List { field : String, value : 
 addMissingCases insertionPoint data =
     let
         insertion =
-            "\n      , " ++ (List.map (\{ field, value } -> field ++ " = " ++ value) data |> String.join "\n      , ")
+            ", " ++ (List.map (\{ field, value } -> field ++ " = " ++ value) data |> String.join ", ")
     in
     Fix.insertAt
         { row = insertionPoint.row
         , column = insertionPoint.column + 4
         }
         insertion
+
+
+getFieldNamesAndLastRange : Expression -> ( List String, Range )
+getFieldNamesAndLastRange expr =
+    case expr of
+        TupledExpression expressions ->
+            let
+                lastRange_ =
+                    case expressions |> List.head |> Maybe.map Node.value of
+                        Just expression ->
+                            Install.Library.lastRange expression
+
+                        Nothing ->
+                            Elm.Syntax.Range.empty
+
+                fieldNames_ : List String
+                fieldNames_ =
+                    case expressions |> List.map Node.value |> List.head of
+                        Just recordExpr ->
+                            Install.Library.fieldNames recordExpr
+
+                        Nothing ->
+                            []
+            in
+            ( fieldNames_, lastRange_ )
+
+        LetExpression { expression } ->
+            getFieldNamesAndLastRange (Node.value expression)
+
+        Application children ->
+            children
+                |> List.Extra.find
+                    (\child ->
+                        case Node.value child of
+                            TupledExpression _ ->
+                                True
+
+                            _ ->
+                                False
+                    )
+                |> Maybe.map Node.value
+                |> Maybe.withDefault (TupledExpression [])
+                |> getFieldNamesAndLastRange
+
+        _ ->
+            ( [], Elm.Syntax.Range.empty )
