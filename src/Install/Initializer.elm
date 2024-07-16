@@ -158,7 +158,7 @@ addMissingCases insertionPoint data =
     in
     Fix.insertAt
         { row = insertionPoint.row
-        , column = insertionPoint.column + 4
+        , column = insertionPoint.column
         }
         insertion
 
