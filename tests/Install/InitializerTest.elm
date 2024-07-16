@@ -12,6 +12,7 @@ all =
         , Run.testFix test2
         , Run.testFix test3
         , Run.testFix test4
+        , Run.testFix test5
         ]
 
 
@@ -280,3 +281,113 @@ init =
       }
     , Cmd.none
     )"""
+
+
+test5 =
+    { description = "should insert multiple fields in a function with multiple arguments 2"
+    , src = src5
+    , rule = rule5
+    , under = under5
+    , fixed = fixed5
+    , message = "Add fields to the model"
+    }
+
+
+src5 =
+    """module Backend exposing (..)
+
+import Html
+import Lamdera exposing (ClientId, SessionId)
+import Types exposing (..)
+
+
+type alias Model =
+    BackendModel
+
+
+app =
+    Lamdera.backend
+        { init = init
+        , update = update
+        , updateFromFrontend = updateFromFrontend
+        , subscriptions = \\m -> Sub.none
+        }
+
+
+init : ( Model, Cmd BackendMsg )
+init =
+    ( { message = "Hello!" }
+    , Cmd.none
+    )
+
+
+update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )
+update msg model =
+    case msg of
+        NoOpBackendMsg ->
+            ( model, Cmd.none )
+
+
+updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
+updateFromFrontend sessionId clientId msg model =
+    case msg of
+        NoOpToBackend ->
+            ( model, Cmd.none )"""
+
+
+rule5 =
+    Install.Initializer.makeRule "Backend"
+        "init"
+        [ { field = "pendingAuths", value = "Dict.empty" }
+        , { field = "sessions", value = "Dict.empty" }
+        , { field = "users", value = "Dict.empty" }
+        ]
+
+
+under5 =
+    """init =
+    ( { message = "Hello!" }
+    , Cmd.none
+    )"""
+
+
+fixed5 =
+    """module Backend exposing (..)
+
+import Html
+import Lamdera exposing (ClientId, SessionId)
+import Types exposing (..)
+
+
+type alias Model =
+    BackendModel
+
+
+app =
+    Lamdera.backend
+        { init = init
+        , update = update
+        , updateFromFrontend = updateFromFrontend
+        , subscriptions = \\m -> Sub.none
+        }
+
+
+init : ( Model, Cmd BackendMsg )
+init =
+    ( { message = "Hello!", pendingAuths = Dict.empty, sessions = Dict.empty, users = Dict.empty }
+    , Cmd.none
+    )
+
+
+update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )
+update msg model =
+    case msg of
+        NoOpBackendMsg ->
+            ( model, Cmd.none )
+
+
+updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
+updateFromFrontend sessionId clientId msg model =
+    case msg of
+        NoOpToBackend ->
+            ( model, Cmd.none )"""
