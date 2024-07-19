@@ -63,20 +63,20 @@ test1c =
 
 rule1a : Rule
 rule1a =
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
 
 rule1b : Rule
 rule1b =
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
         |> Install.ClauseInCase.makeRule
 
 
 rule1c : Rule
 rule1c =
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.makeRule
 
@@ -167,7 +167,7 @@ test2 =
 
 rule2 : Rule
 rule2 =
-    Install.ClauseInCase.init "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
+    Install.ClauseInCase.config "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
         |> Install.ClauseInCase.makeRule
 
@@ -265,7 +265,7 @@ stringToPhilosopher str =
 
 rule3 : Rule
 rule3 =
-    Install.ClauseInCase.init "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
+    Install.ClauseInCase.config "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
         |> Install.ClauseInCase.makeRule
 
@@ -344,7 +344,7 @@ isStringPattern nodePattern =
 
 rule4 : Rule
 rule4 =
-    Install.ClauseInCase.init "Elm.Syntax.Pattern2" "isStringPattern" "_" "False"
+    Install.ClauseInCase.config "Elm.Syntax.Pattern2" "isStringPattern" "_" "False"
         |> Install.ClauseInCase.makeRule
 
 
@@ -401,7 +401,7 @@ errorFix context node maybeError =
 
 rule5 : Rule
 rule5 =
-    Install.ClauseInCase.init "SomeElmReviewRule" "errorFix" "Just \"\"" "[]"
+    Install.ClauseInCase.config "SomeElmReviewRule" "errorFix" "Just \"\"" "[]"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.withCustomErrorMessage "Add handler for empty error string" [ "" ]
         |> Install.ClauseInCase.makeRule
@@ -475,7 +475,7 @@ getShiftFormFromWeekday weekday =
 
 rule6 : Rule
 rule6 =
-    Install.ClauseInCase.init "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
+    Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
         |> Install.ClauseInCase.makeRule
 
@@ -564,7 +564,7 @@ someFunction condition maybeData =
 
 rule7 : Rule
 rule7 =
-    Install.ClauseInCase.init "Backend" "someFunction" "Just []" "Result.Err \"Empty data\""
+    Install.ClauseInCase.config "Backend" "someFunction" "Just []" "Result.Err \"Empty data\""
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.makeRule
 
@@ -642,7 +642,7 @@ getShiftFormFromWeekday weekday weekShiftForm =
 
 rule8 : Rule
 rule8 =
-    Install.ClauseInCase.init "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
+    Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
         |> Install.ClauseInCase.makeRule
 
@@ -737,7 +737,7 @@ decodeFieldErrors =
 
 rule9 : Rule
 rule9 =
-    Install.ClauseInCase.init "Errors" "decodeFieldErrors" "Just []" "Dict.singleton \"base\" []"
+    Install.ClauseInCase.config "Errors" "decodeFieldErrors" "Just []" "Dict.singleton \"base\" []"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.makeRule
 
@@ -815,7 +815,7 @@ viewModal modal =
 
 rule10 : Rule
 rule10 =
-    Install.ClauseInCase.init "Modal" "viewModal" "ModalConfirm" "div [class \"modal-confirm\"] []"
+    Install.ClauseInCase.config "Modal" "viewModal" "ModalConfirm" "div [class \"modal-confirm\"] []"
         |> Install.ClauseInCase.makeRule
 
 

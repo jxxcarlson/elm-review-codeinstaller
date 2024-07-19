@@ -1,6 +1,6 @@
 module Install.ClauseInCaseTest exposing (all)
 
-import Install.ClauseInCase exposing (init, makeRule)
+import Install.ClauseInCase exposing (config, makeRule)
 import Run
 import Test exposing (Test, describe)
 
@@ -14,7 +14,7 @@ all =
 
 
 rule1 =
-    init "REPLACEME" "REPLACEME" "REPLACEME" "REPLACEME"
+    config "REPLACEME" "REPLACEME" "REPLACEME" "REPLACEME"
         |> makeRule
 
 

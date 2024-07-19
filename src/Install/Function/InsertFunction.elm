@@ -1,4 +1,4 @@
-module Install.Function.InsertFunction exposing (makeRule, init, Config, CustomError, withInsertAfter)
+module Install.Function.InsertFunction exposing (makeRule, config, Config, CustomError, withInsertAfter)
 
 {-| Add a function in a given module if it is not present.
 
@@ -64,14 +64,14 @@ type InsertAt
 {-| Add the function after a specified declaration. Just give the name of a function, type, type alias or port and the function will be added after that declaration. Only work if the function is being added and not replaced.
 -}
 withInsertAfter : String -> Config -> Config
-withInsertAfter previousDeclaration (Config config) =
-    Config { config | insertAt = After previousDeclaration }
+withInsertAfter previousDeclaration (Config config_) =
+    Config { config_ | insertAt = After previousDeclaration }
 
 
 {-| Initialize the configuration for the rule.
 -}
-init : String -> String -> String -> Config
-init moduleNaeme functionName functionImplementation =
+config : String -> String -> String -> Config
+config moduleNaeme functionName functionImplementation =
     Config
         { moduleName = moduleNaeme
         , functionName = functionName
@@ -85,15 +85,15 @@ init moduleNaeme functionName functionImplementation =
 {-| Create a rule that adds a function in a given module if it is not present.
 -}
 makeRule : Config -> Rule
-makeRule config =
+makeRule config_ =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor declaration context =
-            declarationVisitor context config declaration
+            declarationVisitor context config_ declaration
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Function.InsertFunction" initialContext
         |> Rule.withDeclarationEnterVisitor visitor
-        |> Rule.withFinalModuleEvaluation (finalEvaluation config)
+        |> Rule.withFinalModuleEvaluation (finalEvaluation config_)
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
 
@@ -115,13 +115,13 @@ initialContext =
 
 
 declarationVisitor : Context -> Config -> Node Declaration -> ( List (Rule.Error {}), Context )
-declarationVisitor context (Config config) declaration =
+declarationVisitor context (Config config_) declaration =
     let
         declarationName =
             Install.Library.getDeclarationName declaration
 
         contextWithLastDeclarationRange =
-            case config.insertAt of
+            case config_.insertAt of
                 After previousDeclaration ->
                     if Install.Library.getDeclarationName declaration == previousDeclaration then
                         { context | lastDeclarationRange = Node.range declaration }
@@ -132,7 +132,7 @@ declarationVisitor context (Config config) declaration =
                 AtEnd ->
                     { context | lastDeclarationRange = Node.range declaration }
     in
-    if declarationName == config.functionName then
+    if declarationName == config_.functionName then
         ( [], { context | appliedFix = True } )
 
     else
@@ -140,9 +140,9 @@ declarationVisitor context (Config config) declaration =
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
-finalEvaluation (Config config) context =
-    if not context.appliedFix && Install.Library.isInCorrectModule config.moduleName context then
-        addFunction { range = context.lastDeclarationRange, functionName = config.functionName, functionImplementation = config.functionImplementation }
+finalEvaluation (Config config_) context =
+    if not context.appliedFix && Install.Library.isInCorrectModule config_.moduleName context then
+        addFunction { range = context.lastDeclarationRange, functionName = config_.functionName, functionImplementation = config_.functionImplementation }
 
     else
         []
