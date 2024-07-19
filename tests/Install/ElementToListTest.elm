@@ -8,9 +8,9 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.ElementToList"
-        [ Run.testFix test1 |> Run.withOnly
-        , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1 |> Run.withOnly
-        , Run.testFix test2 |> Run.withOnly
+        [ Run.testFix test1
+        , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1
+        , Run.testFix test2
         ]
 
 
