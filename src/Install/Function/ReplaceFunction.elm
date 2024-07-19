@@ -4,7 +4,7 @@ module Install.Function.ReplaceFunction exposing (makeRule, config, Config, Cust
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.InsertFunction.init
+        Install.Function.InsertFunction.config
             "Frontend"
             "view"
             """view model =
@@ -16,13 +16,13 @@ Running this rule will replace the function `view` in the module `Frontend` with
 The form of the rule is the same for nested modules:
 
     rule =
-        Install.Function.ReplaceFunction.init
+        Install.Function.ReplaceFunction.config
             "Foo.Bar"
             "earnInterest"
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.Function.ReplaceFunction.makeRule
 
-@docs makeRule, init, Config, CustomError
+@docs makeRule, config, Config, CustomError
 
 -}
 

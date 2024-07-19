@@ -4,7 +4,7 @@ module Install.Function.InsertFunction exposing (makeRule, config, Config, Custo
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.InsertFunction.init
+        Install.Function.InsertFunction.config
             "Frontend"
             "view"
             """view model =
@@ -16,13 +16,13 @@ Running this rule will insert the function `view` in the module `Frontend` with 
 The form of the rule is the same for nested modules:
 
     rule =
-        Install.Function.InsertFunction.init
+        Install.Function.InsertFunction.config
             "Foo.Bar"
             "earnInterest"
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.Function.InsertFunction.makeRule
 
-@docs makeRule, init, Config, CustomError, withInsertAfter
+@docs makeRule, config, Config, CustomError, withInsertAfter
 
 -}
 

@@ -1,5 +1,7 @@
 # elm-review-codeinstaller
 
+**NOTE:** *This version is a breaking change from version 11.0.  In case where you wrote `.init ... |> makeRule` you will need to write `.config ... |> makeRule` instead.*
+
 A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
 
 The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment.
@@ -61,7 +63,7 @@ addResetCounterVariant =
 
 addResetCounterClause : Rule
 addResetCounterClause =
-    Install.ClauseInCase.init "Counter" "update" "ResetCounter" "( { model | counter = 0 }, Cmd.none )"
+    Install.ClauseInCase.config "Counter" "update" "ResetCounter" "( { model | counter = 0 }, Cmd.none )"
         |> Install.ClauseInCase.makeRule
 ```
 
