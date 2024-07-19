@@ -6,15 +6,16 @@
     "version": "11.0.2",
     "exposed-modules": [
         "Install.ClauseInCase",
+        "Install.ElementToList",
         "Install.FieldInTypeAlias",
-        "Install.Initializer",
-        "Install.InitializerCmd",
-        "Install.TypeVariant",
         "Install.Function.InsertFunction",
         "Install.Function.ReplaceFunction",
         "Install.Import",
+        "Install.Initializer",
+        "Install.InitializerCmd",
+        "Install.Subscription",
         "Install.Type",
-        "Install.Subscription"
+        "Install.TypeVariant"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

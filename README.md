@@ -2,9 +2,10 @@
 
 A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
 
-The project is still in development, so expect it to change a lot over the next weeks and likely months.  For now, consider it to be an experiment.
+The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment.
 
 ## Installation
+
 To install `elm-review-codeinstaller`, add it to your `elm.json` dependencies:
 
 ```bash
@@ -12,6 +13,7 @@ elm install jxxcarlson/elm-review-codeinstaller
 ```
 
 ## Usage
+
 Suppose you have the following `Msg` type and `update` function in your `Counter` module:
 
 ```elm
@@ -37,6 +39,7 @@ To add a new `ResetCounter` variant to the `Msg` type and handle it in the `upda
 module ReviewConfig exposing (config)
 
 import Install.ClauseInCase
+import Install.ElementToList
 import Install.TypeVariant
 import Review.Rule exposing (Rule)
 
@@ -84,6 +87,7 @@ update msg model =
         ResetCounter ->
             ( { model | counter = 0 }, Cmd.none )
 ```
+
 ## Modules
 
 `elm-review-codeinstaller` includes the following modules:
@@ -95,8 +99,10 @@ update msg model =
 - **Install.Function.ReplaceFunction**: Replace a function in a given module with a new implementation. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function-ReplaceFunction).
 - **Install.Function.InsertFunction**: Add a function in a given module if it is not present. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Function-InsertFunction).
 - **Install.Import**: Add import statements to a given module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-Import).
+- **Install.ElementToList**: Add an element to a list in a specified function within a specified module. For more details, see the [docs](https://package.elm-lang.org/packages/jxxcarlson/elm-review-codeinstaller/latest/Install-ElementToList).
 
 ## Try it out
+
 To test the review code in its current state, try running this in a clean Lamdera project:
 
 ```
