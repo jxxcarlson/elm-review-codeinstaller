@@ -37,7 +37,7 @@ test1 =
 
 rule1 : Rule
 rule1 =
-    ReplaceFunction.init
+    ReplaceFunction.config
         "Frontend"
         "view"
         """view model =
@@ -104,7 +104,7 @@ test2 =
 
 rule2 : Rule
 rule2 =
-    InsertFunction.init
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -169,7 +169,7 @@ type alias Model =
 
 rule3 : Rule
 rule3 =
-    InsertFunction.init
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -213,7 +213,7 @@ test4 =
 
 rule4 : Rule
 rule4 =
-    InsertFunction.init
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -260,7 +260,7 @@ test4a =
 
 rule4a : Rule
 rule4a =
-    InsertFunction.init
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -306,7 +306,7 @@ test4b =
 
 rule4b : Rule
 rule4b =
-    InsertFunction.init
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =

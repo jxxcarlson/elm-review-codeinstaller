@@ -1,4 +1,4 @@
-module Install.ClauseInCase exposing (init, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError)
+module Install.ClauseInCase exposing (config, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError)
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -6,7 +6,7 @@ in a specified module. For example, if you put the code below in your
 `ResetCounter` to the `updateFromFrontend` function in the `Backend` module.
 
     -- code for ReviewConfig.elm:
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
     Thus we will have
@@ -22,7 +22,7 @@ in a specified module. For example, if you put the code below in your
                 ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
     You also can add the clause after another clause of choice with the `withInsertAfter` function:
-        Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
             |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
             |> Install.ClauseInCase.makeRule
 
@@ -38,11 +38,11 @@ in a specified module. For example, if you put the code below in your
                 CounterDecremented ->
                 ...
     You can also customize the error message with the `withCustomErrorMessage` function:
-        Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
             |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
             |> Install.ClauseInCase.makeRule
 
-@docs init, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError
+@docs config, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError
 
 -}
 
@@ -87,13 +87,13 @@ type CustomError
 
 {-| Basic config to add a new clause to a case expression. If you just need to add a new clause at the end of the case, you can simply use it with the `makeRule` function like this:
 
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
     If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
 
 -}
-init : String -> String -> String -> String -> Config
-init moduleName functionName clause functionCall =
+config : String -> String -> String -> String -> Config
+config moduleName functionName clause functionCall =
     Config
         { moduleName = moduleName
         , functionName = functionName
@@ -106,16 +106,16 @@ init moduleName functionName clause functionCall =
 
 {-| Create a makeRule that adds a clause to a case expression in a specified function. You can use it like this:
 
-    Install.ClauseInCase.init "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
 -}
 makeRule : Config -> Rule
-makeRule (Config config) =
+makeRule (Config config_) =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor declaration context =
-            declarationVisitor declaration config.moduleName config.functionName config.clause config.functionCall config.insertAt context config.customErrorMessage
+            declarationVisitor declaration config_.moduleName config_.functionName config_.clause config_.functionCall config_.insertAt context config_.customErrorMessage
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.ClauseInCase" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -359,7 +359,7 @@ Given the following module:
 
 To add the clause `Aspasia` after the clause `Aristotle`, you can use the following configuration:
 
-    Install.ClauseInCase.init "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
+    Install.ClauseInCase.config "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
         |> Install.ClauseInCase.makeRule
 
@@ -385,9 +385,9 @@ This will add the clause `Aspasia` after the clause `Aristotle` in the `stringTo
 
 -}
 withInsertAfter : String -> Config -> Config
-withInsertAfter clauseToInsertAfter (Config config) =
+withInsertAfter clauseToInsertAfter (Config config_) =
     Config
-        { config
+        { config_
             | insertAt = After clauseToInsertAfter
         }
 
@@ -395,9 +395,9 @@ withInsertAfter clauseToInsertAfter (Config config) =
 {-| Add a clause at the beginning of the case expression.
 -}
 withInsertAtBeginning : Config -> Config
-withInsertAtBeginning (Config config) =
+withInsertAtBeginning (Config config_) =
     Config
-        { config
+        { config_
             | insertAt = AtBeginning
         }
 
@@ -405,9 +405,9 @@ withInsertAtBeginning (Config config) =
 {-| Customize the error message that will be displayed when running `elm-review --fix` or `elm-review --fix-all`
 -}
 withCustomErrorMessage : String -> List String -> Config -> Config
-withCustomErrorMessage errorMessage details (Config config) =
+withCustomErrorMessage errorMessage details (Config config_) =
     Config
-        { config
+        { config_
             | customErrorMessage = CustomError { message = errorMessage, details = details }
         }
 

@@ -1,10 +1,10 @@
-module Install.Function.ReplaceFunction exposing (makeRule, init, Config, CustomError)
+module Install.Function.ReplaceFunction exposing (makeRule, config, Config, CustomError)
 
 {-| Replace a function in a given module with a new implementation.
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.InsertFunction.init
+        Install.Function.InsertFunction.config
             "Frontend"
             "view"
             """view model =
@@ -16,13 +16,13 @@ Running this rule will replace the function `view` in the module `Frontend` with
 The form of the rule is the same for nested modules:
 
     rule =
-        Install.Function.ReplaceFunction.init
+        Install.Function.ReplaceFunction.config
             "Foo.Bar"
             "earnInterest"
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.Function.ReplaceFunction.makeRule
 
-@docs makeRule, init, Config, CustomError
+@docs makeRule, config, Config, CustomError
 
 -}
 
@@ -59,8 +59,8 @@ type CustomError
 
 {-| Initialize the configuration for the rule.
 -}
-init : String -> String -> String -> Config
-init moduleNaeme functionName functionImplementation =
+config : String -> String -> String -> Config
+config moduleNaeme functionName functionImplementation =
     Config
         { moduleName = moduleNaeme
         , functionName = functionName
@@ -73,11 +73,11 @@ init moduleNaeme functionName functionImplementation =
 {-| Create a rule that replaces a function in a given module with a new implementation.
 -}
 makeRule : Config -> Rule
-makeRule config =
+makeRule config_ =
     let
         visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor declaration context =
-            declarationVisitor context config declaration
+            declarationVisitor context config_ declaration
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Function.ReplaceFunction" initialContext
         |> Rule.withDeclarationEnterVisitor visitor
@@ -100,7 +100,7 @@ initialContext =
 
 
 declarationVisitor : Context -> Config -> Node Declaration -> ( List (Rule.Error {}), Context )
-declarationVisitor context (Config config) declaration =
+declarationVisitor context (Config config_) declaration =
     case Node.value declaration of
         FunctionDeclaration function ->
             let
@@ -109,13 +109,13 @@ declarationVisitor context (Config config) declaration =
                     Install.Library.getDeclarationName declaration
 
                 isInCorrectModule =
-                    Install.Library.isInCorrectModule config.moduleName context
+                    Install.Library.isInCorrectModule config_.moduleName context
 
                 resources =
                     { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
                 isInCorrectFunction =
-                    isInCorrectModule && name == config.functionName
+                    isInCorrectModule && name == config_.functionName
 
                 isNotImplemented : Function -> { a | functionImplementation : String } -> Bool
                 isNotImplemented f confg =
@@ -127,8 +127,8 @@ declarationVisitor context (Config config) declaration =
                                 |> not
                            )
             in
-            if isNotImplemented function config then
-                replaceFunction { range = Node.range declaration, functionName = config.functionName, functionImplementation = config.functionImplementation } context
+            if isNotImplemented function config_ then
+                replaceFunction { range = Node.range declaration, functionName = config_.functionName, functionImplementation = config_.functionImplementation } context
 
             else
                 ( [], context )
