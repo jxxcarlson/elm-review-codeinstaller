@@ -26,35 +26,20 @@ import Review.Rule exposing (Rule)
 
 
 
-{-
-
-   NOTES.
-
-   1. (FIX FAILED) Install.Initializer: Add cmds Time.now |> Task.perform GotFastTick,
-      MagicLink.Helper.getAtmosphericRandomNumbers to the model
-      (( I failed to apply the automatic fix because it resulted in the same source code. ))
-      See InitializerCmd.makeRule "Backend" "init" below
-      The error is a false positive, but it needs to be fixed.
-
-   2.  Infinite loop: see comments labeled XX.
-
-
--}
-
 
 config =
-    configMagicLinkMinimal
+    magicLinkMinimal
 
 
-configAll =
+magicLinkAuth = List.concat [
     configAtmospheric
-        ++ configUsers
-        ++ configAuthTypes
-        ++ configAuthFrontend
-        ++ configAuthBackend
-        ++ configRoute
-        ++ configView
-
+        ,configUsers
+       , configAuthTypes
+        , configAuthFrontend
+        , configAuthBackend
+        , configRoute
+       , configView
+    ]
 
 configAtmospheric : List Rule
 configAtmospheric =
@@ -72,12 +57,7 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix"
         ]
-
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
-    --    , { field = "time", value = "Time.millisToPosix 0" }
-    --    ]
+      ]
     , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
     , ClauseInCase.init "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString" |> ClauseInCase.makeRule
     , ClauseInCase.init "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)" |> ClauseInCase.makeRule
@@ -104,18 +84,11 @@ configUsers =
     , Import.qualified "Frontend" [ "Dict" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
 
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "userNameToEmailString", value = "Dict.empty" }, { field = "users", value = "Dict.empty" } ]
-    -- XX: enable the below only if you are not using ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
-    -- later on.  If you enable both, you will get an infinite loop.
-    --, ReplaceFunction.init "Frontend" "tryLoading" tryLoading1
-    --    |> ReplaceFunction.makeRule
     ]
 
 -- HERE
-configMagicLinkMinimal : List Rule
-configMagicLinkMinimal =
+magicLinkMinimal : List Rule
+magicLinkMinimal =
     [ Import.qualified "Types" [ "Dict", "AssocList", "EmailAddress", "LocalUUID", "Auth.Common", "MagicLink.Types", "Session", "User" ] |> Import.makeRule
     , Import.qualified "Frontend" [ "Dict", "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn" ] |> Import.makeRule
     , Import.qualified "Backend" [ "Dict", "AssocList", "Time", "Auth.Flow", "MagicLink.Auth", "User", "LocalUUID" ] |> Import.makeRule
@@ -251,9 +224,6 @@ configAuthFrontend =
         ]
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
     , ClauseInCase.init "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
-
-    -- XX, WARNING! Causes infinite loop if ReplaceFunction.init "Frontend" "tryLoading" tryLoading1
-    -- is present
     , ReplaceFunction.init "Frontend" "tryLoading" tryLoading2
         |> ReplaceFunction.makeRule
     ]
