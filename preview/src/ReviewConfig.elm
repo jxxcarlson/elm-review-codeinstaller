@@ -12,6 +12,7 @@ when inside the directory containing this file.
 -}
 
 import Install.ClauseInCase as ClauseInCase
+import Install.ElementToList
 import Install.FieldInTypeAlias as FieldInTypeAlias
 import Install.Function.InsertFunction as InsertFunction
 import Install.Function.ReplaceFunction as ReplaceFunction

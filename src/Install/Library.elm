@@ -2,7 +2,7 @@ module Install.Library exposing (..)
 
 import Elm.Parser
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), FunctionImplementation, Lambda)
+import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
@@ -282,6 +282,11 @@ isInCorrectModule moduleName context =
     context.moduleName
         |> String.join "."
         |> (==) moduleName
+
+
+isInCorrectFunction : String -> Function -> Bool
+isInCorrectFunction functionName function =
+    functionName == Node.value (Node.value function.declaration).name
 
 
 getDeclarationName : Node Declaration -> String
