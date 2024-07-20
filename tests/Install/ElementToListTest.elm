@@ -11,6 +11,7 @@ all =
         [ Run.testFix test1
         , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1
         , Run.testFix test2
+        --, Run.testFix test3
         ]
 
 
@@ -116,6 +117,59 @@ under2 =
 
 
 fixed2 =
+    """module Contributors exposing (..)
+
+type Contributors
+    = Jxx
+    | Matt
+    | Laozi
+
+contributors : List Contributors
+contributors =
+    [ Jxx, Matt, Laozi ]
+"""
+
+-- TEST 3
+
+
+
+test3 =
+    { description = "should add multiple elements to the list in project with two modules"
+    , src = src3
+    , rule = rule3
+    , under = under3
+    , fixed = fixed3
+    , message = "Add 2 elements to the list in project with two modules"
+    }
+
+
+src3 =
+    """module Contributors exposing (..)
+
+type Contributors
+    = Jxx
+    | Matt
+    | Laozi
+
+contributors : List Contributors
+contributors =
+    [ Jxx ]
+
+ module Foo exposing(..)
+
+ bar = 1
+"""
+
+
+rule3 =
+    makeRule "Contributors" "contributors" [ "Matt", "Laozi" ]
+
+
+under3 =
+    """[ Jxx ]"""
+
+
+fixed3 =
     """module Contributors exposing (..)
 
 type Contributors
