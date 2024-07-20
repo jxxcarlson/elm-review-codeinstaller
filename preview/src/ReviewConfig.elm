@@ -184,7 +184,7 @@ configAuthTypes =
 configAuthFrontend : List Rule
 configAuthFrontend =
     [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
-    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.config loadingModel.initUrl" } ]
+    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
         |> ClauseInCase.withInsertAtBeginning
         |> ClauseInCase.makeRule
@@ -460,7 +460,7 @@ tryLoading loadingModel =
                         , counter = 0
                         , window = window
                         , showTooltip = False
-                        , magicLinkModel = Pages.SignIn.config authRedirectBaseUrl
+                        , magicLinkModel = Pages.SignIn.init authRedirectBaseUrl
                         , route = loadingModel.route
                         , message = "Starting up ..."
                         , users = Dict.empty
