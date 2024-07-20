@@ -334,7 +334,7 @@ expressionToString (Node _ expression) =
             String.join " " (List.map expressionToString children)
 
         TupledExpression children ->
-            "(" ++ String.join ", " (List.map expressionToString children) ++ ")"
+            "(" ++ String.join ", " (List.map expressionToString children) ++ ")" |> Debug.log "TupledExpression"
 
         ListExpr children ->
             "[" ++ String.join ", " (List.map expressionToString children) ++ "]"

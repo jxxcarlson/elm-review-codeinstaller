@@ -11,7 +11,7 @@ all =
         [ Run.testFix test1
         , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1
         , Run.testFix test2
-        --, Run.testFix test3
+        , Run.testFix test4
         ]
 
 
@@ -129,55 +129,52 @@ contributors =
     [ Jxx, Matt, Laozi ]
 """
 
--- TEST 3
 
 
+-- TEST 4
 
-test3 =
-    { description = "should add multiple elements to the list in project with two modules"
-    , src = src3
-    , rule = rule3
-    , under = under3
-    , fixed = fixed3
-    , message = "Add 2 elements to the list in project with two modules"
+
+test4 =
+    { description = "should add an element to a list of tuples in project"
+    , src = src4
+    , rule = rule4
+    , under = under4
+    , fixed = fixed4
+    , message = "Add an element to a list of tuples in project"
     }
 
 
-src3 =
-    """module Contributors exposing (..)
+src4 =
+    """module Routes exposing (..)
 
-type Contributors
-    = Jxx
-    | Matt
-    | Laozi
+type Route
+    = HomepageRoute
+    | Quotes
 
-contributors : List Contributors
-contributors =
-    [ Jxx ]
 
- module Foo exposing(..)
-
- bar = 1
+routesAndNames : List (Route, String)
+routesAndNames =
+    [(HomepageRoute, "homepage")]
 """
 
 
-rule3 =
-    makeRule "Contributors" "contributors" [ "Matt", "Laozi" ]
+rule4 =
+    makeRule "Routes" "routesAndNames" [ "(Quotes, \"quotes\")" ]
 
 
-under3 =
-    """[ Jxx ]"""
+under4 =
+    """[(HomepageRoute, "homepage")]"""
 
 
-fixed3 =
-    """module Contributors exposing (..)
-
-type Contributors
-    = Jxx
-    | Matt
-    | Laozi
-
-contributors : List Contributors
-contributors =
-    [ Jxx, Matt, Laozi ]
-"""
+fixed4 =
+    """module Routes exposing (..)
+   
+   type Route
+       = HomepageRoute
+       | Quotes
+       | Jokes
+   
+   routesAndNames : List (Route, String)
+   routesAndNames =
+       [(HomepageRoute, "homepage"), (Quotes, "quotes")]
+   """
