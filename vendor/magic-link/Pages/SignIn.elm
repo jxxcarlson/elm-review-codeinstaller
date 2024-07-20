@@ -89,14 +89,12 @@ signInView model =
     Element.column []
         [ Element.el [ Element.Font.semiBold, Element.Font.size 24 ] (Element.text "Sign in")
         , MagicLink.LoginForm.view model.signInForm
-
-        --, Element.paragraph [ Element.Font.color (Element.rgb 1 0 0) ] [ Element.text (model.loginErrorMessage |> Maybe.withDefault "") ]
         , Element.row
             [ Element.spacing 12
             , Element.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
             ]
-            [ Element.el [] (Element.text "Need to sign up?  "), View.Button.openSignUp ]
-            , Element.el [Element.paddingXY 12 24, Element.Font.bold, Element.Font.color (Element.rgb 80 0 0)] (Element.text <| "MESSAGE: " ++ model.message)
+            [ Element.el [] (Element.text "Need to sign up?  "), View.Button.openSignUp, View.Button.closeSignUp ]
+        , Element.el [ Element.paddingXY 12 24, Element.Font.bold, Element.Font.color (Element.rgb 80 0 0) ] (Element.text model.message)
         ]
 
 
