@@ -96,6 +96,7 @@ signInView model =
             , Element.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
             ]
             [ Element.el [] (Element.text "Need to sign up?  "), View.Button.openSignUp ]
+            , Element.el [Element.Font.bold, Element.Font.color (Element.rgb 80 0 0)] (Element.text <| "MESSAGE: " ++ model.message)
         ]
 
 
