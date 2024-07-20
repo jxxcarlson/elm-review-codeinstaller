@@ -26,23 +26,6 @@ import Regex
 import Review.Rule exposing (Rule)
 
 
-
-{-
-
-   NOTES.
-
-   1. (FIX FAILED) Install.Initializer: Add cmds Time.now |> Task.perform GotFastTick,
-      MagicLink.Helper.getAtmosphericRandomNumbers to the model
-      (( I failed to apply the automatic fix because it resulted in the same source code. ))
-      See InitializerCmd.makeRule "Backend" "init" below
-      The error is a false positive, but it needs to be fixed.
-
-   2.  Infinite loop: see comments labeled XX.
-
-
--}
-
-
 config =
     configAll
 
@@ -73,12 +56,6 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix"
         ]
-
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
-    --    , { field = "time", value = "Time.millisToPosix 0" }
-    --    ]
     , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
     , ClauseInCase.config "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)" |> ClauseInCase.makeRule
@@ -105,13 +82,6 @@ configUsers =
     , Import.qualified "Frontend" [ "Dict" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
 
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "userNameToEmailString", value = "Dict.empty" }, { field = "users", value = "Dict.empty" } ]
-    -- XX: enable the below only if you are not using ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
-    -- later on.  If you enable both, you will get an infinite loop.
-    --, ReplaceFunction.config "Frontend" "tryLoading" tryLoading1
-    --    |> ReplaceFunction.makeRule
     ]
 
 
@@ -216,9 +186,6 @@ configAuthFrontend =
         ]
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
     , ClauseInCase.config "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
-
-    -- XX, WARNING! Causes infinite loop if ReplaceFunction.config "Frontend" "tryLoading" tryLoading1
-    -- is present
     , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
         |> ReplaceFunction.makeRule
     ]
@@ -226,7 +193,6 @@ configAuthFrontend =
 
 configAuthBackend : List Rule
 configAuthBackend =
-    -- 19 rules
     [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
@@ -382,30 +348,6 @@ decode url =
         ]
         |> (\\a -> Url.Parser.parse a url |> Maybe.withDefault HomepageRoute)
 """
-
-
-
---configReset : List Rule
---configReset =
---    [ TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
---    , TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
---    , ClauseInCase.config "Frontend" "updateLoaded" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
---        |> ClauseInCase.withInsertAfter "Increment"
---        |> ClauseInCase.makeRule
---    , ClauseInCase.config "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )" |> ClauseInCase.makeRule
---    , ReplaceFunction.config "Pages.Counter" "view" viewFunction |> ReplaceFunction.makeRule
---    ]
-
-
-viewFunction =
-    """view model =
-    Html.div [ style "padding" "50px" ]
-        [ Html.button [ onClick Increment ] [ text "+" ]
-        , Html.div [ style "padding" "10px" ] [ Html.text (String.fromInt model.counter) ]
-        , Html.button [ onClick Decrement ] [ text "-" ]
-        , Html.div [] [Html.button [ onClick Reset, style "margin-top" "10px"] [ text "Reset" ]]
-        ] |> Element.html   """
-
 
 tryLoading1 =
     """tryLoading : LoadingModel -> ( FrontendModel, Cmd FrontendMsg )

@@ -64,7 +64,7 @@ view toSelf model =
         MagicLink.Types.SuccessfulRegistration username email ->
             Element.column []
                 [ signInAfterRegisteringView model
-                , Element.el [ Element.Font.color (Element.rgb 0 0 1) ] (Element.text <| username ++ ", you are now registered as " ++ email)
+                , Element.el [ Element.paddingXY 13 0, Element.Font.color (Element.rgb 0 0 1) ] (Element.text <| username ++ ", you are now registered as " ++ email)
                 ]
 
         MagicLink.Types.ErrorNotRegistered message ->
@@ -93,7 +93,7 @@ signInView model =
             [ Element.spacing 12
             , Element.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
             ]
-            [ Element.el [] (Element.text "Need to sign up?  "), View.Button.openSignUp, View.Button.closeSignUp ]
+            [ Element.el [] (Element.text "Need to sign up?  "), View.Button.openSignUp ]
         , Element.el [ Element.paddingXY 12 24, Element.Font.bold, Element.Font.color (Element.rgb 80 0 0) ] (Element.text model.message)
         ]
 
@@ -115,7 +115,7 @@ signUp model =
         , View.Input.template "Email" model.email MagicLink.Types.InputEmail
         , Element.row [ Element.spacing 18 ]
             [ signUpButton
-            , cancelSignUpButton
+            , View.Button.closeSignUp
             ]
         , Element.el [ Element.Font.size 14, Element.Font.italic, Element.Font.color View.Color.darkGray ] (Element.text model.message)
         ]
