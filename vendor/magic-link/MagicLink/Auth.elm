@@ -170,7 +170,7 @@ initiateEmailSignin sessionId clientId model login now =
                             )
 
                         Nothing ->
-                            ( model, MagicLink.Common.sendMessage clientId "You are not properly registered." )
+                            ( model, MagicLink.Common.sendMessage clientId "You are not properly registered. Pleas sign up." )
 
 
 onEmailAuthCallbackReceived :
