@@ -140,7 +140,7 @@ test4 =
     , rule = rule4
     , under = under4
     , fixed = fixed4
-    , message = "Add an element to a list of tuples in project"
+    , message = "Add 2 elements to the list"
     }
 
 
@@ -150,7 +150,6 @@ src4 =
 type Route
     = HomepageRoute
     | Quotes
-
 
 routesAndNames : List (Route, String)
 routesAndNames =
@@ -168,13 +167,12 @@ under4 =
 
 fixed4 =
     """module Routes exposing (..)
-   
-   type Route
-       = HomepageRoute
-       | Quotes
-       | Jokes
-   
-   routesAndNames : List (Route, String)
-   routesAndNames =
-       [(HomepageRoute, "homepage"), (Quotes, "quotes")]
-   """
+
+type Route
+    = HomepageRoute
+    | Quotes
+
+routesAndNames : List (Route, String)
+routesAndNames =
+    [(HomepageRoute, "homepage"), (Quotes, "quotes")]
+"""

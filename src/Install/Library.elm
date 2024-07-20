@@ -334,7 +334,7 @@ expressionToString (Node _ expression) =
             String.join " " (List.map expressionToString children)
 
         TupledExpression children ->
-            "(" ++ String.join ", " (List.map expressionToString children) ++ ")" |> Debug.log "TupledExpression"
+            "(" ++ String.join ", " (List.map expressionToString children) ++ ")"
 
         ListExpr children ->
             "[" ++ String.join ", " (List.map expressionToString children) ++ "]"
@@ -347,6 +347,9 @@ expressionToString (Node _ expression) =
 
         RecordAccess child field ->
             expressionToString child ++ "." ++ Node.value field
+
+        Literal str ->
+            "\"" ++ str ++ "\""
 
         -- CaseExpression caseBlock ->
         --     "case " ++ expressionToString caseBlock.expression ++ " of " ++ String.join " " (List.map caseToString caseBlock.cases)
