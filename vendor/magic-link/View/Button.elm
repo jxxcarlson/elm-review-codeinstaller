@@ -1,4 +1,4 @@
-module View.Button exposing (openSignUp)
+module View.Button exposing (openSignUp, closeSignUp)
 
 import Element
 import Element.Background
@@ -17,6 +17,9 @@ import View.Color
 
 openSignUp =
     button MagicLink.Types.OpenSignUp "Sign up"
+
+closeSignUp =
+    button MagicLink.Types.CloseSignUp "Cancel"
 
 
 highlight condition =
