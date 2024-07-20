@@ -348,6 +348,9 @@ expressionToString (Node _ expression) =
         RecordAccess child field ->
             expressionToString child ++ "." ++ Node.value field
 
+        Literal str ->
+            "\"" ++ str ++ "\""
+
         -- CaseExpression caseBlock ->
         --     "case " ++ expressionToString caseBlock.expression ++ " of " ++ String.join " " (List.map caseToString caseBlock.cases)
         -- LambdaExpression lambda ->

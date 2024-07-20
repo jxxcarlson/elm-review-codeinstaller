@@ -11,6 +11,7 @@ all =
         [ Run.testFix test1
         , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1
         , Run.testFix test2
+        , Run.testFix test4
         ]
 
 
@@ -126,4 +127,52 @@ type Contributors
 contributors : List Contributors
 contributors =
     [ Jxx, Matt, Laozi ]
+"""
+
+
+
+-- TEST 4
+
+
+test4 =
+    { description = "should add an element to a list of tuples in project"
+    , src = src4
+    , rule = rule4
+    , under = under4
+    , fixed = fixed4
+    , message = "Add 2 elements to the list"
+    }
+
+
+src4 =
+    """module Routes exposing (..)
+
+type Route
+    = HomepageRoute
+    | Quotes
+
+routesAndNames : List (Route, String)
+routesAndNames =
+    [(HomepageRoute, "homepage")]
+"""
+
+
+rule4 =
+    makeRule "Routes" "routesAndNames" [ "(Quotes, \"quotes\")" ]
+
+
+under4 =
+    """[(HomepageRoute, "homepage")]"""
+
+
+fixed4 =
+    """module Routes exposing (..)
+
+type Route
+    = HomepageRoute
+    | Quotes
+
+routesAndNames : List (Route, String)
+routesAndNames =
+    [(HomepageRoute, "homepage"), (Quotes, "quotes")]
 """
