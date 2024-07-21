@@ -185,7 +185,7 @@ showCurrentUser model =
 
 signOutButton : String -> Element.Element MagicLink.Types.Msg
 signOutButton str =
-    button MagicLink.Types.SignOut ("Sign out " ++ str)
+    Element.el [ Element.paddingXY 24 0 ] (button MagicLink.Types.SignOut ("Sign out " ++ str))
 
 
 cancelSignUpButton =

@@ -270,8 +270,8 @@ configView =
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
-    --, ReplaceFunction.config "View.Main" "headerRow model" headerRow |> ReplaceFunction.makeRule
-    , ElementToList.makeRule "View.Main" "headerRow =" [  "Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg"]
+    , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
+    --, ElementToList.makeRule "View.Main" "headerRow =" [  "Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg"]
      ]
 
 
