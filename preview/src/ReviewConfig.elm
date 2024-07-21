@@ -25,20 +25,24 @@ import Install.Type
 import Install.TypeVariant as TypeVariant
 import Regex
 import Review.Rule exposing (Rule)
+import String.Extra
 
 
 config =
     configAll
 
 
-configAll =
+configAll : List Rule
+configAll = List.concat [
     configAtmospheric
-        ++ configUsers
-        ++ configAuthTypes
-        ++ configAuthFrontend
-        ++ configAuthBackend
-        ++ configRoute
-        ++ configView
+        , configUsers
+        , configAuthTypes
+        , configAuthFrontend
+        , configAuthBackend
+        , configRoute
+        --, configPages
+        , configView
+        ]
 
 
 configAtmospheric : List Rule
@@ -87,7 +91,29 @@ configUsers =
 
 
 
--- HERE
+
+configgg : List Rule
+configgg =
+   addPages [ "quotes", "jokes"]
+
+addPages : List String -> List Rule
+addPages pageNames =
+    List.concatMap addPage pageNames
+
+addPage : String -> List Rule
+addPage page =
+   let
+    routeTitle = String.Extra.toTitleCase page
+    routeName = routeTitle ++ "Route"
+
+   in
+    [
+      TypeVariant.makeRule "Route" "Route" [ routeName ]
+    , ClauseInCase.config "View.Main" "loadedView" routeName ("generic model Pages." ++ (routeTitle) ++ ".view") |> ClauseInCase.makeRule
+    , Import.qualified "View.Main" ["Pages." ++ routeTitle] |> Import.makeRule
+    , ElementToList.makeRule "Route" "routesAndNames" [ "(JokesRoute, \"jokes\")", "(QuotesRoute, \"quotes\")"]
+    ]
+
 
 
 configMagicLinkMinimal : List Rule
@@ -235,152 +261,32 @@ configAuthBackend =
 configRoute : List Rule
 configRoute =
     [ -- ROUTE
+
       TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "NotesRoute", "SignInRoute", "AdminRoute" ]
-    --, ReplaceFunction.config "Route" "decode" decode |> ReplaceFunction.makeRule
-    --, ReplaceFunction.config "Route" "encode" encode |> ReplaceFunction.makeRule
-     , ElementToList.makeRule "Route" "routesAndNames" [ "(TermsOfServiceRoute, \"tos\")", "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
+     , ElementToList.makeRule "Route" "routesAndNames" [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
     ]
 
+configPages =
+    addPages [ "-term-of-service"]
 
+configView : List Rule
 configView =
     [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
-   -- , InsertFunction.config "View.Main" "generic" generic |> InsertFunction.makeRule
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
-    , ReplaceFunction.config "View.Main" "headerRow" (asOneLine headerRow) |> ReplaceFunction.makeRule
-    ]
+     ]
 
+
+-- addPages [ "quotes", "jokes"]
 
 
 -- VALUES USED IN THE RULES:
 
-
-headerRow =
-    """headerRow model = [ headerView model model.route { window = model.window, isCompact = True }, Pages.SignIn.headerView model.magicLinkModel model.route { window = model.window, isCompact = True } |> Element.map Types.AuthFrontendMsg ]"""
-
-
 adminRoute =
     "if User.isAdmin model.magicLinkModel.currentUserData then generic model Pages.Admin.view else generic model Pages.Home.view"
-
-
-generic =
-    """generic : Types.LoadedModel -> (Types.LoadedModel -> Element Types.FrontendMsg) -> Element Types.FrontendMsg
-generic model view_ =
-    Element.column
-        [ Element.width Element.fill, Element.height Element.fill ]
-        [ Element.row [ Element.width (Element.px model.window.width), Element.Background.color View.Color.blue ]
-            [ ---
-              Pages.SignIn.headerView model.magicLinkModel
-                model.route
-                { window = model.window, isCompact = True }
-                |> Element.map Types.AuthFrontendMsg
-            , headerView model model.route { window = model.window, isCompact = True }
-            ]
-        , Element.column
-            (Element.padding 20
-                :: Element.scrollbarY
-                :: Element.height (Element.px <| model.window.height - 95)
-                :: Theme.contentAttributes
-            )
-            [ view_ model -- |> Element.map Types.AuthFrontendMsg
-            ]
-        , footer model.route model
-        ]
-"""
-
-
-encode =
-    """encode : Route -> String
-encode route =
-    Url.Builder.absolute
-        (case route of
-            HomepageRoute ->
-                []
-
-            CounterPageRoute ->
-                [ "counter" ]
-
-            TermsOfServiceRoute ->
-                [ "terms" ]
-
-            Notes ->
-                [ "notes" ]
-
-            SignInRoute ->
-                [ "signin" ]
-
-            AdminRoute ->
-                [ "admin" ]
-        )
-        (case route of
-            HomepageRoute ->
-                []
-
-            CounterPageRoute ->
-                []
-
-            TermsOfServiceRoute ->
-                []
-
-            Notes ->
-                []
-
-            SignInRoute ->
-                []
-
-            AdminRoute ->
-                []
-        )
-"""
-
-
-decode =
-    """decode : Url -> Route
-decode url =
-    Url.Parser.oneOf
-        [ Url.Parser.top |> Url.Parser.map HomepageRoute
-        , Url.Parser.s "counter" |> Url.Parser.map CounterPageRoute
-        , Url.Parser.s "admin" |> Url.Parser.map AdminRoute
-        , Url.Parser.s "notes" |> Url.Parser.map Notes
-        , Url.Parser.s "signin" |> Url.Parser.map SignInRoute
-        , Url.Parser.s "tos" |> Url.Parser.map TermsOfServiceRoute
-        ]
-        |> (\\a -> Url.Parser.parse a url |> Maybe.withDefault HomepageRoute)
-"""
-
-tryLoading1 =
-    """tryLoading : LoadingModel -> ( FrontendModel, Cmd FrontendMsg )
-tryLoading loadingModel =
-    Maybe.map
-        (\\window ->
-            case loadingModel.route of
-                _ ->
-                    let
-                        authRedirectBaseUrl =
-                            let
-                                initUrl =
-                                    loadingModel.initUrl
-                            in
-                            { initUrl | query = Nothing, fragment = Nothing }
-                    in
-                    ( Loaded
-                        { key = loadingModel.key
-                        , now = loadingModel.now
-                        , counter = 0
-                        , window = window
-                        , showTooltip = False
-                        , users = Dict.empty
-                        , route = loadingModel.route
-                        , message = "Starting up ..."
-                        }
-                    , Cmd.none
-                    )
-        )
-        loadingModel.window
-        |> Maybe.withDefault ( Loading loadingModel, Cmd.none )"""
 
 
 tryLoading2 =
@@ -418,15 +324,12 @@ tryLoading loadingModel =
 
 
 -- Function to compress runs of spaces to a single space
-
-
 asOneLine : String -> String
 asOneLine str =
     str
         |> String.trim
         |> compressSpaces
         |> String.split "\n"
-        -- |> List.filter (\s -> s /= "")
         |> String.join " "
 
 
