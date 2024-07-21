@@ -4,9 +4,10 @@ import Browser
 import Element exposing (Element)
 import Element.Background
 import Element.Font
-import Pages.Counter
 import Pages.Home
+import Pages.Notes
 import Route exposing (Route(..))
+import String.Extra
 import Types exposing (FrontendModel(..), FrontendMsg, LoadedModel)
 import View.Color
 
@@ -49,8 +50,8 @@ loadedView model =
         HomepageRoute ->
             generic model Pages.Home.view
 
-        CounterPageRoute ->
-            generic model Pages.Counter.view
+        NotesRoute ->
+            generic model Pages.Notes.view
 
 
 generic : Types.LoadedModel -> (Types.LoadedModel -> Element Types.FrontendMsg) -> Element Types.FrontendMsg
@@ -74,6 +75,7 @@ generic model view_ =
 headerRow model =
     [ headerView model model.route { window = model.window, isCompact = True } ]
 
+
 headerView : Types.LoadedModel -> Route -> { window : { width : Int, height : Int }, isCompact : Bool } -> Element Types.FrontendMsg
 headerView model route config =
     Element.el
@@ -87,14 +89,28 @@ headerView model route config =
             , Element.Background.color View.Color.blue
             , Element.Font.color (Element.rgb 1 1 1)
             ]
-            [ Element.link
-                (linkStyle route HomepageRoute)
-                { url = Route.encode HomepageRoute, label = Element.text "Home" }
-            , Element.link
-                (linkStyle route CounterPageRoute)
-                { url = Route.encode CounterPageRoute, label = Element.text "Counter" }
-            ]
+            (makeLinks route)
         )
+
+
+homePageLink : Route -> Element msg
+homePageLink route =
+    Element.link
+        (linkStyle route HomepageRoute)
+        { url = Route.encode HomepageRoute, label = Element.text "Home" }
+
+
+makeLink : Route -> ( Route, String ) -> Element msg
+makeLink currentRoute ( route, name ) =
+    Element.link
+        (linkStyle currentRoute route)
+        { url = Route.encode route, label = Element.text (String.Extra.toTitleCase name) }
+
+
+makeLinks : Route -> List (Element msg)
+makeLinks route =
+    homePageLink route
+        :: List.map (makeLink route) Route.routesAndNames
 
 
 linkStyle : Route -> Route -> List (Element.Attribute msg)

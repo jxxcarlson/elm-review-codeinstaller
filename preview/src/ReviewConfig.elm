@@ -19,6 +19,7 @@ import Install.Function.ReplaceFunction as ReplaceFunction
 import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
 import Install.Initializer as Initializer
 import Install.InitializerCmd as InitializerCmd
+import Install.ElementToList as ElementToList
 import Install.Subscription as Subscription
 import Install.Type
 import Install.TypeVariant as TypeVariant
@@ -44,7 +45,7 @@ configAtmospheric : List Rule
 configAtmospheric =
     [ -- Add fields randomAtmosphericNumbers and time to BackendModel
       Import.qualified "Types" [ "Http" ] |> Import.makeRule
-    , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper" ] |> Import.makeRule
+    , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper", "MagicLink.Backend", "MagicLink.Auth" ] |> Import.makeRule
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"
         [ "randomAtmosphericNumbers : Maybe (List Int)"
@@ -234,20 +235,21 @@ configAuthBackend =
 configRoute : List Rule
 configRoute =
     [ -- ROUTE
-      TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "Notes", "SignInRoute", "AdminRoute" ]
-    , ReplaceFunction.config "Route" "decode" decode |> ReplaceFunction.makeRule
-    , ReplaceFunction.config "Route" "encode" encode |> ReplaceFunction.makeRule
+      TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "NotesRoute", "SignInRoute", "AdminRoute" ]
+    --, ReplaceFunction.config "Route" "decode" decode |> ReplaceFunction.makeRule
+    --, ReplaceFunction.config "Route" "encode" encode |> ReplaceFunction.makeRule
+     , ElementToList.makeRule "Route" "routesAndNames" [ "(TermsOfServiceRoute, \"tos\")", "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
     ]
 
 
 configView =
     [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
-    , ClauseInCase.config "View.Main" "loadedView" "Notes" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
+    , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
-    , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model (generic model Pages.Counter.view)" |> ClauseInCase.makeRule
-    , InsertFunction.config "View.Main" "generic" generic |> InsertFunction.makeRule
-    , Import.qualified "View.Main" [ "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
+    , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
+   -- , InsertFunction.config "View.Main" "generic" generic |> InsertFunction.makeRule
+    , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
     , ReplaceFunction.config "View.Main" "headerRow" (asOneLine headerRow) |> ReplaceFunction.makeRule
     ]
 
