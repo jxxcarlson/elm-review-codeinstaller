@@ -137,7 +137,7 @@ signOut model =
         --, adminDisplay = ADUser
         , message = ""
       }
-    , Cmd.none
+    , Lamdera.sendToBackend (AuthToBackend Auth.Common.AuthLogoutRequested)
     )
 
 

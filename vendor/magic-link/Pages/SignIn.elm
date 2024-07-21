@@ -1,4 +1,4 @@
-module Pages.SignIn exposing (headerView, init, view)
+module Pages.SignIn exposing (headerView, init, signOutButton, view)
 
 import Auth.Common
 import Element exposing (Element)
@@ -81,6 +81,7 @@ signedInView model =
             Element.none
 
         Just userData ->
+            -- TODO SIGNOUT BUTTON
             signOutButton userData.username
 
 

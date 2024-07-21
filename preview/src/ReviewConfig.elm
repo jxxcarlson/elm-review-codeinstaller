@@ -40,7 +40,7 @@ configAll = List.concat [
         , configAuthFrontend
         , configAuthBackend
         , configRoute
-        --, configPages
+        , newPages
         , configView
         ]
 
@@ -91,28 +91,6 @@ configUsers =
 
 
 
-
-configgg : List Rule
-configgg =
-   addPages [ "quotes", "jokes"]
-
-addPages : List String -> List Rule
-addPages pageNames =
-    List.concatMap addPage pageNames
-
-addPage : String -> List Rule
-addPage page =
-   let
-    routeTitle = String.Extra.toTitleCase page
-    routeName = routeTitle ++ "Route"
-
-   in
-    [
-      TypeVariant.makeRule "Route" "Route" [ routeName ]
-    , ClauseInCase.config "View.Main" "loadedView" routeName ("generic model Pages." ++ (routeTitle) ++ ".view") |> ClauseInCase.makeRule
-    , Import.qualified "View.Main" ["Pages." ++ routeTitle] |> Import.makeRule
-    , ElementToList.makeRule "Route" "routesAndNames" [ "(JokesRoute, \"jokes\")", "(QuotesRoute, \"quotes\")"]
-    ]
 
 
 
@@ -262,26 +240,43 @@ configRoute : List Rule
 configRoute =
     [ -- ROUTE
 
-      TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "NotesRoute", "SignInRoute", "AdminRoute" ]
+      TypeVariant.makeRule "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
      , ElementToList.makeRule "Route" "routesAndNames" [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
     ]
 
-configPages =
-    addPages [ "-term-of-service"]
+
+newPages = addPages [("TermsOfService", "terms")]
+
+
+addPages : List (String, String) -> List Rule
+addPages  pageData =
+    List.concatMap addPage pageData
+
+
+
+addPage : (String,  String) -> List Rule
+addPage (pageTitle, routeName)  =
+    [ TypeVariant.makeRule "Route" "Route" [ pageTitle ++ "Route" ]
+    , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ (pageTitle) ++ ".view") |> ClauseInCase.makeRule
+    , Import.qualified "View.Main" ["Pages." ++ pageTitle] |> Import.makeRule
+    , ElementToList.makeRule "Route" "routesAndNames" [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")"]
+    ]
+
 
 configView : List Rule
 configView =
     [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
-    , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
+   -- , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
+    , ReplaceFunction.config "View.Main" "headerRow" headerRow
+            |> ReplaceFunction.makeRule
      ]
 
 
--- addPages [ "quotes", "jokes"]
-
+headerRow = """[ headerView model model.route { window = model.window, isCompact = True }, showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
 
 -- VALUES USED IN THE RULES:
 

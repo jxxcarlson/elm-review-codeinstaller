@@ -4,6 +4,7 @@ module MagicLink.Auth exposing
     , updateFromBackend
     )
 
+import AssocList
 import Auth.Common exposing (UserInfo)
 import Auth.Flow
 import Auth.Method.EmailMagicLink
@@ -46,7 +47,7 @@ update msg model =
             ( { model | signInStatus = MagicLink.Types.SigningUp }, Cmd.none )
 
         MagicLink.Types.CloseSignUp ->
-                    ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
+            ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
 
         MagicLink.Types.TypedEmailInSignInForm email ->
             MagicLink.Frontend.enterEmail model email
@@ -237,7 +238,12 @@ backendConfig model =
 
 logout : SessionId -> ClientId -> BackendModel -> ( BackendModel, Cmd msg )
 logout sessionId _ model =
-    ( { model | sessions = model.sessions |> Dict.remove sessionId }, Cmd.none )
+    ( { model
+        | sessions = model.sessions |> Dict.remove sessionId
+        , sessionDict = AssocList.remove sessionId model.sessionDict
+      }
+    , Cmd.none
+    )
 
 
 renewSession : Lamdera.SessionId -> Lamdera.ClientId -> BackendModel -> ( BackendModel, Cmd BackendMsg )

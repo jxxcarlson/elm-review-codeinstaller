@@ -1,4 +1,4 @@
-module View.Main exposing (view)
+module View.Main exposing (showCurrentUser, view)
 
 import Browser
 import Element exposing (Element)
@@ -76,12 +76,26 @@ headerRow model =
     [ headerView model model.route { window = model.window, isCompact = True } ]
 
 
+
+-- showCurrentUser : Model -> Element MagicLink.Types.Msg
+
+
+showCurrentUser model =
+    case model.magicLinkModel.currentUserData of
+        Nothing ->
+            Element.none
+
+        Just userData ->
+            -- TODO SIGNOUT BUTTON
+            Pages.SignIn.signOutButton userData.username
+
+
 headerView : Types.LoadedModel -> Route -> { window : { width : Int, height : Int }, isCompact : Bool } -> Element Types.FrontendMsg
 headerView model route config =
     Element.el
         [ Element.Background.color View.Color.blue
         , Element.paddingXY 24 16
-        , Element.width (Element.px 300)
+        , Element.width Element.fill
         , Element.alignTop
         ]
         (Element.wrappedRow
