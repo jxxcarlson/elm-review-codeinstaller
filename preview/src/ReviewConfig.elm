@@ -266,17 +266,16 @@ addPage (pageTitle, routeName)  =
 configView : List Rule
 configView =
     [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
-   -- , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
-    , ReplaceFunction.config "View.Main" "headerRow" headerRow
-            |> ReplaceFunction.makeRule
+    --, ReplaceFunction.config "View.Main" "headerRow model" headerRow |> ReplaceFunction.makeRule
+    , ElementToList.makeRule "View.Main" "headerRow =" [  "Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg"]
      ]
 
 
-headerRow = """[ headerView model model.route { window = model.window, isCompact = True }, showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
+headerRow = """headerRow model = [ headerView model model.route { window = model.window, isCompact = True }, Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
 
 -- VALUES USED IN THE RULES:
 
