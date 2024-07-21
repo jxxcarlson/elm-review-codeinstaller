@@ -1,4 +1,4 @@
-module Pages.SignIn exposing (headerView, init, signOutButton, view)
+module Pages.SignIn exposing (headerView, init, showCurrentUser, view)
 
 import Auth.Common
 import Element exposing (Element)
@@ -171,6 +171,16 @@ headerView model route config =
 signUpButton : Element.Element MagicLink.Types.Msg
 signUpButton =
     button MagicLink.Types.SubmitSignUp "Submit"
+
+
+showCurrentUser : { a | magicLinkModel : { b | currentUserData : Maybe { c | username : String } } } -> Element MagicLink.Types.Msg
+showCurrentUser model =
+    case model.magicLinkModel.currentUserData of
+        Nothing ->
+            Element.none
+
+        Just userData ->
+            signOutButton userData.username
 
 
 signOutButton : String -> Element.Element MagicLink.Types.Msg
