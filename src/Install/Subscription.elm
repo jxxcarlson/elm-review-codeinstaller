@@ -14,8 +14,6 @@ import Elm.Syntax.Range exposing (Location, Range)
 import Install.Library
 import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
-import Set exposing (Set)
-import Set.Extra
 
 
 {-| Suppose that you have the following code in your `Backend.elm` file:
@@ -38,7 +36,7 @@ makeRule moduleName subscriptions =
     let
         --visitor : Node Declaration -> Context -> ( List (Error {}), Context )
         visitor =
-            declarationVisitor moduleName (Set.fromList subscriptions)
+            declarationVisitor moduleName subscriptions
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Subscription" contextCreator
         |> Rule.withDeclarationEnterVisitor visitor
@@ -63,7 +61,7 @@ contextCreator =
         |> Rule.withModuleName
 
 
-declarationVisitor : String -> Set String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
+declarationVisitor : String -> List String -> Node Declaration -> Context -> ( List (Rule.Error {}), Context )
 declarationVisitor moduleName items (Node _ declaration) context =
     if Install.Library.isInCorrectModule moduleName context then
         case declaration of
@@ -118,11 +116,8 @@ declarationVisitor moduleName items (Node _ declaration) context =
                                                                 []
                                                    )
 
-                                        stringifiedExprs =
-                                            listElements |> List.map Install.Library.expressionToString
-
                                         isAlreadyImplemented =
-                                            Set.Extra.isSubsetOf (Set.fromList stringifiedExprs) items
+                                            Install.Library.areItemsInList items listElements
                                     in
                                     if isAlreadyImplemented then
                                         ( [], context )
@@ -131,7 +126,6 @@ declarationVisitor moduleName items (Node _ declaration) context =
                                         let
                                             replacementCode =
                                                 items
-                                                    |> Set.toList
                                                     |> List.map (\item -> ", " ++ item)
                                                     |> String.concat
                                         in

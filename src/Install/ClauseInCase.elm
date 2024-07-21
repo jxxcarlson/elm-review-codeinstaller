@@ -195,7 +195,7 @@ visitFunction clause functionCall expressionNode insertAt customError context =
                 findClause : String -> List Case -> Bool
                 findClause clause_ cases_ =
                     List.any
-                        (\pattern -> patternToString pattern == clause_)
+                        (\pattern -> Install.Library.patternToString (Node.empty pattern) == clause_)
                         (getPatterns cases_)
 
                 isClauseStringPattern =
@@ -247,7 +247,7 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                     cases
                         |> List.Extra.find
                             (\( pattern, _ ) ->
-                                nodePatternToString pattern == normalizedPreviousClause
+                                Install.Library.patternToString pattern == normalizedPreviousClause
                             )
             in
             case previousClausePattern of
@@ -451,63 +451,6 @@ findNestedCaseNode node =
 
         _ ->
             Nothing
-
-
-patternToString : Pattern -> String
-patternToString pattern =
-    String.Extra.clean <|
-        case pattern of
-            AllPattern ->
-                "_"
-
-            UnitPattern ->
-                "()"
-
-            CharPattern char ->
-                "'" ++ String.fromChar char ++ "'"
-
-            StringPattern str ->
-                "\"" ++ str ++ "\""
-
-            IntPattern int ->
-                String.fromInt int
-
-            HexPattern hex ->
-                "0x" ++ String.fromInt hex
-
-            FloatPattern float ->
-                String.fromFloat float
-
-            TuplePattern patterns ->
-                "(" ++ String.join ", " (List.map nodePatternToString patterns) ++ ")"
-
-            RecordPattern fields ->
-                "{ " ++ String.join ", " (List.map Node.value fields) ++ " }"
-
-            UnConsPattern head tail ->
-                nodePatternToString head ++ " :: " ++ nodePatternToString tail
-
-            ListPattern patterns ->
-                "[" ++ String.join ", " (List.map nodePatternToString patterns) ++ "]"
-
-            VarPattern var ->
-                var
-
-            NamedPattern qualifiedNameRef pattern_ ->
-                qualifiedNameRef.name ++ " " ++ String.join " " (List.map nodePatternToString pattern_)
-
-            AsPattern pattern_ (Node _ var) ->
-                nodePatternToString pattern_ ++ " as " ++ var
-
-            ParenthesizedPattern pattern_ ->
-                "(" ++ nodePatternToString pattern_ ++ ")"
-
-
-nodePatternToString : Node Pattern -> String
-nodePatternToString node =
-    node
-        |> Node.value
-        |> patternToString
 
 
 isStringPattern : Pattern -> Bool

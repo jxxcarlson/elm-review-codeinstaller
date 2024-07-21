@@ -14,8 +14,6 @@ import Elm.Syntax.Range exposing (Location)
 import Install.Library
 import Review.Fix as Fix
 import Review.Rule as Rule exposing (Rule)
-import Set
-import Set.Extra
 import String.Extra
 
 
@@ -84,11 +82,8 @@ declarationVisitor moduleName functionName items (Node _ declaration) context =
 
                         Just listElements ->
                             let
-                                stringifiedExprs =
-                                    listElements |> List.map Install.Library.expressionToString |> Set.fromList
-
                                 isAlreadyImplemented =
-                                    Set.Extra.isSubsetOf stringifiedExprs (Set.fromList items)
+                                    Install.Library.areItemsInList items listElements
                             in
                             if isAlreadyImplemented then
                                 ( [], context )

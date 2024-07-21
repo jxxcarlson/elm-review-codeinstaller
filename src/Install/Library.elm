@@ -2,7 +2,7 @@ module Install.Library exposing (..)
 
 import Elm.Parser
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda)
+import Elm.Syntax.Expression exposing (Case, CaseBlock, Expression(..), Function, FunctionImplementation, Lambda, LetDeclaration(..))
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
@@ -11,6 +11,8 @@ import List.Extra
 import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule
 import Set exposing (Set)
+import Set.Extra as Set
+import String.Extra
 
 
 type alias Ignored =
@@ -312,52 +314,187 @@ getDeclarationName declaration =
             ""
 
 
-{-| Converts an expression to a string. Not fully implemented yet, so check if it covers your case before using.
--}
 expressionToString : Node Expression -> String
-expressionToString (Node _ expression) =
-    case expression of
-        FunctionOrValue moduleName name ->
-            case moduleName of
-                [] ->
-                    name
+expressionToString (Node _ expr) =
+    let
+        recordSetterToString : Node Elm.Syntax.Expression.RecordSetter -> String
+        recordSetterToString (Node _ ( name, expression )) =
+            Node.value name ++ " = " ++ expressionToString expression
+    in
+    String.Extra.clean <|
+        case expr of
+            FunctionOrValue moduleName name ->
+                case moduleName of
+                    [] ->
+                        name
 
-                _ ->
-                    String.join "." moduleName ++ "." ++ name
+                    _ ->
+                        String.join "." moduleName ++ "." ++ name
 
-        IfBlock c t f ->
-            "if " ++ expressionToString c ++ " then " ++ expressionToString t ++ " else " ++ expressionToString f
+            IfBlock c t f ->
+                "if " ++ expressionToString c ++ " then " ++ expressionToString t ++ " else " ++ expressionToString f
 
-        -- OperatorApplication op l r ->
-        --     expressionToString l ++ " " ++ op ++ " " ++ expressionToString r
-        Application children ->
-            String.join " " (List.map expressionToString children)
+            Application children ->
+                String.join " " (List.map expressionToString children)
 
-        TupledExpression children ->
-            "(" ++ String.join ", " (List.map expressionToString children) ++ ")"
+            TupledExpression children ->
+                "(" ++ String.join ", " (List.map expressionToString children) ++ ")"
 
-        ListExpr children ->
-            "[" ++ String.join ", " (List.map expressionToString children) ++ "]"
+            ListExpr children ->
+                "[" ++ String.join ", " (List.map expressionToString children) ++ "]"
 
-        Negation child ->
-            "-" ++ expressionToString child
+            Negation child ->
+                "not " ++ expressionToString child
 
-        ParenthesizedExpression child ->
-            "(" ++ expressionToString child ++ ")"
+            ParenthesizedExpression child ->
+                "(" ++ expressionToString child ++ ")"
 
-        RecordAccess child field ->
-            expressionToString child ++ "." ++ Node.value field
+            RecordAccess child field ->
+                expressionToString child ++ "." ++ Node.value field
 
-        Literal str ->
-            "\"" ++ str ++ "\""
+            Literal str ->
+                "\"" ++ str ++ "\""
 
-        -- CaseExpression caseBlock ->
-        --     "case " ++ expressionToString caseBlock.expression ++ " of " ++ String.join " " (List.map caseToString caseBlock.cases)
-        -- LambdaExpression lambda ->
-        --     "\\" ++ String.join " " (List.map patternToString lambda.args) ++ " -> " ++ expressionToString lambda.expression
-        -- RecordExpr recordSetters ->
-        --     "{ " ++ String.join ", " (List.map recordSetterToString recordSetters) ++ " }"
-        -- RecordUpdateExpression record recordSetters ->
-        --     "{ " ++ expressionToString record ++ " | " ++ String.join ", " (List.map recordSetterToString recordSetters) ++ " }"
-        _ ->
-            ""
+            CharLiteral char ->
+                "'" ++ String.fromChar char ++ "'"
+
+            UnitExpr ->
+                "()"
+
+            OperatorApplication op _ l r ->
+                expressionToString l ++ " " ++ op ++ " " ++ expressionToString r
+
+            PrefixOperator op ->
+                op
+
+            Operator op ->
+                op
+
+            Integer int ->
+                String.fromInt int
+
+            Hex hex ->
+                "0x" ++ String.fromInt hex
+
+            Floatable float ->
+                String.fromFloat float
+
+            LetExpression { declarations, expression } ->
+                let
+                    letDeclarationsToString declaration =
+                        case declaration of
+                            LetFunction function ->
+                                let
+                                    ( name, args, expression_ ) =
+                                        function.declaration
+                                            |> Node.value
+                                            |> (\dec -> ( Node.value dec.name, dec.arguments, dec.expression ))
+                                in
+                                name
+                                    ++ " "
+                                    ++ String.join " " (List.map patternToString args)
+                                    ++ " = "
+                                    ++ expressionToString expression_
+
+                            LetDestructuring pattern exprs ->
+                                patternToString pattern ++ " = " ++ expressionToString exprs
+                in
+                "let " ++ String.join " " (List.map (Node.value >> letDeclarationsToString) declarations) ++ " in " ++ expressionToString expression
+
+            CaseExpression caseBlock ->
+                let
+                    caseToString ( pattern, expression ) =
+                        patternToString pattern ++ " -> " ++ expressionToString expression
+                in
+                "case " ++ expressionToString caseBlock.expression ++ " of " ++ String.join " " (List.map caseToString caseBlock.cases)
+
+            LambdaExpression lambda ->
+                "\\" ++ String.join " " (List.map patternToString lambda.args) ++ " -> " ++ expressionToString lambda.expression
+
+            RecordExpr recordSetters ->
+                "{" ++ String.join ", " (List.map recordSetterToString recordSetters) ++ "}"
+
+            RecordUpdateExpression record recordSetters ->
+                "{" ++ Node.value record ++ " | " ++ String.join ", " (List.map recordSetterToString recordSetters) ++ "}"
+
+            RecordAccessFunction field ->
+                "." ++ field
+
+            GLSLExpression str ->
+                str
+
+
+patternToString : Node Pattern -> String
+patternToString (Node _ pattern) =
+    String.Extra.clean <|
+        case pattern of
+            AllPattern ->
+                "_"
+
+            UnitPattern ->
+                "()"
+
+            CharPattern char ->
+                "'" ++ String.fromChar char ++ "'"
+
+            StringPattern str ->
+                "\"" ++ str ++ "\""
+
+            IntPattern int ->
+                String.fromInt int
+
+            HexPattern hex ->
+                "0x" ++ String.fromInt hex
+
+            FloatPattern float ->
+                String.fromFloat float
+
+            TuplePattern patterns ->
+                "(" ++ String.join ", " (List.map patternToString patterns) ++ ")"
+
+            RecordPattern fields ->
+                "{ " ++ String.join ", " (List.map Node.value fields) ++ " }"
+
+            UnConsPattern head tail ->
+                patternToString head ++ " :: " ++ patternToString tail
+
+            ListPattern patterns ->
+                "[" ++ String.join ", " (List.map patternToString patterns) ++ "]"
+
+            VarPattern var ->
+                var
+
+            NamedPattern qualifiedNameRef pattern_ ->
+                qualifiedNameRef.name ++ " " ++ String.join " " (List.map patternToString pattern_)
+
+            AsPattern pattern_ (Node _ var) ->
+                patternToString pattern_ ++ " as " ++ var
+
+            ParenthesizedPattern pattern_ ->
+                "(" ++ patternToString pattern_ ++ ")"
+
+
+isStringEqualToExpression : String -> Node Expression -> Bool
+isStringEqualToExpression str expr =
+    let
+        removeLineBreaksAndIndentation : String -> String
+        removeLineBreaksAndIndentation string =
+            string
+                |> String.split "\n"
+                |> List.map String.Extra.clean
+                |> String.join " "
+                |> String.Extra.clean
+    in
+    expressionToString expr == removeLineBreaksAndIndentation str
+
+
+areItemsInList : List String -> List (Node Expression) -> Bool
+areItemsInList newItems oldItems =
+    let
+        stringifiedExprs : Set String
+        stringifiedExprs =
+            oldItems
+                |> List.map expressionToString
+                |> Set.fromList
+    in
+    Set.isSubsetOf stringifiedExprs (Set.fromList newItems)
