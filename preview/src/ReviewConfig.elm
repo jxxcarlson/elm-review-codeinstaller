@@ -19,28 +19,12 @@ import Install.Function.ReplaceFunction as ReplaceFunction
 import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
 import Install.Initializer as Initializer
 import Install.InitializerCmd as InitializerCmd
+import Install.ElementToList as ElementToList
 import Install.Subscription as Subscription
 import Install.Type
 import Install.TypeVariant as TypeVariant
 import Regex
 import Review.Rule exposing (Rule)
-
-
-
-{-
-
-   NOTES.
-
-   1. (FIX FAILED) Install.Initializer: Add cmds Time.now |> Task.perform GotFastTick,
-      MagicLink.Helper.getAtmosphericRandomNumbers to the model
-      (( I failed to apply the automatic fix because it resulted in the same source code. ))
-      See InitializerCmd.makeRule "Backend" "init" below
-      The error is a false positive, but it needs to be fixed.
-
-   2.  Infinite loop: see comments labeled XX.
-
-
--}
 
 
 config =
@@ -61,7 +45,7 @@ configAtmospheric : List Rule
 configAtmospheric =
     [ -- Add fields randomAtmosphericNumbers and time to BackendModel
       Import.qualified "Types" [ "Http" ] |> Import.makeRule
-    , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper" ] |> Import.makeRule
+    , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper", "MagicLink.Backend", "MagicLink.Auth" ] |> Import.makeRule
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"
         [ "randomAtmosphericNumbers : Maybe (List Int)"
@@ -73,12 +57,6 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix"
         ]
-
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
-    --    , { field = "time", value = "Time.millisToPosix 0" }
-    --    ]
     , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
     , ClauseInCase.config "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)" |> ClauseInCase.makeRule
@@ -105,13 +83,6 @@ configUsers =
     , Import.qualified "Frontend" [ "Dict" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
 
-    --, Initializer.makeRule "Backend"
-    --    "init"
-    --    [ { field = "userNameToEmailString", value = "Dict.empty" }, { field = "users", value = "Dict.empty" } ]
-    -- XX: enable the below only if you are not using ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
-    -- later on.  If you enable both, you will get an infinite loop.
-    --, ReplaceFunction.config "Frontend" "tryLoading" tryLoading1
-    --    |> ReplaceFunction.makeRule
     ]
 
 
@@ -184,7 +155,7 @@ configAuthTypes =
 configAuthFrontend : List Rule
 configAuthFrontend =
     [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Import.makeRule
-    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.config loadingModel.initUrl" } ]
+    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
         |> ClauseInCase.withInsertAtBeginning
         |> ClauseInCase.makeRule
@@ -216,9 +187,6 @@ configAuthFrontend =
         ]
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
     , ClauseInCase.config "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
-
-    -- XX, WARNING! Causes infinite loop if ReplaceFunction.config "Frontend" "tryLoading" tryLoading1
-    -- is present
     , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
         |> ReplaceFunction.makeRule
     ]
@@ -226,7 +194,6 @@ configAuthFrontend =
 
 configAuthBackend : List Rule
 configAuthBackend =
-    -- 19 rules
     [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
@@ -268,20 +235,21 @@ configAuthBackend =
 configRoute : List Rule
 configRoute =
     [ -- ROUTE
-      TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "Notes", "SignInRoute", "AdminRoute" ]
-    , ReplaceFunction.config "Route" "decode" decode |> ReplaceFunction.makeRule
-    , ReplaceFunction.config "Route" "encode" encode |> ReplaceFunction.makeRule
+      TypeVariant.makeRule "Route" "Route" [ "TermsOfServiceRoute", "NotesRoute", "SignInRoute", "AdminRoute" ]
+    --, ReplaceFunction.config "Route" "decode" decode |> ReplaceFunction.makeRule
+    --, ReplaceFunction.config "Route" "encode" encode |> ReplaceFunction.makeRule
+     , ElementToList.makeRule "Route" "routesAndNames" [ "(TermsOfServiceRoute, \"tos\")", "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
     ]
 
 
 configView =
     [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "TermsOfServiceRoute" "generic model Pages.TermsOfService.view" |> ClauseInCase.makeRule
-    , ClauseInCase.config "View.Main" "loadedView" "Notes" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
+    , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
-    , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model (generic model Pages.Counter.view)" |> ClauseInCase.makeRule
-    , InsertFunction.config "View.Main" "generic" generic |> InsertFunction.makeRule
-    , Import.qualified "View.Main" [ "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
+    , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
+   -- , InsertFunction.config "View.Main" "generic" generic |> InsertFunction.makeRule
+    , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
     , ReplaceFunction.config "View.Main" "headerRow" (asOneLine headerRow) |> ReplaceFunction.makeRule
     ]
 
@@ -383,30 +351,6 @@ decode url =
         |> (\\a -> Url.Parser.parse a url |> Maybe.withDefault HomepageRoute)
 """
 
-
-
---configReset : List Rule
---configReset =
---    [ TypeVariant.makeRule "Types" "ToBackend" "CounterReset"
---    , TypeVariant.makeRule "Types" "FrontendMsg" "Reset"
---    , ClauseInCase.config "Frontend" "updateLoaded" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
---        |> ClauseInCase.withInsertAfter "Increment"
---        |> ClauseInCase.makeRule
---    , ClauseInCase.config "Backend" "updateFromFrontend" "CounterReset" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )" |> ClauseInCase.makeRule
---    , ReplaceFunction.config "Pages.Counter" "view" viewFunction |> ReplaceFunction.makeRule
---    ]
-
-
-viewFunction =
-    """view model =
-    Html.div [ style "padding" "50px" ]
-        [ Html.button [ onClick Increment ] [ text "+" ]
-        , Html.div [ style "padding" "10px" ] [ Html.text (String.fromInt model.counter) ]
-        , Html.button [ onClick Decrement ] [ text "-" ]
-        , Html.div [] [Html.button [ onClick Reset, style "margin-top" "10px"] [ text "Reset" ]]
-        ] |> Element.html   """
-
-
 tryLoading1 =
     """tryLoading : LoadingModel -> ( FrontendModel, Cmd FrontendMsg )
 tryLoading loadingModel =
@@ -460,7 +404,7 @@ tryLoading loadingModel =
                         , counter = 0
                         , window = window
                         , showTooltip = False
-                        , magicLinkModel = Pages.SignIn.config authRedirectBaseUrl
+                        , magicLinkModel = Pages.SignIn.init authRedirectBaseUrl
                         , route = loadingModel.route
                         , message = "Starting up ..."
                         , users = Dict.empty

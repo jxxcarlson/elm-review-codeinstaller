@@ -151,6 +151,7 @@ userRegistered model user =
     ( { model
         | currentUser = Just user
         , signInStatus = MagicLink.Types.SuccessfulRegistration user.username (EmailAddress.toString user.email)
+        , signInForm = MagicLink.Types.EnterEmail { email = "", pressedSubmitEmail = False, rateLimited = False }
       }
     , Cmd.none
     )

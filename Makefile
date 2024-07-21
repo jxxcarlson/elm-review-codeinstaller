@@ -4,7 +4,7 @@ install:
 	git checkout counter/
 	cp -r counter-original/src/. counter/src/
 	cp vendor-secret/Env.elm counter/src
-	npx elm-review --config preview counter/src --debug --fix-all
+	npx elm-review --config preview counter/src --fix-all
 
 deps:
 	lamdera install MartinSStewart/elm-nonempty-string

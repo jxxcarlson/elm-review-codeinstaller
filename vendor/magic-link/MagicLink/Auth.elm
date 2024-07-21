@@ -45,6 +45,9 @@ update msg model =
         MagicLink.Types.OpenSignUp ->
             ( { model | signInStatus = MagicLink.Types.SigningUp }, Cmd.none )
 
+        MagicLink.Types.CloseSignUp ->
+                    ( { model | signInStatus = MagicLink.Types.NotSignedIn }, Cmd.none )
+
         MagicLink.Types.TypedEmailInSignInForm email ->
             MagicLink.Frontend.enterEmail model email
 
@@ -170,7 +173,7 @@ initiateEmailSignin sessionId clientId model login now =
                             )
 
                         Nothing ->
-                            ( model, MagicLink.Common.sendMessage clientId "You are not properly registered." )
+                            ( model, MagicLink.Common.sendMessage clientId "You are not properly registered. Pleas sign up." )
 
 
 onEmailAuthCallbackReceived :

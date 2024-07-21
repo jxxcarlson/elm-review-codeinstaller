@@ -53,6 +53,7 @@ type Msg
     | CancelSignIn
     | CancelSignUp
     | OpenSignUp
+    | CloseSignUp
     | TypedEmailInSignInForm String
     | SubmitSignUp
     | SignOut
