@@ -13,6 +13,7 @@ all =
         [ Run.testFix test1
         , Run.testFix test1b
         , Run.testFix test2
+        , Run.testFix test2a
         , Run.testFix test3
         , Run.testFix test4
         , Run.testFix test4a
@@ -90,7 +91,7 @@ update msg model =
 
 test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
 test1b =
-    { description = "Test 1b, replace function body of of View.Main.makeLinks"
+    { description = "Test 1b, replace function with unformatted code"
     , src = src1b
     , rule = rule1b
     , under = under1b
@@ -243,6 +244,58 @@ update msg model =
             model
 newFunction model =
     Html.text "This is a test\""""
+
+
+
+-- TEST 2A - should add new function with unformatted code
+
+
+test2a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2a =
+    { description = "Test 2a, add a new function with unformatted code"
+    , src = src1
+    , rule = rule2a
+    , under = under2
+    , fixed = fixed2a
+    , message = "Add function \"makeLinks\""
+    }
+
+
+rule2a : Rule
+rule2a =
+    InsertFunction.config
+        "Frontend"
+        "makeLinks"
+        makeLinks
+        |> InsertFunction.makeRule
+
+
+fixed2a : String
+fixed2a =
+    """module Frontend exposing(..)
+
+type Model = String
+
+init string =
+    (string, Cmd.none)
+
+view model =
+    Html.div [] [ Html.text "Hello, World!" ]
+
+update msg model =
+    case msg of
+        _ ->
+            model
+makeLinks model route =
+    case model.magicLinkModel.currentUserData of
+        Just user ->
+            homePageLink route
+                :: List.map (makeLink route) (List.filter (\\(r, n) -> n /= "signin") Route.routesAndNames)
+
+        Nothing ->
+            homePageLink route
+                :: List.map (makeLink route) Route.routesAndNames
+ """
 
 
 
