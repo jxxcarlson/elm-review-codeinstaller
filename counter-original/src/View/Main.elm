@@ -89,7 +89,7 @@ headerView model route config =
             , Element.Background.color View.Color.blue
             , Element.Font.color (Element.rgb 1 1 1)
             ]
-            (makeLinks route)
+            (makeLinks model route)
         )
 
 
@@ -107,8 +107,8 @@ makeLink currentRoute ( route, name ) =
         { url = Route.encode route, label = Element.text (String.Extra.toTitleCase name) }
 
 
-makeLinks : Route -> List (Element msg)
-makeLinks route =
+makeLinks : Types.LoadedModel -> Route -> List (Element msg)
+makeLinks model route =
     homePageLink route
         :: List.map (makeLink route) Route.routesAndNames
 

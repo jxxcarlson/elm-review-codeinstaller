@@ -271,9 +271,20 @@ configView =
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
     , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
-    --, ElementToList.makeRule "View.Main" "headerRow =" [  "Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg"]
+    , ReplaceFunction.config "View.Main" "makeLinks" makeLinks |> ReplaceFunction.makeRule
      ]
 
+
+makeLinks = """makeLinks model route =
+    case model.magicLinkModel.currentUserData of
+        Just user ->
+            homePageLink route
+                :: List.map (makeLink route) (List.filter (\\(r, n) -> n /= "signin") Route.routesAndNames)
+
+        Nothing ->
+            homePageLink route
+                :: List.map (makeLink route) Route.routesAndNames
+ """
 
 headerRow = """headerRow model = [ headerView model model.route { window = model.window, isCompact = True }, Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
 
