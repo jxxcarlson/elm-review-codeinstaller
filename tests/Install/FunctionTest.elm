@@ -11,6 +11,7 @@ all : Test
 all =
     describe "Install.Function"
         [ Run.testFix test1
+        , Run.testFix test1b
         , Run.testFix test2
         , Run.testFix test3
         , Run.testFix test4
@@ -85,6 +86,110 @@ update msg model =
     case msg of
         _ ->
             model"""
+
+
+test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1b =
+    { description = "Test 1b, replace function body of of View.Main.makeLinks"
+    , src = src1b
+    , rule = rule1b
+    , under = under1b
+    , fixed = fixed1b
+    , message = "Replace function \"makeLinks\""
+    }
+
+
+src1b =
+    """module View.Main exposing (view)
+
+import Browser
+import Element exposing (Element)
+import Element.Background
+import Element.Font
+import Pages.Home
+import Pages.Notes
+import Route exposing (Route(..))
+import String.Extra
+import Types exposing (FrontendModel(..), FrontendMsg, LoadedModel)
+import View.Color
+
+
+noFocus : Element.FocusStyle
+noFocus =
+    { borderColor = Nothing
+    , backgroundColor = Nothing
+    , shadow = Nothing
+    }
+
+makeLinks : Types.LoadedModel -> Route -> List (Element msg)
+makeLinks model route =
+    homePageLink route
+        :: List.map (makeLink route) Route.routesAndNames"""
+
+
+rule1b : Rule
+rule1b =
+    ReplaceFunction.config
+        "View.Main"
+        "makeLinks"
+        makeLinks
+        |> ReplaceFunction.makeRule
+
+
+under1b : String
+under1b =
+    """makeLinks : Types.LoadedModel -> Route -> List (Element msg)
+makeLinks model route =
+    homePageLink route
+        :: List.map (makeLink route) Route.routesAndNames"""
+
+
+fixed1b : String
+fixed1b =
+    """module View.Main exposing (view)
+
+import Browser
+import Element exposing (Element)
+import Element.Background
+import Element.Font
+import Pages.Home
+import Pages.Notes
+import Route exposing (Route(..))
+import String.Extra
+import Types exposing (FrontendModel(..), FrontendMsg, LoadedModel)
+import View.Color
+
+
+noFocus : Element.FocusStyle
+noFocus =
+    { borderColor = Nothing
+    , backgroundColor = Nothing
+    , shadow = Nothing
+    }
+
+makeLinks model route =
+    case model.magicLinkModel.currentUserData of
+        Just user ->
+            homePageLink route
+                :: List.map (makeLink route) (List.filter (\\(r, n) -> n /= "signin") Route.routesAndNames)
+
+        Nothing ->
+            homePageLink route
+                :: List.map (makeLink route) Route.routesAndNames
+ """
+
+
+makeLinks =
+    """makeLinks model route =
+    case model.magicLinkModel.currentUserData of
+        Just user ->
+            homePageLink route
+                :: List.map (makeLink route) (List.filter (\\(r, n) -> n /= "signin") Route.routesAndNames)
+
+        Nothing ->
+            homePageLink route
+                :: List.map (makeLink route) Route.routesAndNames
+ """
 
 
 
