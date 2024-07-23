@@ -119,7 +119,7 @@ declarationVisitor context (Config config_) declaration =
 
                 isNotImplemented : Function -> { a | functionImplementation : String } -> Bool
                 isNotImplemented f confg =
-                    isInCorrectFunction && (Install.Library.isStringEqualToExpression confg.functionImplementation (f.declaration |> Node.value |> .expression) |> not)
+                    isInCorrectFunction && (Install.Library.isStringEqualToDeclaration confg.functionImplementation declaration |> not)
             in
             if isNotImplemented function config_ then
                 replaceFunction { range = Node.range declaration, functionName = config_.functionName, functionImplementation = config_.functionImplementation } context
