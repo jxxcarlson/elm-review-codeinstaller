@@ -4,6 +4,7 @@ import Browser
 import Element exposing (Element)
 import Element.Background
 import Element.Font
+import Pages.Counter
 import Pages.Home
 import Pages.Notes
 import Route exposing (Route(..))
@@ -50,8 +51,8 @@ loadedView model =
         HomepageRoute ->
             generic model Pages.Home.view
 
-        NotesRoute ->
-            generic model Pages.Notes.view
+        CounterPageRoute ->
+            generic model Pages.Counter.view
 
 
 generic : Types.LoadedModel -> (Types.LoadedModel -> Element Types.FrontendMsg) -> Element Types.FrontendMsg
