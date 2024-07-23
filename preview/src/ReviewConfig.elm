@@ -14,7 +14,6 @@ when inside the directory containing this file.
 import Install.ClauseInCase as ClauseInCase
 import Install.ElementToList as ElementToList
 import Install.FieldInTypeAlias as FieldInTypeAlias
-import Install.Function.InsertFunction as InsertFunction
 import Install.Function.ReplaceFunction as ReplaceFunction
 import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
 import Install.Initializer as Initializer
@@ -27,18 +26,26 @@ import Review.Rule exposing (Rule)
 import String.Extra
 
 
-config =
-    configAll
+
+config = makeConfig "Jim Carlson" "jxxcarlson" "jxxcarlson@gmail.com"
 
 
-configAll : List Rule
-configAll =
+makeConfig fullname username email =
+    configAll {fullname = fullname, username = username, email = email }
+
+stringifyAdminConfig : { fullname : String, username : String, email : String } -> String
+stringifyAdminConfig { fullname, username, email } =
+    "{ fullname = " ++ String.Extra.quote fullname ++ ", username = " ++ String.Extra.quote username ++ ", email = " ++ String.Extra.quote email ++"}"
+
+
+configAll : { fullname : String, username : String, email : String } -> List Rule
+configAll adminConfig =
     List.concat
         [ configAtmospheric
         , configUsers
         , configAuthTypes
         , configAuthFrontend
-        , configAuthBackend
+        , configAuthBackend adminConfig
         , configRoute
         , newPages
         , configView
@@ -191,8 +198,8 @@ configAuthFrontend =
     ]
 
 
-configAuthBackend : List Rule
-configAuthBackend =
+configAuthBackend : { fullname : String, username : String, email : String } -> List Rule
+configAuthBackend adminConfig=
     [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
@@ -213,7 +220,7 @@ configAuthBackend =
         , { field = "time", value = "Time.millisToPosix 0" }
         , { field = "sessions", value = "Dict.empty" }
         , { field = "userNameToEmailString", value = "Dict.fromList [ (\"jxxcarlson\", \"jxxcarlson@gmail.com\") ]" }
-        , { field = "users", value = "MagicLink.Helper.testUserDictionary" }
+        , { field = "users", value = "MagicLink.Helper.initialUserDictionary " ++ stringifyAdminConfig adminConfig }
         , { field = "sessionInfo", value = "Dict.empty" }
         , { field = "pendingAuths", value = "Dict.empty" }
         , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }

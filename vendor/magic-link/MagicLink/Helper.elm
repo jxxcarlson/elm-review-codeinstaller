@@ -1,7 +1,7 @@
 module MagicLink.Helper exposing
     ( adminFilter
     , getAtmosphericRandomNumbers
-    , testUserDictionary
+    , initialUserDictionary
     , trigger
     )
 
@@ -27,23 +27,43 @@ trigger msg =
     Task.perform (always msg) Time.now
 
 
-testUserDictionary : Dict.Dict User.EmailString User.User
-testUserDictionary =
-    Dict.fromList
-        [ ( "jxxcarlson@gmail.com"
-          , { fullname = "Jim Carlson"
-            , username = "jxxcarlson"
-            , email = EmailAddress.EmailAddress { domain = "gmail", localPart = "jxxcarlson", tags = [], tld = [ "com" ] }
-            , emailString = "jxxcarlson@gmail.com"
-            , id = "661b76d8-eee8-42fb-a28d-cf8ada73f869"
-            , created_at = Time.millisToPosix 1704237963000
-            , updated_at = Time.millisToPosix 1704237963000
-            , roles = [ User.AdminRole, User.UserRole ]
-            , recentLoginEmails = []
-            , verified = Nothing
-            }
-          )
-        ]
+initialUserDictionary : { fullname : String, username : String, email : String } -> Dict.Dict User.EmailString User.User
+initialUserDictionary { fullname, username, email } =
+    case getParts email of
+        Just parts ->
+            Dict.fromList
+                [ ( email
+                  , { fullname = fullname
+                    , username = username
+                    , email = EmailAddress.EmailAddress { domain = parts.emailDomain, localPart = parts.emailLocalPart, tags = [], tld = parts.emailTld }
+                    , emailString = email
+                    , id = "661b76d8-eee8-42fb-a28d-cf8ada73f869"
+                    , created_at = Time.millisToPosix 1704237963000
+                    , updated_at = Time.millisToPosix 1704237963000
+                    , roles = [ User.AdminRole, User.UserRole ]
+                    , recentLoginEmails = []
+                    , verified = Nothing
+                    }
+                  )
+                ]
+
+        Nothing ->
+            Dict.empty
+
+
+getParts : String -> Maybe { emailDomain : String, emailLocalPart : String, emailTld : List String }
+getParts str =
+    case String.split "@" str of
+        [ localPart, domain ] ->
+            case String.split "." domain of
+                emailDomain :: rest ->
+                    Just { emailDomain = emailDomain, emailLocalPart = localPart, emailTld = rest } |> Debug.log "XX, STUFF"
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 adminFilter user =
