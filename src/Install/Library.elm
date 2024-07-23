@@ -476,16 +476,7 @@ patternToString (Node _ pattern) =
 
 isStringEqualToExpression : String -> Node Expression -> Bool
 isStringEqualToExpression str expr =
-    let
-        removeLineBreaksAndIndentation : String -> String
-        removeLineBreaksAndIndentation string =
-            string
-                |> String.split "\n"
-                |> List.map String.Extra.clean
-                |> String.join " "
-                |> String.Extra.clean
-    in
-    expressionToString expr == removeLineBreaksAndIndentation str
+    expressionToString expr == String.Extra.clean str
 
 
 areItemsInList : List String -> List (Node Expression) -> Bool
