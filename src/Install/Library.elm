@@ -474,9 +474,53 @@ patternToString (Node _ pattern) =
                 "(" ++ patternToString pattern_ ++ ")"
 
 
+declarationToString : Node Declaration -> String
+declarationToString (Node _ declaration) =
+    String.Extra.clean <|
+        case declaration of
+            FunctionDeclaration function ->
+                let
+                    ( name, args, expression ) =
+                        function.declaration
+                            |> Node.value
+                            |> (\dec -> ( Node.value dec.name, dec.arguments, dec.expression ))
+                in
+                name
+                    ++ " "
+                    ++ String.join " " (List.map patternToString args)
+                    ++ " = "
+                    ++ expressionToString expression
+
+            _ ->
+                ""
+
+
+isStringEqualToDeclaration : String -> Node Declaration -> Bool
+isStringEqualToDeclaration str decl =
+    let
+        removeTypeAnnotation initialString =
+            initialString
+                |> String.lines
+                |> (\lines ->
+                        case lines of
+                            [] ->
+                                []
+
+                            first :: rest ->
+                                if String.contains ":" first && String.contains "->" first then
+                                    rest
+
+                                else
+                                    lines
+                   )
+                |> String.join ""
+    in
+    (declarationToString >> deepCleanString) decl == (removeTypeAnnotation >> deepCleanString) str
+
+
 isStringEqualToExpression : String -> Node Expression -> Bool
 isStringEqualToExpression str expr =
-    expressionToString expr == String.Extra.clean str
+    (expressionToString >> deepCleanString) expr == deepCleanString str
 
 
 areItemsInList : List String -> List (Node Expression) -> Bool
@@ -485,7 +529,17 @@ areItemsInList newItems oldItems =
         stringifiedExprs : Set String
         stringifiedExprs =
             oldItems
-                |> List.map expressionToString
+                |> List.map (expressionToString >> deepCleanString)
                 |> Set.fromList
+
+        cleanedNewItems : List String
+        cleanedNewItems =
+            newItems
+                |> List.map deepCleanString
     in
-    Set.isSubsetOf stringifiedExprs (Set.fromList newItems)
+    Set.isSubsetOf stringifiedExprs (Set.fromList cleanedNewItems)
+
+
+deepCleanString : String -> String
+deepCleanString =
+    String.Extra.clean >> String.replace " " ""
