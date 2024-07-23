@@ -27,10 +27,10 @@ import String.Extra
 
 
 
-config = makeConfig "Jim Carlson" "jxxcarlson" "jxxcarlson@gmail.com"
+config = configMagicLinkAuth "Jim Carlson" "jxxcarlson" "jxxcarlson@gmail.com"
 
 
-makeConfig fullname username email =
+configMagicLinkAuth fullname username email =
     configAll {fullname = fullname, username = username, email = email }
 
 stringifyAdminConfig : { fullname : String, username : String, email : String } -> String

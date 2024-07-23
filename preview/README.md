@@ -8,7 +8,7 @@ The ReviewConfig.elm file exposes a function to configure a rule for
 installing magic-link authentication in a Lamdera app:
 
 ```
-config = makeConfig REAL_NAME USER NAME EMAIL
+config = configMagicLinkAuth REAL_NAME USER NAME EMAIL
 ```
 
 # Setup
