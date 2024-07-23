@@ -212,8 +212,8 @@ configAuthBackend =
         [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
         , { field = "time", value = "Time.millisToPosix 0" }
         , { field = "sessions", value = "Dict.empty" }
-        , { field = "userNameToEmailString", value = "Dict.empty" }
-        , { field = "users", value = "Dict.empty" }
+        , { field = "userNameToEmailString", value = "Dict.fromList [ (\"jxxcarlson\", \"jxxcarlson@gmail.com\") ]" }
+        , { field = "users", value = "MagicLink.Helper.testUserDictionary" }
         , { field = "sessionInfo", value = "Dict.empty" }
         , { field = "pendingAuths", value = "Dict.empty" }
         , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }
@@ -229,6 +229,7 @@ configAuthBackend =
     , ClauseInCase.config "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )" |> ClauseInCase.makeRule
     , Subscription.makeRule "Backend" [ "Lamdera.onConnect OnConnected" ]
     ]
+
 
 
 configRoute : List Rule
@@ -263,7 +264,7 @@ configView =
     , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
-    , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
+    , Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
     , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
     , ReplaceFunction.config "View.Main" "makeLinks" makeLinks |> ReplaceFunction.makeRule
     ]
@@ -274,11 +275,12 @@ makeLinks =
     case model.magicLinkModel.currentUserData of
         Just user ->
             homePageLink route
-                :: List.map (makeLink route) (List.filter (\\(r, n) -> n /= "signin") Route.routesAndNames)
+                :: List.map (makeLink route) (Route.routesAndNames |> List.filter (\\(r, n) -> n /= "signin") |> MagicLink.Helper.adminFilter user)
+
 
         Nothing ->
             homePageLink route
-                :: List.map (makeLink route) Route.routesAndNames
+                :: List.map (makeLink route) (Route.routesAndNames |> List.filter (\\( r, n ) -> n /= "admin"))
  """
 
 

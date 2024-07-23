@@ -1,5 +1,6 @@
 module MagicLink.Helper exposing
-    ( getAtmosphericRandomNumbers
+    ( adminFilter
+    , getAtmosphericRandomNumbers
     , testUserDictionary
     , trigger
     )
@@ -42,20 +43,15 @@ testUserDictionary =
             , verified = Nothing
             }
           )
-        , ( "jxxcarlson@mac.com"
-          , { fullname = "Aristotle"
-            , username = "aristotle"
-            , email = EmailAddress.EmailAddress { domain = "mac", localPart = "jxxcarlson", tags = [], tld = [ "com" ] }
-            , emailString = "jxxcarlson@mac.com"
-            , id = "38952d62-9772-4e5d-a927-b8e41b6ef2ed"
-            , created_at = Time.millisToPosix 1704237963000
-            , updated_at = Time.millisToPosix 1704237963000
-            , roles = [ User.UserRole ]
-            , recentLoginEmails = []
-            , verified = Nothing
-            }
-          )
         ]
+
+
+adminFilter user =
+    if not <| List.member User.AdminRole user.roles then
+        List.filter (\( r, n ) -> n /= "admin")
+
+    else
+        identity
 
 
 getAtmosphericRandomNumbers : Cmd Types.BackendMsg
