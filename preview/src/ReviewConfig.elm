@@ -12,14 +12,13 @@ when inside the directory containing this file.
 -}
 
 import Install.ClauseInCase as ClauseInCase
-import Install.ElementToList
+import Install.ElementToList as ElementToList
 import Install.FieldInTypeAlias as FieldInTypeAlias
 import Install.Function.InsertFunction as InsertFunction
 import Install.Function.ReplaceFunction as ReplaceFunction
 import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
 import Install.Initializer as Initializer
 import Install.InitializerCmd as InitializerCmd
-import Install.ElementToList as ElementToList
 import Install.Subscription as Subscription
 import Install.Type
 import Install.TypeVariant as TypeVariant
@@ -33,8 +32,9 @@ config =
 
 
 configAll : List Rule
-configAll = List.concat [
-    configAtmospheric
+configAll =
+    List.concat
+        [ configAtmospheric
         , configUsers
         , configAuthTypes
         , configAuthFrontend
@@ -86,12 +86,7 @@ configUsers =
         |> Import.makeRule
     , Import.qualified "Frontend" [ "Dict" ] |> Import.makeRule
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
-
     ]
-
-
-
-
 
 
 configMagicLinkMinimal : List Rule
@@ -239,27 +234,26 @@ configAuthBackend =
 configRoute : List Rule
 configRoute =
     [ -- ROUTE
-
       TypeVariant.makeRule "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
-     , ElementToList.makeRule "Route" "routesAndNames" [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")",  "(AdminRoute, \"admin\")"]
+    , ElementToList.makeRule "Route" "routesAndNames" [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
     ]
 
 
-newPages = addPages [("TermsOfService", "terms")]
+newPages =
+    addPages [ ( "TermsOfService", "terms" ) ]
 
 
-addPages : List (String, String) -> List Rule
-addPages  pageData =
+addPages : List ( String, String ) -> List Rule
+addPages pageData =
     List.concatMap addPage pageData
 
 
-
-addPage : (String,  String) -> List Rule
-addPage (pageTitle, routeName)  =
+addPage : ( String, String ) -> List Rule
+addPage ( pageTitle, routeName ) =
     [ TypeVariant.makeRule "Route" "Route" [ pageTitle ++ "Route" ]
-    , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ (pageTitle) ++ ".view") |> ClauseInCase.makeRule
-    , Import.qualified "View.Main" ["Pages." ++ pageTitle] |> Import.makeRule
-    , ElementToList.makeRule "Route" "routesAndNames" [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")"]
+    , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view") |> ClauseInCase.makeRule
+    , Import.qualified "View.Main" [ "Pages." ++ pageTitle ] |> Import.makeRule
+    , ElementToList.makeRule "Route" "routesAndNames" [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
     ]
 
 
@@ -272,10 +266,11 @@ configView =
     , Import.qualified "View.Main" [ "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Import.makeRule
     , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
     , ReplaceFunction.config "View.Main" "makeLinks" makeLinks |> ReplaceFunction.makeRule
-     ]
+    ]
 
 
-makeLinks = """makeLinks model route =
+makeLinks =
+    """makeLinks model route =
     case model.magicLinkModel.currentUserData of
         Just user ->
             homePageLink route
@@ -286,9 +281,14 @@ makeLinks = """makeLinks model route =
                 :: List.map (makeLink route) Route.routesAndNames
  """
 
-headerRow = """headerRow model = [ headerView model model.route { window = model.window, isCompact = True }, Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
+
+headerRow =
+    """headerRow model = [ headerView model model.route { window = model.window, isCompact = True }, Pages.SignIn.showCurrentUser model |> Element.map Types.AuthFrontendMsg]"""
+
+
 
 -- VALUES USED IN THE RULES:
+
 
 adminRoute =
     "if User.isAdmin model.magicLinkModel.currentUserData then generic model Pages.Admin.view else generic model Pages.Home.view"
@@ -329,6 +329,8 @@ tryLoading loadingModel =
 
 
 -- Function to compress runs of spaces to a single space
+
+
 asOneLine : String -> String
 asOneLine str =
     str
