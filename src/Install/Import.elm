@@ -1,4 +1,7 @@
-module Install.Import exposing (config, ImportData, module_, withAlias, withExposedValues, qualified, makeRule)
+module Install.Import exposing
+    ( config, Config
+    , ImportData, module_, withAlias, withExposedValues, qualified, makeRule
+    )
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
@@ -24,7 +27,8 @@ There is a shortcut for importing modules with no alias or exposed values
         ]
         |> Install.Import.makeRule
 
-@docs config, ImportData, module_, withAlias, withExposedValues, qualified, makeRule
+@docs config, Config
+@docs ImportData, module_, withAlias, withExposedValues, qualified, makeRule
 
 -}
 
