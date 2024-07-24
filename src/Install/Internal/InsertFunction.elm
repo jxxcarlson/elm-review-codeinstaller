@@ -13,7 +13,7 @@ import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
 import Install.Library
 import Review.Fix as Fix
-import Review.Rule as Rule exposing (Error)
+import Review.Rule as Rule
 
 
 type Config
@@ -68,23 +68,11 @@ declarationVisitor (Config config) declaration context =
 finalEvaluation : Config -> Context -> List (Rule.Error {})
 finalEvaluation (Config config) context =
     if not context.appliedFix then
-        addFunction { range = context.lastDeclarationRange, functionName = config.functionName, functionImplementation = config.functionImplementation }
+        [ Rule.errorWithFix
+            { message = "Add function \"" ++ config.functionName ++ "\"", details = [ "" ] }
+            context.lastDeclarationRange
+            [ Fix.insertAt { row = context.lastDeclarationRange.end.row + 1, column = 0 } config.functionImplementation ]
+        ]
 
     else
         []
-
-
-type alias FixConfig =
-    { range : Range
-    , functionName : String
-    , functionImplementation : String
-    }
-
-
-addFunction : FixConfig -> List (Error {})
-addFunction fixConfig =
-    [ Rule.errorWithFix
-        { message = "Add function \"" ++ fixConfig.functionName ++ "\"", details = [ "" ] }
-        fixConfig.range
-        [ Fix.insertAt { row = fixConfig.range.end.row + 1, column = 0 } fixConfig.functionImplementation ]
-    ]
