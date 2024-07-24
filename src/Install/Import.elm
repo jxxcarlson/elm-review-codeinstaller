@@ -1,6 +1,7 @@
 module Install.Import exposing
     ( config, Config
     , ImportData, module_, withAlias, withExposedValues, qualified, makeRule
+    , Context, finalEvaluation, importVisitor, init, moduleDefinitionVisitor
     )
 
 {-| Add import statements to a given module.
@@ -118,8 +119,8 @@ See above for examples.
 makeRule : Config -> Rule
 makeRule config_ =
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Import" initialContext
-        |> Rule.withImportVisitor (importVisitor config_)
-        |> Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
+        |> Rule.withImportVisitor (\imp context -> ( [], importVisitor config_ imp context ))
+        |> Rule.withModuleDefinitionVisitor (\mod context -> ( [], moduleDefinitionVisitor mod context ))
         |> Rule.withFinalModuleEvaluation (finalEvaluation config_)
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -136,11 +137,20 @@ type alias Context =
 initialContext : Rule.ContextCreator () Context
 initialContext =
     Rule.initContextCreator
-        (\moduleName () -> { moduleName = moduleName, moduleWasImported = False, lastNodeRange = Range.empty, foundImports = [] })
+        (\moduleName () -> init moduleName)
         |> Rule.withModuleName
 
 
-importVisitor : Config -> Node Import -> Context -> ( List (Error {}), Context )
+init : ModuleName -> Context
+init moduleName =
+    { moduleName = moduleName
+    , moduleWasImported = False
+    , lastNodeRange = Range.empty
+    , foundImports = []
+    }
+
+
+importVisitor : Config -> Node Import -> Context -> Context
 importVisitor (Config config_) node context =
     if config_.hostModuleName == context.moduleName then
         let
@@ -158,19 +168,19 @@ importVisitor (Config config_) node context =
                 List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
         in
         if areAllImportsFound then
-            ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
+            { context | moduleWasImported = True, lastNodeRange = Node.range node }
 
         else
-            ( [], { context | lastNodeRange = Node.range node, foundImports = foundImports } )
+            { context | lastNodeRange = Node.range node, foundImports = foundImports }
 
     else
-        ( [], context )
+        context
 
 
-moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
+moduleDefinitionVisitor : Node Module -> Context -> Context
 moduleDefinitionVisitor def context =
     -- visit the module definition to set the module definition as the lastNodeRange in case the module has no imports yet
-    ( [], { context | lastNodeRange = Node.range def } )
+    { context | lastNodeRange = Node.range def }
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})

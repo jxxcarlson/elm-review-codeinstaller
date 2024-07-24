@@ -13,6 +13,7 @@
         "Install.Import",
         "Install.Initializer",
         "Install.InitializerCmd",
+        "Install.Rule",
         "Install.Subscription",
         "Install.Type",
         "Install.TypeVariant"
