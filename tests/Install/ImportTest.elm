@@ -2,8 +2,9 @@ module Install.ImportTest exposing (..)
 
 import Install.Import exposing (module_, withAlias, withExposedValues)
 import Install.Rule
+import Review.Test
 import Run exposing (TestData_)
-import Test exposing (Test, describe)
+import Test exposing (Test, describe, test)
 
 
 all : Test
@@ -17,6 +18,15 @@ all =
         , Run.expectNoErrorsTest_ test5.description test5.src test5.installation
         , Run.testFix_ test6
         , Run.testFix_ test7
+        , test "should not report an error when it's not the target module" <|
+            \() ->
+                """module NotMain exposing (..)
+
+import Set
+
+foo = 1"""
+                    |> Review.Test.run (Install.Rule.rule "TestRule" [ rule1 ])
+                    |> Review.Test.expectNoErrors
         ]
 
 

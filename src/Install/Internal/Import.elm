@@ -50,29 +50,25 @@ init moduleName =
 
 importVisitor : Config -> Node Import -> Context -> Context
 importVisitor (Config config) node context =
-    if config.hostModuleName == context.moduleName then
-        let
-            currentModuleName : ModuleName
-            currentModuleName =
-                Node.value node |> .moduleName |> Node.value
+    let
+        currentModuleName : ModuleName
+        currentModuleName =
+            Node.value node |> .moduleName |> Node.value
 
-            allModuleNames =
-                List.map .moduleToImport config.imports
+        allModuleNames =
+            List.map .moduleToImport config.imports
 
-            foundImports =
-                currentModuleName :: context.foundImports
+        foundImports =
+            currentModuleName :: context.foundImports
 
-            areAllImportsFound =
-                List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
-        in
-        if areAllImportsFound then
-            { context | moduleWasImported = True, lastNodeRange = Node.range node }
-
-        else
-            { context | lastNodeRange = Node.range node, foundImports = foundImports }
+        areAllImportsFound =
+            List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
+    in
+    if areAllImportsFound then
+        { context | moduleWasImported = True, lastNodeRange = Node.range node }
 
     else
-        context
+        { context | lastNodeRange = Node.range node, foundImports = foundImports }
 
 
 moduleDefinitionVisitor : Node Module -> Context -> Context
@@ -83,7 +79,7 @@ moduleDefinitionVisitor def context =
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
 finalEvaluation (Config config) context =
-    if context.moduleWasImported == False && config.hostModuleName == context.moduleName then
+    if context.moduleWasImported == False then
         fixError config.imports context
 
     else

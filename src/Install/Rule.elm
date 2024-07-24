@@ -58,8 +58,12 @@ initContext installations =
             List.foldl
                 (\installation context ->
                     case installation of
-                        AddImport config ->
-                            { context | importContexts = ( config, Install.Internal.Import.init moduleName ) :: context.importContexts }
+                        AddImport ((Install.Internal.Import.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | importContexts = ( config, Install.Internal.Import.init moduleName ) :: context.importContexts }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 }
