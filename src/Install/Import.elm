@@ -1,15 +1,16 @@
 module Install.Import exposing
     ( config, Config
-    , ImportData, module_, withAlias, withExposedValues, qualified, makeRule
-    , Context, finalEvaluation, importVisitor, init, moduleDefinitionVisitor
+    , ImportData, module_, withAlias, withExposedValues, qualified
     )
 
 {-| Add import statements to a given module.
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
 
-    Install.Import.config "Frontend"
-        [ Install.Import.module_ "Foo.Bar" ]
-        |> Install.Import.makeRule
+    Install.Rule.rule
+        [ Install.Import.config "Frontend"
+            [ Install.Import.module_ "Foo.Bar" ]
+            |> Install.Rule.addImport
+        ]
 
 To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
@@ -18,7 +19,6 @@ To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend`
             |> Install.Import.withAlias "FB"
             |> Install.Import.withExposedValues [ "a", "b", "c" ]
         ]
-        |> Install.Import.makeRule
 
 There is a shortcut for importing modules with no alias or exposed values
 
@@ -26,43 +26,26 @@ There is a shortcut for importing modules with no alias or exposed values
         [ Install.Import.module_ "Foo.Bar"
         , Install.Import.module_ "Baz.Qux"
         ]
-        |> Install.Import.makeRule
 
 @docs config, Config
-@docs ImportData, module_, withAlias, withExposedValues, qualified, makeRule
+@docs ImportData, module_, withAlias, withExposedValues, qualified
 
 -}
 
-import Elm.Syntax.Import exposing (Import)
-import Elm.Syntax.Module exposing (Module)
-import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node)
-import Elm.Syntax.Range as Range exposing (Range)
-import Review.Fix as Fix
-import Review.Rule as Rule exposing (Error, Rule)
+import Install.Internal.Import as Internal
 
 
 {-| Configuration for the rule.
 -}
-type Config
-    = Config
-        { hostModuleName : List String
-        , imports : List ImportedModule
-        }
-
-
-type alias ImportedModule =
-    { moduleToImport : ModuleName
-    , alias : Maybe String
-    , exposedValues : Maybe (List String)
-    }
+type alias Config =
+    Internal.Config
 
 
 {-| Initialize the configuration for the rule.
 -}
 config : String -> List { moduleToImport : String, alias : Maybe String, exposedValues : Maybe (List String) } -> Config
 config hostModuleName_ imports =
-    Config
+    Internal.Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\{ moduleToImport, alias, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias = alias, exposedValues = exposedValues }) imports
         }
@@ -76,10 +59,6 @@ type alias ImportData =
     , alias : Maybe String
     , exposedValues : Maybe (List String)
     }
-
-
-
---{ moduleToImport : String, alias : Maybe String, exposedValues : Maybe (List String) }
 
 
 {-| Create a module to import with no alias or exposed values
@@ -107,140 +86,7 @@ withExposedValues exposedValues importData =
 -}
 qualified : String -> List String -> Config
 qualified hostModuleName_ imports =
-    Config
+    Internal.Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias = Nothing, exposedValues = Nothing }) imports
         }
-
-
-{-| Create a rule that adds a list of imports for given modules in a given module.
-See above for examples.
--}
-makeRule : Config -> Rule
-makeRule config_ =
-    Rule.newModuleRuleSchemaUsingContextCreator "Install.Import" initialContext
-        |> Rule.withImportVisitor (\imp context -> ( [], importVisitor config_ imp context ))
-        |> Rule.withModuleDefinitionVisitor (\mod context -> ( [], moduleDefinitionVisitor mod context ))
-        |> Rule.withFinalModuleEvaluation (finalEvaluation config_)
-        |> Rule.providesFixesForModuleRule
-        |> Rule.fromModuleRuleSchema
-
-
-type alias Context =
-    { moduleName : ModuleName
-    , moduleWasImported : Bool
-    , lastNodeRange : Range
-    , foundImports : List (List String)
-    }
-
-
-initialContext : Rule.ContextCreator () Context
-initialContext =
-    Rule.initContextCreator
-        (\moduleName () -> init moduleName)
-        |> Rule.withModuleName
-
-
-init : ModuleName -> Context
-init moduleName =
-    { moduleName = moduleName
-    , moduleWasImported = False
-    , lastNodeRange = Range.empty
-    , foundImports = []
-    }
-
-
-importVisitor : Config -> Node Import -> Context -> Context
-importVisitor (Config config_) node context =
-    if config_.hostModuleName == context.moduleName then
-        let
-            currentModuleName : ModuleName
-            currentModuleName =
-                Node.value node |> .moduleName |> Node.value
-
-            allModuleNames =
-                List.map .moduleToImport config_.imports
-
-            foundImports =
-                currentModuleName :: context.foundImports
-
-            areAllImportsFound =
-                List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
-        in
-        if areAllImportsFound then
-            { context | moduleWasImported = True, lastNodeRange = Node.range node }
-
-        else
-            { context | lastNodeRange = Node.range node, foundImports = foundImports }
-
-    else
-        context
-
-
-moduleDefinitionVisitor : Node Module -> Context -> Context
-moduleDefinitionVisitor def context =
-    -- visit the module definition to set the module definition as the lastNodeRange in case the module has no imports yet
-    { context | lastNodeRange = Node.range def }
-
-
-finalEvaluation : Config -> Context -> List (Rule.Error {})
-finalEvaluation (Config config_) context =
-    if context.moduleWasImported == False && config_.hostModuleName == context.moduleName then
-        fixError config_.imports context
-
-    else
-        []
-
-
-fixError : List ImportedModule -> Context -> List (Error {})
-fixError imports context =
-    let
-        importText moduleToImport importedModuleAlias exposedValues =
-            "import "
-                ++ String.join "." moduleToImport
-                |> addAlias importedModuleAlias
-                |> addExposing exposedValues
-
-        uniqueImports =
-            List.filter (\importedModule -> not (List.member importedModule.moduleToImport context.foundImports)) imports
-
-        allImports =
-            List.map (\{ moduleToImport, alias, exposedValues } -> importText moduleToImport alias exposedValues) uniqueImports
-                |> String.join "\n"
-
-        addAlias : Maybe String -> String -> String
-        addAlias mAlias str =
-            case mAlias of
-                Nothing ->
-                    str
-
-                Just alias ->
-                    str ++ " as " ++ alias
-
-        addExposing : Maybe (List String) -> String -> String
-        addExposing mExposedValues str =
-            case mExposedValues of
-                Nothing ->
-                    str
-
-                Just exposedValues ->
-                    str ++ " exposing (" ++ String.join ", " exposedValues ++ ")"
-
-        numberOfImports =
-            List.length uniqueImports
-
-        moduleName =
-            context.moduleName |> String.join "."
-
-        numberOfImportsText =
-            if numberOfImports == 1 then
-                String.fromInt numberOfImports ++ " import"
-
-            else
-                String.fromInt numberOfImports ++ " imports"
-    in
-    [ Rule.errorWithFix
-        { message = "add " ++ numberOfImportsText ++ " to module " ++ moduleName, details = [ "" ] }
-        context.lastNodeRange
-        [ Fix.insertAt { row = context.lastNodeRange.end.row + 1, column = context.lastNodeRange.end.column } allImports ]
-    ]

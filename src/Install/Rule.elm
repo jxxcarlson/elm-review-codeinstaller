@@ -16,24 +16,25 @@ module Install.Rule exposing
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
-import Install.Import
+import Install.Import as Import
+import Install.Internal.Import
 import Review.Rule as Rule exposing (Error, Rule)
 
 
 type alias Context =
-    { importContexts : List ( Install.Import.Config, Install.Import.Context )
+    { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
     }
 
 
 {-| A transformation to apply.
 -}
 type Installation
-    = AddImport Install.Import.Config
+    = AddImport Import.Config
 
 
 {-| Add an import defined by [Install-Import#config].
 -}
-addImport : Install.Import.Config -> Installation
+addImport : Import.Config -> Installation
 addImport =
     AddImport
 
@@ -58,7 +59,7 @@ initContext installations =
                 (\installation context ->
                     case installation of
                         AddImport config ->
-                            { context | importContexts = ( config, Install.Import.init moduleName ) :: context.importContexts }
+                            { context | importContexts = ( config, Install.Internal.Import.init moduleName ) :: context.importContexts }
                 )
                 { importContexts = []
                 }
@@ -72,7 +73,7 @@ moduleDefinitionVisitor node context =
     ( []
     , { importContexts =
             List.map
-                (\( config, importContext ) -> ( config, Install.Import.moduleDefinitionVisitor node importContext ))
+                (\( config, importContext ) -> ( config, Install.Internal.Import.moduleDefinitionVisitor node importContext ))
                 context.importContexts
       }
     )
@@ -83,7 +84,7 @@ importVisitor node context =
     ( []
     , { importContexts =
             List.map
-                (\( config, importContext ) -> ( config, Install.Import.importVisitor config node importContext ))
+                (\( config, importContext ) -> ( config, Install.Internal.Import.importVisitor config node importContext ))
                 context.importContexts
       }
     )
@@ -92,5 +93,5 @@ importVisitor node context =
 finalEvaluation : Context -> List (Rule.Error {})
 finalEvaluation context =
     List.concatMap
-        (\( config, importContext ) -> Install.Import.finalEvaluation config importContext)
+        (\( config, importContext ) -> Install.Internal.Import.finalEvaluation config importContext)
         context.importContexts
