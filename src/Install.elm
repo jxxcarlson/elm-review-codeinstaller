@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList
+    , addImport, addElementToList, insertFunction
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList
+@docs addImport, addElementToList, insertFunction
 
 -}
 
@@ -18,15 +18,18 @@ import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
 import Install.ElementToList
+import Install.Function.InsertFunction
 import Install.Import
 import Install.Internal.ElementToList
 import Install.Internal.Import
+import Install.Internal.InsertFunction
 import Review.Rule as Rule exposing (Error, Rule)
 
 
 type alias Context =
     { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
     , elementToList : List Install.ElementToList.Config
+    , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
     }
 
 
@@ -35,6 +38,7 @@ type alias Context =
 type Installation
     = AddImport Install.Import.Config
     | AddElementToList Install.ElementToList.Config
+    | InsertFunction Install.Function.InsertFunction.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -49,6 +53,13 @@ addImport =
 addElementToList : Install.ElementToList.Config -> Installation
 addElementToList =
     AddElementToList
+
+
+{-| Insert a function, defined by [`Install.Function.InsertFunction.insert`](Install-Function-InsertFunction#insert).
+-}
+insertFunction : Install.Function.InsertFunction.Config -> Installation
+insertFunction =
+    InsertFunction
 
 
 {-| Create a rule from a list of transformations.
@@ -84,9 +95,17 @@ initContext installations =
 
                             else
                                 context
+
+                        InsertFunction ((Install.Internal.InsertFunction.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | insertFunction = ( config, Install.Internal.InsertFunction.init ) :: context.insertFunction }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
+                , insertFunction = []
                 }
                 installations
         )
@@ -99,7 +118,7 @@ moduleDefinitionVisitor node context =
     , { context
         | importContexts =
             List.map
-                (\( config, importContext ) -> ( config, Install.Internal.Import.moduleDefinitionVisitor node importContext ))
+                (\( config, ctx ) -> ( config, Install.Internal.Import.moduleDefinitionVisitor node ctx ))
                 context.importContexts
       }
     )
@@ -111,7 +130,7 @@ importVisitor node context =
     , { context
         | importContexts =
             List.map
-                (\( config, importContext ) -> ( config, Install.Internal.Import.importVisitor config node importContext ))
+                (\( config, ctx ) -> ( config, Install.Internal.Import.importVisitor config node ctx ))
                 context.importContexts
       }
     )
@@ -122,12 +141,22 @@ declarationVisitor node context =
     ( List.concatMap
         (\config -> Install.Internal.ElementToList.declarationVisitor config node)
         context.elementToList
-    , context
+    , { context
+        | insertFunction =
+            List.map
+                (\( config, ctx ) -> ( config, Install.Internal.InsertFunction.declarationVisitor config node ctx ))
+                context.insertFunction
+      }
     )
 
 
 finalEvaluation : Context -> List (Rule.Error {})
 finalEvaluation context =
-    List.concatMap
-        (\( config, importContext ) -> Install.Internal.Import.finalEvaluation config importContext)
-        context.importContexts
+    List.concat
+        [ List.concatMap
+            (\( config, ctx ) -> Install.Internal.Import.finalEvaluation config ctx)
+            context.importContexts
+        , List.concatMap
+            (\( config, ctx ) -> Install.Internal.InsertFunction.finalEvaluation config ctx)
+            context.insertFunction
+        ]
