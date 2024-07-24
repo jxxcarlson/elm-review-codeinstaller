@@ -154,7 +154,7 @@ importVisitor (Config config_) node context =
                     List.map .moduleToImport config_.imports
 
                 foundImports =
-                    context.foundImports ++ [ currentModuleName ]
+                    currentModuleName :: context.foundImports
 
                 areAllImportsFound =
                     List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
