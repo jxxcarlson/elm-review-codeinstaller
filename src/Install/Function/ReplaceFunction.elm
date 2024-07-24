@@ -58,12 +58,12 @@ type CustomError
 {-| Initialize the configuration for the rule.
 -}
 config : String -> String -> String -> Config
-config moduleNaeme functionName functionImplementation =
+config moduleName functionName functionImplementation =
     Config
-        { moduleName = moduleNaeme
+        { moduleName = moduleName
         , functionName = functionName
         , functionImplementation = functionImplementation
-        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleNaeme } functionImplementation
+        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleName } functionImplementation
         , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
         }
 
