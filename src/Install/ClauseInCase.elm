@@ -268,7 +268,7 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                 -- If there are other clauses, the first clause will take the start of other clauses as reference.
                 otherClausesOffset =
                     cases
-                        |> List.map (\( pattern, _ ) -> Node.range pattern |> .start >> .column)
+                        |> List.map (\( pattern, _ ) -> Node.range pattern |> .start |> .column)
                         |> List.minimum
                         |> Maybe.map (\x -> x - 1)
 

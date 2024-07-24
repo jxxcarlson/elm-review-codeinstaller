@@ -11,6 +11,7 @@ import NoPrematureLetComputation
 import NoUnused.Dependencies
 import NoUnused.Variables
 import Review.Rule exposing (Rule)
+import Simplify
 
 
 config : List Rule
@@ -24,4 +25,5 @@ config =
     , Docs.ReviewAtDocs.rule
     , NoMissingTypeExpose.rule
     , NoPrematureLetComputation.rule
+    , Simplify.rule Simplify.defaults
     ]
