@@ -31,7 +31,6 @@ The form of the rule is the same for nested modules:
 -}
 
 import Install.Internal.InsertFunction as Internal
-import Install.Library
 
 
 {-| Configuration for rule: add a function in a specified module if it does not already exist.
@@ -48,7 +47,6 @@ insert hostModuleName functionName functionImplementation =
         { hostModuleName = String.split "." hostModuleName
         , functionName = functionName
         , functionImplementation = functionImplementation
-        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." hostModuleName } functionImplementation
         , insertAt = Internal.AtEnd
         }
 

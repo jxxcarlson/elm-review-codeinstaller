@@ -8,7 +8,6 @@ module Install.Internal.InsertFunction exposing
     )
 
 import Elm.Syntax.Declaration exposing (Declaration)
-import Elm.Syntax.Expression exposing (Expression)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range as Range exposing (Range)
@@ -22,7 +21,6 @@ type Config
         { hostModuleName : ModuleName
         , functionName : String
         , functionImplementation : String
-        , theFunctionNodeExpression : Maybe (Node Expression)
         , insertAt : InsertAt
         }
 
