@@ -147,27 +147,29 @@ initialContext =
 
 importVisitor : Config -> Node Import -> Context -> ( List (Error {}), Context )
 importVisitor (Config config_) node context =
-    case Node.value node |> .moduleName |> Node.value of
-        currentModuleName ->
-            if config_.hostModuleName == context.moduleName then
-                let
-                    allModuleNames =
-                        List.map .moduleToImport config_.imports
+    if config_.hostModuleName == context.moduleName then
+        let
+            currentModuleName : ModuleName
+            currentModuleName =
+                Node.value node |> .moduleName |> Node.value
 
-                    foundImports =
-                        currentModuleName :: context.foundImports
+            allModuleNames =
+                List.map .moduleToImport config_.imports
 
-                    areAllImportsFound =
-                        List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
-                in
-                if areAllImportsFound then
-                    ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
+            foundImports =
+                currentModuleName :: context.foundImports
 
-                else
-                    ( [], { context | lastNodeRange = Node.range node, foundImports = foundImports } )
+            areAllImportsFound =
+                List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
+        in
+        if areAllImportsFound then
+            ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
 
-            else
-                ( [], context )
+        else
+            ( [], { context | lastNodeRange = Node.range node, foundImports = foundImports } )
+
+    else
+        ( [], context )
 
 
 moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
