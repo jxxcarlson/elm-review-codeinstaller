@@ -28,7 +28,7 @@ expectNoErrorsTest_ description src installation =
     test description <|
         \() ->
             src
-                |> Review.Test.run (Install.Rule.rule [ installation ])
+                |> Review.Test.run (Install.Rule.rule "TestRule" [ installation ])
                 |> Review.Test.expectNoErrors
 
 
@@ -83,7 +83,7 @@ testFix_ { description, src, installation, under, fixed, message } =
     test description <|
         \() ->
             src
-                |> Review.Test.run (Install.Rule.rule [ installation ])
+                |> Review.Test.run (Install.Rule.rule "TestRule" [ installation ])
                 |> Review.Test.expectErrors
                     [ Review.Test.error { message = message, details = [ "" ], under = under }
                         |> Review.Test.whenFixed fixed

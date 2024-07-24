@@ -40,9 +40,9 @@ addImport =
 
 {-| Create a rule from a list of transformations.
 -}
-rule : List Installation -> Rule
-rule installations =
-    Rule.newModuleRuleSchemaUsingContextCreator "Install.ClauseInCase" (initContext installations)
+rule : String -> List Installation -> Rule
+rule name installations =
+    Rule.newModuleRuleSchemaUsingContextCreator name (initContext installations)
         |> Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
         |> Rule.withImportVisitor importVisitor
         |> Rule.withFinalModuleEvaluation finalEvaluation
