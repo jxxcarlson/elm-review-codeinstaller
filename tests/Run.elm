@@ -1,11 +1,14 @@
 module Run exposing
-    ( expectErrorsTest
+    ( TestData_
+    , expectErrorsTest
     , expectNoErrorsTest
     , expectNoErrorsTest_
     , testFix
+    , testFix_
     , withOnly
     )
 
+import Install.Rule
 import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, test)
@@ -20,12 +23,12 @@ expectNoErrorsTest description src rule =
                 |> Review.Test.expectNoErrors
 
 
-expectNoErrorsTest_ : TestData -> Test
-expectNoErrorsTest_ testData =
-    test testData.description <|
+expectNoErrorsTest_ : String -> String -> Install.Rule.Installation -> Test
+expectNoErrorsTest_ description src installation =
+    test description <|
         \() ->
-            testData.src
-                |> Review.Test.run testData.rule
+            src
+                |> Review.Test.run (Install.Rule.rule [ installation ])
                 |> Review.Test.expectNoErrors
 
 
@@ -59,6 +62,28 @@ testFix { description, src, rule, under, fixed, message } =
         \() ->
             src
                 |> Review.Test.run rule
+                |> Review.Test.expectErrors
+                    [ Review.Test.error { message = message, details = [ "" ], under = under }
+                        |> Review.Test.whenFixed fixed
+                    ]
+
+
+type alias TestData_ =
+    { description : String
+    , src : String
+    , installation : Install.Rule.Installation
+    , under : String
+    , fixed : String
+    , message : String
+    }
+
+
+testFix_ : TestData_ -> Test
+testFix_ { description, src, installation, under, fixed, message } =
+    test description <|
+        \() ->
+            src
+                |> Review.Test.run (Install.Rule.rule [ installation ])
                 |> Review.Test.expectErrors
                     [ Review.Test.error { message = message, details = [ "" ], under = under }
                         |> Review.Test.whenFixed fixed
