@@ -9,7 +9,7 @@ in a specified module. For example, if you put the code below in your
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
-    Thus we will have
+Thus we will have
 
     updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
     updateFromFrontend sessionId clientId msg model =
@@ -21,23 +21,27 @@ in a specified module. For example, if you put the code below in your
             ResetCounter ->
                 ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
-    You also can add the clause after another clause of choice with the `withInsertAfter` function:
-        Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-            |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
-            |> Install.ClauseInCase.makeRule
+You also can add the clause after another clause of choice with the `withInsertAfter` function:
 
-    In this case we will have
-        updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
-        updateFromFrontend sessionId clientId msg model =
-            case msg of
-                CounterIncremented ->
-                ...
-                ResetCounter ->
-                    ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
+        |> Install.ClauseInCase.makeRule
 
-                CounterDecremented ->
-                ...
-    You can also customize the error message with the `withCustomErrorMessage` function:
+In this case we will have
+
+    updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
+    updateFromFrontend sessionId clientId msg model =
+        case msg of
+            CounterIncremented ->
+            ...
+            ResetCounter ->
+                ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+
+            CounterDecremented ->
+            ...
+
+You can also customize the error message with the `withCustomErrorMessage` function:
+
         Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
             |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
             |> Install.ClauseInCase.makeRule
@@ -88,7 +92,8 @@ type CustomError
 
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
-    If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
+
+If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
 
 -}
 config : String -> String -> String -> String -> Config

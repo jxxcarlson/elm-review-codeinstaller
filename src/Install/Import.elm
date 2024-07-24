@@ -12,7 +12,7 @@ To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend`
     Install.Import.config "Frontend" [ module_ "Foo.Bar" |> withAlias "FB" |> withExposedValues =  [ "a", "b", "c" ] ]
         |> Install.Import.makeRule
 
-There is a short cut for importing modules with no alias or exposed values
+There is a shortcut for importing modules with no alias or exposed values
 
     Install.Import.qualified "Frontend" [ module_ "Foo.Bar", module_ "Baz.Qux" ]
         |> Install.Import.makeRule
@@ -30,10 +30,7 @@ import Review.Fix as Fix
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-|
-
-    Configuration for  the rule.
-
+{-| Configuration for the rule.
 -}
 type Config
     = Config
