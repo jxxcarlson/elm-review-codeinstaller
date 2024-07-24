@@ -9,7 +9,7 @@ For example, to add `import Foo.Bar` to the `Frontend` module, you can use the f
 
 To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
-    Install.Import.config "Frontend" [ module_ "Foo.Bar" |> withAlias "FB" |> withExposedValues =  [ "a", "b", "c" ] ]
+    Install.Import.config "Frontend" [ module_ "Foo.Bar" |> withAlias "FB" |> withExposedValues [ "a", "b", "c" ] ]
         |> Install.Import.makeRule
 
 There is a shortcut for importing modules with no alias or exposed values

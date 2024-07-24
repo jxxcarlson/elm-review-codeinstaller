@@ -37,7 +37,7 @@ import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: replace a function in a specified module with a new implementation.
+{-| Configuration for rule: replace a function in a specified module with a new implementation.
 -}
 type Config
     = Config

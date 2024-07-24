@@ -63,7 +63,7 @@ import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
+{-| Configuration for rule: add a clause to a case expression in a specified function in a specified module.
 -}
 type Config
     = Config
@@ -108,7 +108,7 @@ config moduleName functionName clause functionCall =
         }
 
 
-{-| Create a makeRule that adds a clause to a case expression in a specified function. You can use it like this:
+{-| Create a rule that adds a clause to a case expression in a specified function. You can use it like this:
 
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule

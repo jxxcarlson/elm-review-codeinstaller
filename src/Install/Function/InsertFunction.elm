@@ -37,7 +37,7 @@ import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: add a function in a specified module if it does not already exist.
+{-| Configuration for rule: add a function in a specified module if it does not already exist.
 -}
 type Config
     = Config
