@@ -78,13 +78,8 @@ config moduleName functionName functionImplementation =
 -}
 makeRule : Config -> Rule
 makeRule config_ =
-    let
-        visitor : Node Declaration -> Context -> ( List (Error {}), Context )
-        visitor declaration context =
-            declarationVisitor context config_ declaration
-    in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.Function.InsertFunction" initialContext
-        |> Rule.withDeclarationEnterVisitor visitor
+        |> Rule.withDeclarationEnterVisitor (\node context -> ( [], declarationVisitor config_ node context ))
         |> Rule.withFinalModuleEvaluation (finalEvaluation config_)
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -106,18 +101,17 @@ initialContext =
         |> Rule.withModuleName
 
 
-declarationVisitor : Context -> Config -> Node Declaration -> ( List (Rule.Error {}), Context )
-declarationVisitor context (Config config_) declaration =
+declarationVisitor : Config -> Node Declaration -> Context -> Context
+declarationVisitor (Config config_) declaration context =
     let
         declarationName =
             Install.Library.getDeclarationName declaration
     in
     if declarationName == config_.functionName then
-        ( [], { context | appliedFix = True } )
+        { context | appliedFix = True }
 
     else
-        ( []
-        , case config_.insertAt of
+        case config_.insertAt of
             After previousDeclaration ->
                 if Install.Library.getDeclarationName declaration == previousDeclaration then
                     { context | lastDeclarationRange = Node.range declaration }
@@ -127,7 +121,6 @@ declarationVisitor context (Config config_) declaration =
 
             AtEnd ->
                 { context | lastDeclarationRange = Node.range declaration }
-        )
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})
