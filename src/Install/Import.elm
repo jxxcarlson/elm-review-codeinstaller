@@ -149,21 +149,25 @@ importVisitor : Config -> Node Import -> Context -> ( List (Error {}), Context )
 importVisitor (Config config_) node context =
     case Node.value node |> .moduleName |> Node.value of
         currentModuleName ->
-            let
-                allModuleNames =
-                    List.map .moduleToImport config_.imports
+            if config_.hostModuleName == context.moduleName then
+                let
+                    allModuleNames =
+                        List.map .moduleToImport config_.imports
 
-                foundImports =
-                    currentModuleName :: context.foundImports
+                    foundImports =
+                        currentModuleName :: context.foundImports
 
-                areAllImportsFound =
-                    List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
-            in
-            if areAllImportsFound && config_.hostModuleName == context.moduleName then
-                ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
+                    areAllImportsFound =
+                        List.all (\importedModuleName -> List.member importedModuleName foundImports) allModuleNames
+                in
+                if areAllImportsFound then
+                    ( [], { context | moduleWasImported = True, lastNodeRange = Node.range node } )
+
+                else
+                    ( [], { context | lastNodeRange = Node.range node, foundImports = foundImports } )
 
             else
-                ( [], { context | lastNodeRange = Node.range node, foundImports = foundImports } )
+                ( [], context )
 
 
 moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
