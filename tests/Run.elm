@@ -1,5 +1,6 @@
 module Run exposing
-    ( TestData_
+    ( TestData
+    , TestData_
     , expectErrorsTest
     , expectNoErrorsTest
     , expectNoErrorsTest_

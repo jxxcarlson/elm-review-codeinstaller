@@ -2,7 +2,7 @@ module Install.ClauseInCaseTest2 exposing (all)
 
 import Install.ClauseInCase
 import Review.Rule exposing (Rule)
-import Run
+import Run exposing (TestData)
 import Test exposing (Test, describe)
 
 
@@ -28,7 +28,7 @@ all =
 -- TEST 1
 
 
-test1a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1a : TestData
 test1a =
     { description = "Test 1a, simple makeRule: should report an error and fix it"
     , src = src1
@@ -39,7 +39,7 @@ test1a =
     }
 
 
-test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1b : TestData
 test1b =
     { description = "Test 1b, withInsertAfter CounterIncremented: should report an error and fix it"
     , src = src1
@@ -50,7 +50,7 @@ test1b =
     }
 
 
-test1c : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1c : TestData
 test1c =
     { description = "Test 1c, withInsertAtBeginning: should report an error and fix it"
     , src = src1
@@ -154,7 +154,7 @@ under1 =
 -- TEST 2
 
 
-test2 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2 : TestData
 test2 =
     { description = "Test 2 (Reset, Frontend.update): should report an error and fix it"
     , src = src2
@@ -227,7 +227,7 @@ under2 =
 -- TEST 3
 
 
-test3 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test3 : TestData
 test3 =
     { description = "Test 2: should escape string pattern when is a case of string patterns"
     , src = src3
@@ -317,7 +317,7 @@ stringToPhilosopher str =
 -- TEST 4
 
 
-test4 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4 : TestData
 test4 =
     { description = "Test 4: should add clause when case is inside let in expression"
     , src = src4
@@ -374,7 +374,7 @@ isStringPattern nodePattern =
 -- TEST 5
 
 
-test5 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test5 : TestData
 test5 =
     { description = "Test 5: should add clause when case is inside tupled expression"
     , src = src5
@@ -436,7 +436,7 @@ errorFix context node maybeError =
 -- TEST 6
 
 
-test6 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test6 : TestData
 test6 =
     { description = "Test 6: should add clause when case is inside parenthesized expression"
     , src = src6
@@ -534,7 +534,7 @@ getShiftFormFromWeekday weekday =
 -- TEST 7 - IfBlock test
 
 
-test7 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test7 : TestData
 test7 =
     { description = "Test 7: should add clause when case is inside if block"
     , src = src7
@@ -602,7 +602,7 @@ someFunction condition maybeData =
 -- TEST 8 - Application test
 
 
-test8 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test8 : TestData
 test8 =
     { description = "Test 8: should add clause when case is inside application"
     , src = src8
@@ -702,7 +702,7 @@ getShiftFormFromWeekday weekday weekShiftForm =
 -- TEST 9 - OperatorApplication and LambdaExpression test
 
 
-test9 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test9 : TestData
 test9 =
     { description = "Test 9: should add clause when case is inside operator application and Lambda Expression"
     , src = src9
@@ -784,7 +784,7 @@ decodeFieldErrors =
 -- Test 10: ListExpression test
 
 
-test10 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test10 : TestData
 test10 =
     { description = "Test 10: should add clause when case is inside list expression"
     , src = src10
