@@ -4,17 +4,24 @@ module Install.Import exposing (config, ImportData, module_, withAlias, withExpo
 For example, to add `import Foo.Bar` to the `Frontend` module, you can use the following configuration:
 
     Install.Import.config "Frontend"
-        [ module_ "Foo.Bar" ]
+        [ Install.Import.module_ "Foo.Bar" ]
         |> Install.Import.makeRule
 
 To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend` module, do this:
 
-    Install.Import.config "Frontend" [ module_ "Foo.Bar" |> withAlias "FB" |> withExposedValues [ "a", "b", "c" ] ]
+    Install.Import.config "Frontend"
+        [ Install.Import.module_ "Foo.Bar"
+            |> Install.Import.withAlias "FB"
+            |> Install.Import.withExposedValues [ "a", "b", "c" ]
+        ]
         |> Install.Import.makeRule
 
 There is a shortcut for importing modules with no alias or exposed values
 
-    Install.Import.qualified "Frontend" [ module_ "Foo.Bar", module_ "Baz.Qux" ]
+    Install.Import.qualified "Frontend"
+        [ Install.Import.module_ "Foo.Bar"
+        , Install.Import.module_ "Baz.Qux"
+        ]
         |> Install.Import.makeRule
 
 @docs config, ImportData, module_, withAlias, withExposedValues, qualified, makeRule
