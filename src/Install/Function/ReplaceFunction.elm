@@ -31,9 +31,7 @@ import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
-import Install.Infer as Infer
 import Install.Library
-import Install.Normalize as Normalize
 import Review.Fix as Fix
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
@@ -110,9 +108,6 @@ declarationVisitor context (Config config_) declaration =
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule config_.moduleName context
-
-                resources =
-                    { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
                 isInCorrectFunction =
                     isInCorrectModule && name == config_.functionName
