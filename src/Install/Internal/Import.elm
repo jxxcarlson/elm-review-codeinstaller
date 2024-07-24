@@ -32,17 +32,15 @@ type alias ImportedModule =
 
 
 type alias Context =
-    { moduleName : ModuleName
-    , moduleWasImported : Bool
+    { moduleWasImported : Bool
     , lastNodeRange : Range
     , foundImports : List (List String)
     }
 
 
-init : ModuleName -> Context
-init moduleName =
-    { moduleName = moduleName
-    , moduleWasImported = False
+init : Context
+init =
+    { moduleWasImported = False
     , lastNodeRange = Range.empty
     , foundImports = []
     }
@@ -80,14 +78,14 @@ moduleDefinitionVisitor def context =
 finalEvaluation : Config -> Context -> List (Rule.Error {})
 finalEvaluation (Config config) context =
     if context.moduleWasImported == False then
-        fixError config.imports context
+        fixError config.hostModuleName config.imports context
 
     else
         []
 
 
-fixError : List ImportedModule -> Context -> List (Error {})
-fixError imports context =
+fixError : ModuleName -> List ImportedModule -> Context -> List (Error {})
+fixError hostModuleName imports context =
     let
         importText moduleToImport importedModuleAlias exposedValues =
             "import "
@@ -124,7 +122,7 @@ fixError imports context =
             List.length uniqueImports
 
         moduleName =
-            context.moduleName |> String.join "."
+            hostModuleName |> String.join "."
 
         numberOfImportsText =
             if numberOfImports == 1 then

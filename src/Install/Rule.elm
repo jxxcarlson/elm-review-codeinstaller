@@ -60,7 +60,7 @@ initContext installations =
                     case installation of
                         AddImport ((Install.Internal.Import.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | importContexts = ( config, Install.Internal.Import.init moduleName ) :: context.importContexts }
+                                { context | importContexts = ( config, Install.Internal.Import.init ) :: context.importContexts }
 
                             else
                                 context
