@@ -79,49 +79,44 @@ declarationVisitor moduleName items (Node _ declaration) context =
 
                 else
                     case Node.value implementation.expression of
-                        Application (head :: rest) ->
-                            case Node.value head of
-                                FunctionOrValue [ "Sub" ] "batch" ->
-                                    let
-                                        listElements =
-                                            rest
-                                                |> List.head
-                                                |> Maybe.map Node.value
-                                                |> (\expression ->
-                                                        case expression of
-                                                            Just (ListExpr exprs) ->
-                                                                exprs
+                        Application ((Node _ (FunctionOrValue [ "Sub" ] "batch")) :: rest) ->
+                            let
+                                listElements =
+                                    rest
+                                        |> List.head
+                                        |> Maybe.map Node.value
+                                        |> (\expression ->
+                                                case expression of
+                                                    Just (ListExpr exprs) ->
+                                                        exprs
 
-                                                            _ ->
-                                                                []
-                                                   )
+                                                    _ ->
+                                                        []
+                                           )
 
-                                        isAlreadyImplemented =
-                                            Install.Library.areItemsInList items listElements
-                                    in
-                                    if isAlreadyImplemented then
-                                        ( [], context )
+                                isAlreadyImplemented =
+                                    Install.Library.areItemsInList items listElements
+                            in
+                            if isAlreadyImplemented then
+                                ( [], context )
 
-                                    else
-                                        let
-                                            expr =
-                                                implementation.expression
+                            else
+                                let
+                                    expr =
+                                        implementation.expression
 
-                                            endOfRange =
-                                                (Node.range expr).end
+                                    endOfRange =
+                                        (Node.range expr).end
 
-                                            nameRange =
-                                                Node.range implementation.name
+                                    nameRange =
+                                        Node.range implementation.name
 
-                                            replacementCode =
-                                                items
-                                                    |> List.map (\item -> ", " ++ item)
-                                                    |> String.concat
-                                        in
-                                        ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
-
-                                _ ->
-                                    ( [], context )
+                                    replacementCode =
+                                        items
+                                            |> List.map (\item -> ", " ++ item)
+                                            |> String.concat
+                                in
+                                ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
 
                         _ ->
                             ( [], context )
