@@ -45,15 +45,8 @@ type Config
         , functionName : String
         , functionImplementation : String
         , theFunctionNodeExpression : Maybe (Node Expression)
-        , customErrorMessage : CustomError
         , insertAt : InsertAt
         }
-
-
-{-| Custom error message to be displayed when running `elm-review --fix` or `elm-review --fix-all`
--}
-type CustomError
-    = CustomError { message : String, details : List String }
 
 
 type InsertAt
@@ -77,7 +70,6 @@ config moduleName functionName functionImplementation =
         , functionName = functionName
         , functionImplementation = functionImplementation
         , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleName } functionImplementation
-        , customErrorMessage = CustomError { message = "Add function \"" ++ functionName ++ "\".", details = [ "" ] }
         , insertAt = AtEnd
         }
 

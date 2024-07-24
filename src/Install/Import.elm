@@ -43,7 +43,6 @@ type Config
     = Config
         { hostModuleName : List String
         , imports : List ImportedModule
-        , customErrorMessage : CustomError
         }
 
 
@@ -54,12 +53,6 @@ type alias ImportedModule =
     }
 
 
-{-| Custom error message to be displayed when running `elm-review --fix` or `elm-review --fix-all`
--}
-type CustomError
-    = CustomError { message : String, details : List String }
-
-
 {-| Initialize the configuration for the rule.
 -}
 config : String -> List { moduleToImport : String, alias : Maybe String, exposedValues : Maybe (List String) } -> Config
@@ -67,7 +60,6 @@ config hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\{ moduleToImport, alias, exposedValues } -> { moduleToImport = String.split "." moduleToImport, alias = alias, exposedValues = exposedValues }) imports
-        , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
         }
 
 
@@ -113,7 +105,6 @@ qualified hostModuleName_ imports =
     Config
         { hostModuleName = String.split "." hostModuleName_
         , imports = List.map (\moduleToImport -> { moduleToImport = String.split "." moduleToImport, alias = Nothing, exposedValues = Nothing }) imports
-        , customErrorMessage = CustomError { message = "Install imports in module " ++ hostModuleName_, details = [ "" ] }
         }
 
 
