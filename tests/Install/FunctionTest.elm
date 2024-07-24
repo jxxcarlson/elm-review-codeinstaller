@@ -3,7 +3,6 @@ module Install.FunctionTest exposing (all)
 import Install exposing (Installation)
 import Install.Function.InsertFunction as InsertFunction
 import Install.Function.ReplaceFunction as ReplaceFunction
-import Review.Rule exposing (Rule)
 import Run
 import Test exposing (Test, describe)
 
@@ -11,8 +10,8 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.Function"
-        [ Run.testFix test1
-        , Run.testFix test1b
+        [ Run.testFix_ test1
+        , Run.testFix_ test1b
         , Run.testFix_ test2
         , Run.testFix_ test2a
         , Run.testFix_ test3
@@ -27,25 +26,25 @@ all =
 -- TEST 1
 
 
-test1 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1 : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test1 =
     { description = "Test 1, replace function body of of Frontend.view"
     , src = src1
-    , rule = rule1
+    , installation = rule1
     , under = under1
     , fixed = fixed1
     , message = "Replace function \"view\""
     }
 
 
-rule1 : Rule
+rule1 : Installation
 rule1 =
-    ReplaceFunction.config
+    ReplaceFunction.replace
         "Frontend"
         "view"
         """view model =
     Html.text "This is a test\""""
-        |> ReplaceFunction.makeRule
+        |> Install.replaceFunction
 
 
 src1 : String
@@ -90,11 +89,11 @@ update msg model =
             model"""
 
 
-test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1b : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test1b =
     { description = "Test 1b, replace function with unformatted code"
     , src = src1b
-    , rule = rule1b
+    , installation = rule1b
     , under = under1b
     , fixed = fixed1b
     , message = "Replace function \"makeLinks\""
@@ -129,13 +128,13 @@ makeLinks model route =
         :: List.map (makeLink route) Route.routesAndNames"""
 
 
-rule1b : Rule
+rule1b : Installation
 rule1b =
-    ReplaceFunction.config
+    ReplaceFunction.replace
         "View.Main"
         "makeLinks"
         makeLinks
-        |> ReplaceFunction.makeRule
+        |> Install.replaceFunction
 
 
 under1b : String

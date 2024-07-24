@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction
+    , addImport, addElementToList, insertFunction, replaceFunction
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction
+@docs addImport, addElementToList, insertFunction, replaceFunction
 
 -}
 
@@ -19,10 +19,12 @@ import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
 import Install.ElementToList
 import Install.Function.InsertFunction
+import Install.Function.ReplaceFunction
 import Install.Import
 import Install.Internal.ElementToList
 import Install.Internal.Import
 import Install.Internal.InsertFunction
+import Install.Internal.ReplaceFunction
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -30,6 +32,7 @@ type alias Context =
     { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
     , elementToList : List Install.ElementToList.Config
     , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
+    , replaceFunction : List Install.Function.ReplaceFunction.Config
     }
 
 
@@ -39,6 +42,7 @@ type Installation
     = AddImport Install.Import.Config
     | AddElementToList Install.ElementToList.Config
     | InsertFunction Install.Function.InsertFunction.Config
+    | ReplaceFunction Install.Function.ReplaceFunction.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -60,6 +64,13 @@ addElementToList =
 insertFunction : Install.Function.InsertFunction.Config -> Installation
 insertFunction =
     InsertFunction
+
+
+{-| Replace a function, defined by [`Install.Function.ReplaceFunction.replace`](Install-Function-ReplaceFunction#replace).
+-}
+replaceFunction : Install.Function.ReplaceFunction.Config -> Installation
+replaceFunction =
+    ReplaceFunction
 
 
 {-| Create a rule from a list of transformations.
@@ -102,10 +113,18 @@ initContext installations =
 
                             else
                                 context
+
+                        ReplaceFunction ((Install.Internal.ReplaceFunction.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | replaceFunction = config :: context.replaceFunction }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
                 , insertFunction = []
+                , replaceFunction = []
                 }
                 installations
         )
@@ -138,9 +157,19 @@ importVisitor node context =
 
 declarationVisitor : Node Declaration -> Context -> ( List (Rule.Error {}), Context )
 declarationVisitor node context =
-    ( List.concatMap
-        (\config -> Install.Internal.ElementToList.declarationVisitor config node)
-        context.elementToList
+    let
+        errors : List (Error {})
+        errors =
+            List.concat
+                [ List.concatMap
+                    (\config -> Install.Internal.ElementToList.declarationVisitor config node)
+                    context.elementToList
+                , List.concatMap
+                    (\config -> Install.Internal.ReplaceFunction.declarationVisitor config node)
+                    context.replaceFunction
+                ]
+    in
+    ( errors
     , { context
         | insertFunction =
             List.map

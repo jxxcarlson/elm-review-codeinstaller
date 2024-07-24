@@ -16,7 +16,7 @@ import Install.ClauseInCase as ClauseInCase
 import Install.ElementToList as ElementToList
 import Install.FieldInTypeAlias as FieldInTypeAlias
 import Install.Function.ReplaceFunction as ReplaceFunction
-import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
+import Install.Import as Import exposing (module_, withAlias, withExposedValues)
 import Install.Initializer as Initializer
 import Install.InitializerCmd as InitializerCmd
 import Install.Subscription as Subscription
@@ -183,6 +183,8 @@ configAuthFrontend =
     [ Install.rule "REPLACEME"
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
             |> Install.addImport
+        , ReplaceFunction.replace "Frontend" "tryLoading" tryLoading2
+            |> Install.replaceFunction
         ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
@@ -216,8 +218,6 @@ configAuthFrontend =
         ]
     , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
     , ClauseInCase.config "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )" |> ClauseInCase.makeRule
-    , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
-        |> ReplaceFunction.makeRule
     ]
 
 
@@ -311,9 +311,11 @@ configView =
     , Install.rule "AddConfig"
         [ Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ]
             |> Install.addImport
+        , ReplaceFunction.replace "View.Main" "headerRow" headerRow
+            |> Install.replaceFunction
+        , ReplaceFunction.replace "View.Main" "makeLinks" makeLinks
+            |> Install.replaceFunction
         ]
-    , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
-    , ReplaceFunction.config "View.Main" "makeLinks" makeLinks |> ReplaceFunction.makeRule
     ]
 
 
