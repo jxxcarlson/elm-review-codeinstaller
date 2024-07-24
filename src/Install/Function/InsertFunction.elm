@@ -1,4 +1,4 @@
-module Install.Function.InsertFunction exposing (makeRule, config, Config, CustomError, withInsertAfter)
+module Install.Function.InsertFunction exposing (makeRule, config, Config, withInsertAfter)
 
 {-| Add a function in a given module if it is not present.
 
@@ -22,7 +22,7 @@ The form of the rule is the same for nested modules:
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.Function.InsertFunction.makeRule
 
-@docs makeRule, config, Config, CustomError, withInsertAfter
+@docs makeRule, config, Config, withInsertAfter
 
 -}
 

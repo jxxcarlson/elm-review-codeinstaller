@@ -1,7 +1,7 @@
 module Install.ClauseInCase exposing
     ( Config, config, makeRule
     , withInsertAfter, withInsertAtBeginning
-    , withCustomErrorMessage, CustomError
+    , withCustomErrorMessage
     )
 
 {-| Add a clause to a case expression in a specified function
@@ -36,7 +36,7 @@ Thus we will have
 By default, the clause will be inserted as the last clause. You can change the insertion location using the following functions:
 
 @docs withInsertAfter, withInsertAtBeginning
-@docs withCustomErrorMessage, CustomError
+@docs withCustomErrorMessage
 
 -}
 
