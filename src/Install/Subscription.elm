@@ -78,20 +78,8 @@ declarationVisitor moduleName items (Node _ declaration) context =
                     ( [], context )
 
                 else
-                    let
-                        data =
-                            case Node.value implementation.expression of
-                                Application (head :: rest) ->
-                                    Just ( head, rest )
-
-                                _ ->
-                                    Nothing
-                    in
-                    case data of
-                        Nothing ->
-                            ( [], context )
-
-                        Just ( head, rest ) ->
+                    case Node.value implementation.expression of
+                        Application (head :: rest) ->
                             case Node.value head of
                                 FunctionOrValue [ "Sub" ] "batch" ->
                                     let
@@ -134,6 +122,9 @@ declarationVisitor moduleName items (Node _ declaration) context =
 
                                 _ ->
                                     ( [], context )
+
+                        _ ->
+                            ( [], context )
 
             _ ->
                 ( [], context )
