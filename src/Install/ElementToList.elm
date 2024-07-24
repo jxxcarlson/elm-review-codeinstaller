@@ -38,7 +38,7 @@ makeRule moduleName functionName elements =
             declarationVisitor moduleName functionName elements
     in
     Rule.newModuleRuleSchemaUsingContextCreator "Install.ElementToList" initialContext
-        |> Rule.withDeclarationExitVisitor visitor
+        |> Rule.withDeclarationEnterVisitor visitor
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
 
