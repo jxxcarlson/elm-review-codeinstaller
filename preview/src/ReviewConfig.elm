@@ -68,11 +68,12 @@ configAtmospheric =
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "update" "GotFastTick time" "( { model | time = time } , Cmd.none )"
             |> Install.insertClauseInCase
-        ]
-    , FieldInTypeAlias.makeRule "Types"
-        "BackendModel"
-        [ "randomAtmosphericNumbers : Maybe (List Int)"
-        , "time : Time.Posix"
+        , FieldInTypeAlias.config "Types"
+            "BackendModel"
+            [ "randomAtmosphericNumbers : Maybe (List Int)"
+            , "time : Time.Posix"
+            ]
+            |> Install.insertFieldInTypeAlias
         ]
     , TypeVariant.makeRule "Types"
         "BackendMsg"
@@ -100,13 +101,15 @@ configUsers =
             |> Install.addImport
         , Import.qualified "Frontend" [ "Dict" ]
             |> Install.addImport
+        , FieldInTypeAlias.config "Types"
+            "BackendModel"
+            [ "users: Dict.Dict User.EmailString User.User"
+            , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
+            ]
+            |> Install.insertFieldInTypeAlias
+        , FieldInTypeAlias.config "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
+            |> Install.insertFieldInTypeAlias
         ]
-    , FieldInTypeAlias.makeRule "Types"
-        "BackendModel"
-        [ "users: Dict.Dict User.EmailString User.User"
-        , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
-        ]
-    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
     ]
 
@@ -122,11 +125,12 @@ configMagicLinkMinimal =
             |> Install.addImport
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
             |> Install.insertClauseInCase
+        , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
+            |> Install.insertFieldInTypeAlias
         ]
     , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
     , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
     , TypeVariant.makeRule "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
-    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , TypeVariant.makeRule "Types"
         "ToFrontend"
@@ -145,6 +149,21 @@ configAuthTypes =
     [ Install.rule "REPLACEME"
         [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ]
             |> Install.addImport
+        , FieldInTypeAlias.config "Types"
+            "BackendModel"
+            [ "localUuidData : Maybe LocalUUID.Data"
+            , "pendingAuths : Dict Lamdera.SessionId Auth.Common.PendingAuth"
+            , "pendingEmailAuths : Dict Lamdera.SessionId Auth.Common.PendingEmailAuth"
+            , "sessions : Dict SessionId Auth.Common.UserInfo"
+            , "secretCounter : Int"
+            , "sessionDict : AssocList.Dict SessionId String"
+            , "pendingLogins : MagicLink.Types.PendingLogins"
+            , "log : MagicLink.Types.Log"
+            , "sessionInfo : Session.SessionInfo"
+            ]
+            |> Install.insertFieldInTypeAlias
+        , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
+            |> Install.insertFieldInTypeAlias
         ]
     , TypeVariant.makeRule "Types"
         "FrontendMsg"
@@ -159,18 +178,6 @@ configAuthTypes =
         , "AutoLogin SessionId User.SignInData"
         , "OnConnected SessionId ClientId"
         ]
-    , FieldInTypeAlias.makeRule "Types"
-        "BackendModel"
-        [ "localUuidData : Maybe LocalUUID.Data"
-        , "pendingAuths : Dict Lamdera.SessionId Auth.Common.PendingAuth"
-        , "pendingEmailAuths : Dict Lamdera.SessionId Auth.Common.PendingEmailAuth"
-        , "sessions : Dict SessionId Auth.Common.UserInfo"
-        , "secretCounter : Int"
-        , "sessionDict : AssocList.Dict SessionId String"
-        , "pendingLogins : MagicLink.Types.PendingLogins"
-        , "log : MagicLink.Types.Log"
-        , "sessionInfo : Session.SessionInfo"
-        ]
     , TypeVariant.makeRule "Types"
         "ToBackend"
         [ "AuthToBackend Auth.Common.ToBackend"
@@ -178,7 +185,6 @@ configAuthTypes =
         , "RequestSignUp String String String"
         , "GetUserDictionary"
         ]
-    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
     ]
 
 

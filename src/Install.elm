@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias
 
 -}
 
@@ -19,11 +19,13 @@ import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
 import Install.ClauseInCase
 import Install.ElementToList
+import Install.FieldInTypeAlias
 import Install.Function.InsertFunction
 import Install.Function.ReplaceFunction
 import Install.Import
 import Install.Internal.ClauseInCase
 import Install.Internal.ElementToList
+import Install.Internal.FieldInTypeAlias
 import Install.Internal.Import
 import Install.Internal.InsertFunction
 import Install.Internal.ReplaceFunction
@@ -36,6 +38,7 @@ type alias Context =
     , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
     , replaceFunction : List Install.Function.ReplaceFunction.Config
     , clauseInCase : List Install.ClauseInCase.Config
+    , fieldInTypeAlias : List Install.FieldInTypeAlias.Config
     }
 
 
@@ -47,6 +50,7 @@ type Installation
     | InsertFunction Install.Function.InsertFunction.Config
     | ReplaceFunction Install.Function.ReplaceFunction.Config
     | InsertClauseInCase Install.ClauseInCase.Config
+    | FieldInTypeAlias Install.FieldInTypeAlias.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -82,6 +86,13 @@ replaceFunction =
 insertClauseInCase : Install.ClauseInCase.Config -> Installation
 insertClauseInCase =
     InsertClauseInCase
+
+
+{-| Insert a field in a type alias, defined by [`Install.FieldInTypeAlias.config`](Install-FieldInTypeAlias#config).
+-}
+insertFieldInTypeAlias : Install.FieldInTypeAlias.Config -> Installation
+insertFieldInTypeAlias =
+    FieldInTypeAlias
 
 
 {-| Create a rule from a list of transformations.
@@ -138,12 +149,20 @@ initContext installations =
 
                             else
                                 context
+
+                        FieldInTypeAlias ((Install.Internal.FieldInTypeAlias.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | fieldInTypeAlias = config :: context.fieldInTypeAlias }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
                 , insertFunction = []
                 , replaceFunction = []
                 , clauseInCase = []
+                , fieldInTypeAlias = []
                 }
                 installations
         )
@@ -189,6 +208,9 @@ declarationVisitor node context =
                 , List.concatMap
                     (\config -> Install.Internal.ClauseInCase.declarationVisitor config node)
                     context.clauseInCase
+                , List.concatMap
+                    (\config -> Install.Internal.FieldInTypeAlias.declarationVisitor config node)
+                    context.fieldInTypeAlias
                 ]
     in
     ( errors
