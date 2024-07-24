@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer
 
 -}
 
@@ -23,10 +23,12 @@ import Install.FieldInTypeAlias
 import Install.Function.InsertFunction
 import Install.Function.ReplaceFunction
 import Install.Import
+import Install.Initializer
 import Install.Internal.ClauseInCase
 import Install.Internal.ElementToList
 import Install.Internal.FieldInTypeAlias
 import Install.Internal.Import
+import Install.Internal.Initializer
 import Install.Internal.InsertFunction
 import Install.Internal.ReplaceFunction
 import Review.Rule as Rule exposing (Error, Rule)
@@ -39,6 +41,7 @@ type alias Context =
     , replaceFunction : List Install.Function.ReplaceFunction.Config
     , clauseInCase : List Install.ClauseInCase.Config
     , fieldInTypeAlias : List Install.FieldInTypeAlias.Config
+    , initializer : List Install.Initializer.Config
     }
 
 
@@ -51,6 +54,7 @@ type Installation
     | ReplaceFunction Install.Function.ReplaceFunction.Config
     | InsertClauseInCase Install.ClauseInCase.Config
     | FieldInTypeAlias Install.FieldInTypeAlias.Config
+    | Initializer Install.Initializer.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -93,6 +97,13 @@ insertClauseInCase =
 insertFieldInTypeAlias : Install.FieldInTypeAlias.Config -> Installation
 insertFieldInTypeAlias =
     FieldInTypeAlias
+
+
+{-| Add fields to the body of a function like `init`, defined by [`Install.Initializer.config`](Install-Initializer#config).
+-}
+initializer : Install.Initializer.Config -> Installation
+initializer =
+    Initializer
 
 
 {-| Create a rule from a list of transformations.
@@ -156,6 +167,13 @@ initContext installations =
 
                             else
                                 context
+
+                        Initializer ((Install.Internal.Initializer.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | initializer = config :: context.initializer }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
@@ -163,6 +181,7 @@ initContext installations =
                 , replaceFunction = []
                 , clauseInCase = []
                 , fieldInTypeAlias = []
+                , initializer = []
                 }
                 installations
         )
@@ -211,6 +230,9 @@ declarationVisitor node context =
                 , List.concatMap
                     (\config -> Install.Internal.FieldInTypeAlias.declarationVisitor config node)
                     context.fieldInTypeAlias
+                , List.concatMap
+                    (\config -> Install.Internal.Initializer.declarationVisitor config node)
+                    context.initializer
                 ]
     in
     ( errors

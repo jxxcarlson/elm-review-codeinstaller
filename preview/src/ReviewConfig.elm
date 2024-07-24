@@ -109,8 +109,9 @@ configUsers =
             |> Install.insertFieldInTypeAlias
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
             |> Install.insertFieldInTypeAlias
+        , Initializer.config "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
+            |> Install.initializer
         ]
-    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
     ]
 
 
@@ -127,11 +128,12 @@ configMagicLinkMinimal =
             |> Install.insertClauseInCase
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
             |> Install.insertFieldInTypeAlias
+        , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
+            |> Install.initializer
         ]
     , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
     , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
     , TypeVariant.makeRule "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
-    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , TypeVariant.makeRule "Types"
         "ToFrontend"
         [ "AuthToFrontend Auth.Common.ToFrontend"
@@ -215,8 +217,9 @@ configAuthFrontend =
             |> Install.insertClauseInCase
         , ClauseInCase.config "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )"
             |> Install.insertClauseInCase
+        , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
+            |> Install.initializer
         ]
-    , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , TypeVariant.makeRule "Types"
         "ToFrontend"
         [ "AuthToFrontend Auth.Common.ToFrontend"
@@ -264,22 +267,23 @@ configAuthBackend adminConfig =
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )"
             |> Install.insertClauseInCase
-        ]
-    , Initializer.makeRule "Backend"
-        "init"
-        [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
-        , { field = "time", value = "Time.millisToPosix 0" }
-        , { field = "sessions", value = "Dict.empty" }
-        , { field = "userNameToEmailString", value = "Dict.fromList [ (\"jxxcarlson\", \"jxxcarlson@gmail.com\") ]" }
-        , { field = "users", value = "MagicLink.Helper.initialUserDictionary " ++ stringifyAdminConfig adminConfig }
-        , { field = "sessionInfo", value = "Dict.empty" }
-        , { field = "pendingAuths", value = "Dict.empty" }
-        , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }
-        , { field = "pendingEmailAuths", value = "Dict.empty" }
-        , { field = "secretCounter", value = "0" }
-        , { field = "sessionDict", value = "AssocList.empty" }
-        , { field = "pendingLogins", value = "AssocList.empty" }
-        , { field = "log", value = "[]" }
+        , Initializer.config "Backend"
+            "init"
+            [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
+            , { field = "time", value = "Time.millisToPosix 0" }
+            , { field = "sessions", value = "Dict.empty" }
+            , { field = "userNameToEmailString", value = "Dict.fromList [ (\"jxxcarlson\", \"jxxcarlson@gmail.com\") ]" }
+            , { field = "users", value = "MagicLink.Helper.initialUserDictionary " ++ stringifyAdminConfig adminConfig }
+            , { field = "sessionInfo", value = "Dict.empty" }
+            , { field = "pendingAuths", value = "Dict.empty" }
+            , { field = "localUuidData", value = "LocalUUID.initFrom4List [ 235880, 700828, 253400, 602641 ]" }
+            , { field = "pendingEmailAuths", value = "Dict.empty" }
+            , { field = "secretCounter", value = "0" }
+            , { field = "sessionDict", value = "AssocList.empty" }
+            , { field = "pendingLogins", value = "AssocList.empty" }
+            , { field = "log", value = "[]" }
+            ]
+            |> Install.initializer
         ]
     , Subscription.makeRule "Backend" [ "Lamdera.onConnect OnConnected" ]
     ]
