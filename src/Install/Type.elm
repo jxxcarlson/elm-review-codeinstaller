@@ -85,12 +85,12 @@ fixError typeName_ variants_ context =
 
 declarationVisitor : String -> String -> Node Declaration -> Context -> ( List (Error {}), Context )
 declarationVisitor moduleName_ typeName_ node context =
-    let
-        isInCorrectModule =
-            Install.Library.isInCorrectModule moduleName_ context
-    in
     case Node.value node of
         Declaration.CustomTypeDeclaration type_ ->
+            let
+                isInCorrectModule =
+                    Install.Library.isInCorrectModule moduleName_ context
+            in
             if isInCorrectModule && Node.value type_.name == typeName_ then
                 ( [], { context | typeIsPresent = True, lastNodeRange = Node.range node } )
 

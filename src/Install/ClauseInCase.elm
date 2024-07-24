@@ -155,12 +155,13 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName context
-
-                functionDeclaration : FunctionImplementation
-                functionDeclaration =
-                    Node.value function.declaration
             in
             if name == functionName && isInCorrectModule then
+                let
+                    functionDeclaration : FunctionImplementation
+                    functionDeclaration =
+                        Node.value function.declaration
+                in
                 visitFunction clause functionCall functionDeclaration.expression insertAt customError context
 
             else
@@ -201,12 +202,12 @@ visitFunction clause functionCall expressionNode insertAt customError context =
                     List.any
                         (\pattern -> Install.Library.patternToString (Node.empty pattern) == clause_)
                         (getPatterns cases_)
-
-                isClauseStringPattern =
-                    List.any isStringPattern (getPatterns allCases)
             in
             if not (findClause clause allCases) then
                 let
+                    isClauseStringPattern =
+                        List.any isStringPattern (getPatterns allCases)
+
                     rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
                         rangeToInsertClause insertAt isClauseStringPattern allCases patternMatchNode |> Just

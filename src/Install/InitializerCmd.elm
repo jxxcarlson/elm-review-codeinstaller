@@ -73,12 +73,13 @@ declarationVisitor moduleName functionName cmds (Node _ declaration) context =
                 name : String
                 name =
                     Node.value (Node.value function.declaration).name
-
-                namespace : String
-                namespace =
-                    String.join "." context.moduleName ++ "." ++ name
             in
             if name == functionName then
+                let
+                    namespace : String
+                    namespace =
+                        String.join "." context.moduleName ++ "." ++ name
+                in
                 visitCmd namespace moduleName functionName cmds Set.empty function context
 
             else

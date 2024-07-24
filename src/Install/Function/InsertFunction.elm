@@ -119,24 +119,23 @@ declarationVisitor context (Config config_) declaration =
     let
         declarationName =
             Install.Library.getDeclarationName declaration
-
-        contextWithLastDeclarationRange =
-            case config_.insertAt of
-                After previousDeclaration ->
-                    if Install.Library.getDeclarationName declaration == previousDeclaration then
-                        { context | lastDeclarationRange = Node.range declaration }
-
-                    else
-                        context
-
-                AtEnd ->
-                    { context | lastDeclarationRange = Node.range declaration }
     in
     if declarationName == config_.functionName then
         ( [], { context | appliedFix = True } )
 
     else
-        ( [], contextWithLastDeclarationRange )
+        ( []
+        , case config_.insertAt of
+            After previousDeclaration ->
+                if Install.Library.getDeclarationName declaration == previousDeclaration then
+                    { context | lastDeclarationRange = Node.range declaration }
+
+                else
+                    context
+
+            AtEnd ->
+                { context | lastDeclarationRange = Node.range declaration }
+        )
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})

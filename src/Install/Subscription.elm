@@ -70,31 +70,23 @@ declarationVisitor moduleName items (Node _ declaration) context =
                     implementation =
                         Node.value function.declaration
 
-                    expr =
-                        implementation.expression
-
-                    endOfRange =
-                        (Node.range expr).end
-
                     name : String
                     name =
                         Node.value implementation.name
-
-                    nameRange =
-                        Node.range implementation.name
-
-                    data =
-                        case Node.value implementation.expression of
-                            Application (head :: rest) ->
-                                Just ( head, rest )
-
-                            _ ->
-                                Nothing
                 in
                 if name /= "subscriptions" then
                     ( [], context )
 
                 else
+                    let
+                        data =
+                            case Node.value implementation.expression of
+                                Application (head :: rest) ->
+                                    Just ( head, rest )
+
+                                _ ->
+                                    Nothing
+                    in
                     case data of
                         Nothing ->
                             ( [], context )
@@ -124,6 +116,15 @@ declarationVisitor moduleName items (Node _ declaration) context =
 
                                     else
                                         let
+                                            expr =
+                                                implementation.expression
+
+                                            endOfRange =
+                                                (Node.range expr).end
+
+                                            nameRange =
+                                                Node.range implementation.name
+
                                             replacementCode =
                                                 items
                                                     |> List.map (\item -> ", " ++ item)
