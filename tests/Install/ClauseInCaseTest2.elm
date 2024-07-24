@@ -1,26 +1,26 @@
 module Install.ClauseInCaseTest2 exposing (all)
 
+import Install exposing (Installation)
 import Install.ClauseInCase
-import Review.Rule exposing (Rule)
-import Run exposing (TestData)
+import Run exposing (TestData_)
 import Test exposing (Test, describe)
 
 
 all : Test
 all =
     describe "Install.ClauseInCase"
-        [ Run.testFix test1a
-        , Run.testFix test1b
-        , Run.testFix test1c
-        , Run.testFix test2
-        , Run.testFix test3
-        , Run.testFix test4
-        , Run.testFix test5
-        , Run.testFix test6
-        , Run.testFix test7
-        , Run.testFix test8
-        , Run.testFix test9
-        , Run.testFix test10
+        [ Run.testFix_ test1a
+        , Run.testFix_ test1b
+        , Run.testFix_ test1c
+        , Run.testFix_ test2
+        , Run.testFix_ test3
+        , Run.testFix_ test4
+        , Run.testFix_ test5
+        , Run.testFix_ test6
+        , Run.testFix_ test7
+        , Run.testFix_ test8
+        , Run.testFix_ test9
+        , Run.testFix_ test10
         ]
 
 
@@ -28,57 +28,57 @@ all =
 -- TEST 1
 
 
-test1a : TestData
+test1a : TestData_
 test1a =
     { description = "Test 1a, simple makeRule: should report an error and fix it"
     , src = src1
-    , rule = rule1a
+    , installation = rule1a
     , under = under1
     , fixed = fixed1
     , message = "Add handler for ResetCounter"
     }
 
 
-test1b : TestData
+test1b : TestData_
 test1b =
     { description = "Test 1b, withInsertAfter CounterIncremented: should report an error and fix it"
     , src = src1
-    , rule = rule1b
+    , installation = rule1b
     , under = under1
     , fixed = fixed1
     , message = "Add handler for ResetCounter"
     }
 
 
-test1c : TestData
+test1c : TestData_
 test1c =
     { description = "Test 1c, withInsertAtBeginning: should report an error and fix it"
     , src = src1
-    , rule = rule1c
+    , installation = rule1c
     , under = under1
     , fixed = fixed1c
     , message = "Add handler for ResetCounter"
     }
 
 
-rule1a : Rule
+rule1a : Installation
 rule1a =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
-rule1b : Rule
+rule1b : Installation
 rule1b =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
-rule1c : Rule
+rule1c : Installation
 rule1c =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 src1 : String
@@ -154,22 +154,22 @@ under1 =
 -- TEST 2
 
 
-test2 : TestData
+test2 : TestData_
 test2 =
     { description = "Test 2 (Reset, Frontend.update): should report an error and fix it"
     , src = src2
-    , rule = rule2
+    , installation = rule2
     , under = under2
     , fixed = fixed2
     , message = "Add handler for Reset"
     }
 
 
-rule2 : Rule
+rule2 : Installation
 rule2 =
     Install.ClauseInCase.config "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 src2 : String
@@ -227,11 +227,11 @@ under2 =
 -- TEST 3
 
 
-test3 : TestData
+test3 : TestData_
 test3 =
     { description = "Test 2: should escape string pattern when is a case of string patterns"
     , src = src3
-    , rule = rule3
+    , installation = rule3
     , under = under3
     , fixed = fixed3
     , message = "Add handler for Aspasia"
@@ -263,11 +263,11 @@ stringToPhilosopher str =
                 Nothing"""
 
 
-rule3 : Rule
+rule3 : Installation
 rule3 =
     Install.ClauseInCase.config "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under3 : String
@@ -317,11 +317,11 @@ stringToPhilosopher str =
 -- TEST 4
 
 
-test4 : TestData
+test4 : TestData_
 test4 =
     { description = "Test 4: should add clause when case is inside let in expression"
     , src = src4
-    , rule = rule4
+    , installation = rule4
     , under = under4
     , fixed = fixed4
     , message = "Add handler for _"
@@ -342,10 +342,10 @@ isStringPattern nodePattern =
 """
 
 
-rule4 : Rule
+rule4 : Installation
 rule4 =
     Install.ClauseInCase.config "Elm.Syntax.Pattern2" "isStringPattern" "_" "False"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under4 : String
@@ -374,11 +374,11 @@ isStringPattern nodePattern =
 -- TEST 5
 
 
-test5 : TestData
+test5 : TestData_
 test5 =
     { description = "Test 5: should add clause when case is inside tupled expression"
     , src = src5
-    , rule = rule5
+    , installation = rule5
     , under = under5
     , fixed = fixed5
     , message = "Add handler for empty error string"
@@ -399,12 +399,12 @@ errorFix context node maybeError =
     """
 
 
-rule5 : Rule
+rule5 : Installation
 rule5 =
     Install.ClauseInCase.config "SomeElmReviewRule" "errorFix" "Just \"\"" "[]"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.withCustomErrorMessage "Add handler for empty error string" [ "" ]
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under5 : String
@@ -436,11 +436,11 @@ errorFix context node maybeError =
 -- TEST 6
 
 
-test6 : TestData
+test6 : TestData_
 test6 =
     { description = "Test 6: should add clause when case is inside parenthesized expression"
     , src = src6
-    , rule = rule6
+    , installation = rule6
     , under = under6
     , fixed = fixed6
     , message = "Add handler for Sun"
@@ -473,11 +473,11 @@ getShiftFormFromWeekday weekday =
     )"""
 
 
-rule6 : Rule
+rule6 : Installation
 rule6 =
     Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under6 : String
@@ -534,11 +534,11 @@ getShiftFormFromWeekday weekday =
 -- TEST 7 - IfBlock test
 
 
-test7 : TestData
+test7 : TestData_
 test7 =
     { description = "Test 7: should add clause when case is inside if block"
     , src = src7
-    , rule = rule7
+    , installation = rule7
     , under = under7
     , fixed = fixed7
     , message = "Add handler for Just []"
@@ -562,11 +562,11 @@ someFunction condition maybeData =
         Result.Err "Condition not satisfied" """
 
 
-rule7 : Rule
+rule7 : Installation
 rule7 =
     Install.ClauseInCase.config "Backend" "someFunction" "Just []" "Result.Err \"Empty data\""
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under7 : String
@@ -602,11 +602,11 @@ someFunction condition maybeData =
 -- TEST 8 - Application test
 
 
-test8 : TestData
+test8 : TestData_
 test8 =
     { description = "Test 8: should add clause when case is inside application"
     , src = src8
-    , rule = rule8
+    , installation = rule8
     , under = under8
     , fixed = fixed8
     , message = "Add handler for Sun"
@@ -640,11 +640,11 @@ getShiftFormFromWeekday weekday weekShiftForm =
         weekShiftForm"""
 
 
-rule8 : Rule
+rule8 : Installation
 rule8 =
     Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under8 : String
@@ -702,11 +702,11 @@ getShiftFormFromWeekday weekday weekShiftForm =
 -- TEST 9 - OperatorApplication and LambdaExpression test
 
 
-test9 : TestData
+test9 : TestData_
 test9 =
     { description = "Test 9: should add clause when case is inside operator application and Lambda Expression"
     , src = src9
-    , rule = rule9
+    , installation = rule9
     , under = under9
     , fixed = fixed9
     , message = "Add handler for Just []"
@@ -735,11 +735,11 @@ decodeFieldErrors =
             )"""
 
 
-rule9 : Rule
+rule9 : Installation
 rule9 =
     Install.ClauseInCase.config "Errors" "decodeFieldErrors" "Just []" "Dict.singleton \"base\" []"
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under9 : String
@@ -784,11 +784,11 @@ decodeFieldErrors =
 -- Test 10: ListExpression test
 
 
-test10 : TestData
+test10 : TestData_
 test10 =
     { description = "Test 10: should add clause when case is inside list expression"
     , src = src10
-    , rule = rule10
+    , installation = rule10
     , under = under10
     , fixed = fixed10
     , message = "Add handler for ModalConfirm"
@@ -813,10 +813,10 @@ viewModal modal =
         ]"""
 
 
-rule10 : Rule
+rule10 : Installation
 rule10 =
     Install.ClauseInCase.config "Modal" "viewModal" "ModalConfirm" "div [class \"modal-confirm\"] []"
-        |> Install.ClauseInCase.makeRule
+        |> Install.insertClauseInCase
 
 
 under10 : String

@@ -33,12 +33,12 @@ expectNoErrorsTest_ description src installation =
                 |> Review.Test.expectNoErrors
 
 
-expectErrorsTest : String -> String -> Rule -> Test
-expectErrorsTest description src rule =
+expectErrorsTest : String -> String -> Install.Installation -> Test
+expectErrorsTest description src installation =
     test description <|
         \() ->
             src
-                |> Review.Test.run rule
+                |> Review.Test.run (Install.rule "TestRule" [ installation ])
                 |> Review.Test.expectErrors []
 
 

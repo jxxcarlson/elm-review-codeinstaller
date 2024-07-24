@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase
 
 -}
 
@@ -17,10 +17,12 @@ import Elm.Syntax.Declaration exposing (Declaration)
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
+import Install.ClauseInCase
 import Install.ElementToList
 import Install.Function.InsertFunction
 import Install.Function.ReplaceFunction
 import Install.Import
+import Install.Internal.ClauseInCase
 import Install.Internal.ElementToList
 import Install.Internal.Import
 import Install.Internal.InsertFunction
@@ -33,6 +35,7 @@ type alias Context =
     , elementToList : List Install.ElementToList.Config
     , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
     , replaceFunction : List Install.Function.ReplaceFunction.Config
+    , clauseInCase : List Install.ClauseInCase.Config
     }
 
 
@@ -43,6 +46,7 @@ type Installation
     | AddElementToList Install.ElementToList.Config
     | InsertFunction Install.Function.InsertFunction.Config
     | ReplaceFunction Install.Function.ReplaceFunction.Config
+    | InsertClauseInCase Install.ClauseInCase.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -71,6 +75,13 @@ insertFunction =
 replaceFunction : Install.Function.ReplaceFunction.Config -> Installation
 replaceFunction =
     ReplaceFunction
+
+
+{-| Insert a clause in a `case` expression, defined by [`Install.ClauseInCase.config`](Install-ClauseInCase#config).
+-}
+insertClauseInCase : Install.ClauseInCase.Config -> Installation
+insertClauseInCase =
+    InsertClauseInCase
 
 
 {-| Create a rule from a list of transformations.
@@ -120,11 +131,19 @@ initContext installations =
 
                             else
                                 context
+
+                        InsertClauseInCase ((Install.Internal.ClauseInCase.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | clauseInCase = config :: context.clauseInCase }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
                 , insertFunction = []
                 , replaceFunction = []
+                , clauseInCase = []
                 }
                 installations
         )
@@ -167,6 +186,9 @@ declarationVisitor node context =
                 , List.concatMap
                     (\config -> Install.Internal.ReplaceFunction.declarationVisitor config node)
                     context.replaceFunction
+                , List.concatMap
+                    (\config -> Install.Internal.ClauseInCase.declarationVisitor config node)
+                    context.clauseInCase
                 ]
     in
     ( errors
