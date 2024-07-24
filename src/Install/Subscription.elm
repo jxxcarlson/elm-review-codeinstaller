@@ -23,7 +23,7 @@ import Review.Rule as Rule exposing (Error, Rule)
 
 and that you want to add `baz` to the list. To do this, say
 
-    Insall.Subscription.makeRule "Backend" [ "baz" ]
+    Install.Subscription.makeRule "Backend" [ "baz" ]
 
 The result is
 
