@@ -206,7 +206,7 @@ visitFunction clause functionCall expressionNode insertAt customError context =
                     isClauseStringPattern =
                         List.any isStringPattern (getPatterns allCases)
 
-                    rangeToInsert : Maybe ( Range, Int, Int )
+                    rangeToInsert : Maybe ( Range, Int )
                     rangeToInsert =
                         rangeToInsertClause insertAt isClauseStringPattern allCases patternMatchNode |> Just
                 in
@@ -219,7 +219,7 @@ visitFunction clause functionCall expressionNode insertAt customError context =
             ( [ couldNotFindCaseError expressionNode ], context )
 
 
-rangeToInsertClause : InsertAt -> Bool -> List Case -> Node Expression -> ( Range, Int, Int )
+rangeToInsertClause : InsertAt -> Bool -> List Case -> Node Expression -> ( Range, Int )
 rangeToInsertClause insertAt isClauseStringPattern cases expression =
     let
         lastClauseExpression =
@@ -258,10 +258,10 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                     pattern
                         |> Tuple.second
                         |> Node.range
-                        |> (\range -> ( range, 1, lastClauseStartingColumn ))
+                        |> (\range -> ( range, lastClauseStartingColumn ))
 
                 Nothing ->
-                    ( Node.range lastClauseExpression, 1, 0 )
+                    ( Node.range lastClauseExpression, 0 )
 
         AtBeginning ->
             let
@@ -280,26 +280,26 @@ rangeToInsertClause insertAt isClauseStringPattern cases expression =
                     otherClausesOffset
                         |> Maybe.withDefault firstClauseOffset
             in
-            ( Node.range expression, 1, clauseOffset )
+            ( Node.range expression, clauseOffset )
 
         AtEnd ->
             let
                 range =
                     Node.range lastClauseExpression
             in
-            ( range, 1, lastClauseStartingColumn )
+            ( range, lastClauseStartingColumn )
 
 
-errorWithFix : CustomError -> Bool -> String -> String -> Node a -> Maybe ( Range, Int, Int ) -> Error {}
+errorWithFix : CustomError -> Bool -> String -> String -> Node a -> Maybe ( Range, Int ) -> Error {}
 errorWithFix (CustomError customError) isClauseStringPattern clause functionCall node errorRange =
     Rule.errorWithFix
         customError
         (Node.range node)
         (case errorRange of
-            Just ( range, verticalOffset, horizontalOffset ) ->
+            Just ( range, horizontalOffset ) ->
                 let
                     insertionPoint =
-                        { row = range.end.row + verticalOffset, column = 0 }
+                        { row = range.end.row + 1, column = 0 }
 
                     prefix =
                         String.repeat horizontalOffset " "
