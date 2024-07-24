@@ -11,6 +11,7 @@ when inside the directory containing this file.
 
 -}
 
+import Install
 import Install.ClauseInCase as ClauseInCase
 import Install.ElementToList as ElementToList
 import Install.FieldInTypeAlias as FieldInTypeAlias
@@ -18,7 +19,6 @@ import Install.Function.ReplaceFunction as ReplaceFunction
 import Install.Import as Import exposing (module_, qualified, withAlias, withExposedValues)
 import Install.Initializer as Initializer
 import Install.InitializerCmd as InitializerCmd
-import Install.Rule
 import Install.Subscription as Subscription
 import Install.Type
 import Install.TypeVariant as TypeVariant
@@ -56,12 +56,12 @@ configAll adminConfig =
 
 configAtmospheric : List Rule
 configAtmospheric =
-    [ Install.Rule.rule "AddAtmospheric"
+    [ Install.rule "AddAtmospheric"
         [ -- Add fields randomAtmosphericNumbers and time to BackendModel
           Import.qualified "Types" [ "Http" ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper", "MagicLink.Backend", "MagicLink.Auth" ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         ]
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"
@@ -83,17 +83,20 @@ configAtmospheric =
 
 configUsers : List Rule
 configUsers =
-    [ Install.Rule.rule "REPLACEME"
-        [ Import.qualified "Types" [ "User" ] |> Install.Rule.addImport
-        , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ] |> Install.Rule.addImport
-        , Import.qualified "Backend" [ "Time", "Task", "LocalUUID" ] |> Install.Rule.addImport
+    [ Install.rule "REPLACEME"
+        [ Import.qualified "Types" [ "User" ]
+            |> Install.addImport
+        , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
+            |> Install.addImport
+        , Import.qualified "Backend" [ "Time", "Task", "LocalUUID" ]
+            |> Install.addImport
         , Import.config "Backend"
             [ module_ "MagicLink.Helper" |> withAlias "Helper"
             , module_ "Dict" |> withExposedValues [ "Dict" ]
             ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         , Import.qualified "Frontend" [ "Dict" ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         ]
     , FieldInTypeAlias.makeRule "Types"
         "BackendModel"
@@ -107,10 +110,13 @@ configUsers =
 
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
-    [ Install.Rule.rule "REPLACEME"
-        [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ] |> Install.Rule.addImport
-        , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Install.Rule.addImport
-        , Import.qualified "Backend" [ "Auth.Flow" ] |> Install.Rule.addImport
+    [ Install.rule "REPLACEME"
+        [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ]
+            |> Install.addImport
+        , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
+            |> Install.addImport
+        , Import.qualified "Backend" [ "Auth.Flow" ]
+            |> Install.addImport
         ]
     , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
     , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
@@ -132,8 +138,9 @@ configMagicLinkMinimal =
 
 configAuthTypes : List Rule
 configAuthTypes =
-    [ Install.Rule.rule "REPLACEME"
-        [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ] |> Install.Rule.addImport
+    [ Install.rule "REPLACEME"
+        [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ]
+            |> Install.addImport
         ]
     , TypeVariant.makeRule "Types"
         "FrontendMsg"
@@ -173,8 +180,9 @@ configAuthTypes =
 
 configAuthFrontend : List Rule
 configAuthFrontend =
-    [ Install.Rule.rule "REPLACEME"
-        [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ] |> Install.Rule.addImport
+    [ Install.rule "REPLACEME"
+        [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
+            |> Install.addImport
         ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
     , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
@@ -219,7 +227,7 @@ configAuthBackend adminConfig =
     , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "ClientConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
-    , Install.Rule.rule "REPLACEME"
+    , Install.rule "REPLACEME"
         [ Import.qualified "Backend"
             [ "AssocList"
             , "Auth.Common"
@@ -229,7 +237,7 @@ configAuthBackend adminConfig =
             , "Reconnect"
             , "User"
             ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         ]
     , Initializer.makeRule "Backend"
         "init"
@@ -259,12 +267,12 @@ configRoute : List Rule
 configRoute =
     [ -- ROUTE
       TypeVariant.makeRule "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
-    , Install.Rule.rule "REPLACEME"
+    , Install.rule "REPLACEME"
         [ ElementToList.add
             "Route"
             "routesAndNames"
             [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
-            |> Install.Rule.addElementToList
+            |> Install.addElementToList
         ]
     ]
 
@@ -282,14 +290,14 @@ addPage : ( String, String ) -> List Rule
 addPage ( pageTitle, routeName ) =
     [ TypeVariant.makeRule "Route" "Route" [ pageTitle ++ "Route" ]
     , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view") |> ClauseInCase.makeRule
-    , Install.Rule.rule "REPLACEME"
+    , Install.rule "REPLACEME"
         [ Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
-            |> Install.Rule.addImport
+            |> Install.addImport
         , ElementToList.add
             "Route"
             "routesAndNames"
             [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
-            |> Install.Rule.addElementToList
+            |> Install.addElementToList
         ]
     ]
 
@@ -300,8 +308,9 @@ configView =
     , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)" |> ClauseInCase.makeRule
     , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view" |> ClauseInCase.makeRule
-    , Install.Rule.rule "AddConfig"
-        [ Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ] |> Install.Rule.addImport
+    , Install.rule "AddConfig"
+        [ Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ]
+            |> Install.addImport
         ]
     , ReplaceFunction.config "View.Main" "headerRow" headerRow |> ReplaceFunction.makeRule
     , ReplaceFunction.config "View.Main" "makeLinks" makeLinks |> ReplaceFunction.makeRule

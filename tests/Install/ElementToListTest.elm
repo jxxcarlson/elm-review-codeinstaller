@@ -1,7 +1,7 @@
 module Install.ElementToListTest exposing (all)
 
+import Install
 import Install.ElementToList as ElementToList
-import Install.Rule
 import Run
 import Test exposing (Test, describe)
 
@@ -62,7 +62,7 @@ contributors =
 
 rule1 =
     ElementToList.add "Contributors" "contributors" [ "Matt" ]
-        |> Install.Rule.addElementToList
+        |> Install.addElementToList
 
 
 under1 =
@@ -115,7 +115,7 @@ rule2 =
         "Contributors"
         "contributors"
         [ "Matt", "Laozi" ]
-        |> Install.Rule.addElementToList
+        |> Install.addElementToList
 
 
 under2 =
@@ -168,7 +168,7 @@ rule4 =
         "Routes"
         "routesAndNames"
         [ "(Quotes, \"quotes\")" ]
-        |> Install.Rule.addElementToList
+        |> Install.addElementToList
 
 
 under4 =

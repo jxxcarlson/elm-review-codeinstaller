@@ -1,7 +1,7 @@
 module Install.ImportTest exposing (..)
 
+import Install
 import Install.Import exposing (module_, withAlias, withExposedValues)
-import Install.Rule
 import Review.Test
 import Run exposing (TestData_)
 import Test exposing (Test, describe, test)
@@ -25,7 +25,7 @@ all =
 import Set
 
 foo = 1"""
-                    |> Review.Test.run (Install.Rule.rule "TestRule" [ rule1 ])
+                    |> Review.Test.run (Install.rule "TestRule" [ rule1 ])
                     |> Review.Test.expectNoErrors
         ]
 
@@ -45,10 +45,10 @@ test1 =
     }
 
 
-rule1 : Install.Rule.Installation
+rule1 : Install.Installation
 rule1 =
     Install.Import.config "Main" [ module_ "Dict" ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 src1 : String
@@ -123,10 +123,10 @@ test2 =
     }
 
 
-rule2 : Install.Rule.Installation
+rule2 : Install.Installation
 rule2 =
     Install.Import.config "Main" [ module_ "Dict" |> withAlias "D" ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 fixed2 : String
@@ -153,10 +153,10 @@ test3 =
     }
 
 
-rule3 : Install.Rule.Installation
+rule3 : Install.Installation
 rule3 =
     Install.Import.config "Main" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 fixed3 : String
@@ -183,7 +183,7 @@ test4 =
     }
 
 
-rule4 : Install.Rule.Installation
+rule4 : Install.Installation
 rule4 =
     Install.Import.config "Main"
         [ module_ "Dict" |> withAlias "D" |> withExposedValues [ "Dict" ]
@@ -192,7 +192,7 @@ rule4 =
         , module_ "Pages.NestedModule.EvenMoreNested.MyPage" |> withAlias "MyPage"
         , module_ "Array" |> withExposedValues [ "Array" ]
         ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 fixed4 : String
@@ -212,7 +212,7 @@ foo = 1"""
 -- TEST 5 - should not report an error when import already exists
 
 
-test5 : { description : String, src : String, installation : Install.Rule.Installation }
+test5 : { description : String, src : String, installation : Install.Installation }
 test5 =
     { description = "should not report an error when import already exists"
     , src = src1
@@ -220,11 +220,11 @@ test5 =
     }
 
 
-rule5 : Install.Rule.Installation
+rule5 : Install.Installation
 rule5 =
     Install.Import.config "Main"
         [ module_ "Set" ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 
@@ -242,13 +242,13 @@ test6 =
     }
 
 
-rule6 : Install.Rule.Installation
+rule6 : Install.Installation
 rule6 =
     Install.Import.config "Main"
         [ module_ "Set"
         , module_ "Dict"
         ]
-        |> Install.Rule.addImport
+        |> Install.addImport
 
 
 fixed6 : String
@@ -271,9 +271,9 @@ test7 =
     }
 
 
-rule7 : Install.Rule.Installation
+rule7 : Install.Installation
 rule7 =
-    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.Rule.addImport
+    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.addImport
 
 
 fixed7 : String

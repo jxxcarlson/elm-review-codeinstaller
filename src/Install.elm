@@ -1,4 +1,4 @@
-module Install.Rule exposing
+module Install exposing
     ( rule
     , Installation
     , addImport, addElementToList

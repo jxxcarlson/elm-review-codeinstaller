@@ -8,7 +8,7 @@ module Run exposing
     , withOnly
     )
 
-import Install.Rule
+import Install
 import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, test)
@@ -23,12 +23,12 @@ expectNoErrorsTest description src rule =
                 |> Review.Test.expectNoErrors
 
 
-expectNoErrorsTest_ : String -> String -> Install.Rule.Installation -> Test
+expectNoErrorsTest_ : String -> String -> Install.Installation -> Test
 expectNoErrorsTest_ description src installation =
     test description <|
         \() ->
             src
-                |> Review.Test.run (Install.Rule.rule "TestRule" [ installation ])
+                |> Review.Test.run (Install.rule "TestRule" [ installation ])
                 |> Review.Test.expectNoErrors
 
 
@@ -71,7 +71,7 @@ testFix { description, src, rule, under, fixed, message } =
 type alias TestData_ =
     { description : String
     , src : String
-    , installation : Install.Rule.Installation
+    , installation : Install.Installation
     , under : String
     , fixed : String
     , message : String
@@ -83,7 +83,7 @@ testFix_ { description, src, installation, under, fixed, message } =
     test description <|
         \() ->
             src
-                |> Review.Test.run (Install.Rule.rule "TestRule" [ installation ])
+                |> Review.Test.run (Install.rule "TestRule" [ installation ])
                 |> Review.Test.expectErrors
                     [ Review.Test.error { message = message, details = [ "" ], under = under }
                         |> Review.Test.whenFixed fixed
