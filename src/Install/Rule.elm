@@ -1,4 +1,17 @@
-module Install.Rule exposing (Installation, rule)
+module Install.Rule exposing
+    ( rule
+    , Installation
+    , addImport
+    )
+
+{-| TODO REPLACEME
+
+@docs rule
+
+@docs Installation
+@docs addImport
+
+-}
 
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module exposing (Module)
@@ -16,6 +29,13 @@ type alias Context =
 -}
 type Installation
     = AddImport Install.Import.Config
+
+
+{-| Add an import defined by [Install-Import#config].
+-}
+addImport : Install.Import.Config -> Installation
+addImport =
+    AddImport
 
 
 {-| Create a rule from a list of transformations.
