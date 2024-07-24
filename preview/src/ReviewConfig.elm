@@ -86,15 +86,7 @@ configUsers =
     [ Install.Rule.rule "REPLACEME"
         [ Import.qualified "Types" [ "User" ] |> Install.Rule.addImport
         , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ] |> Install.Rule.addImport
-        ]
-    , FieldInTypeAlias.makeRule "Types"
-        "BackendModel"
-        [ "users: Dict.Dict User.EmailString User.User"
-        , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
-        ]
-    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
-    , Install.Rule.rule "REPLACEME"
-        [ Import.qualified "Backend" [ "Time", "Task", "LocalUUID" ] |> Install.Rule.addImport
+        , Import.qualified "Backend" [ "Time", "Task", "LocalUUID" ] |> Install.Rule.addImport
         , Import.config "Backend"
             [ module_ "MagicLink.Helper" |> withAlias "Helper"
             , module_ "Dict" |> withExposedValues [ "Dict" ]
@@ -103,6 +95,12 @@ configUsers =
         , Import.qualified "Frontend" [ "Dict" ]
             |> Install.Rule.addImport
         ]
+    , FieldInTypeAlias.makeRule "Types"
+        "BackendModel"
+        [ "users: Dict.Dict User.EmailString User.User"
+        , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
+        ]
+    , FieldInTypeAlias.makeRule "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
     , Initializer.makeRule "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
     ]
 
@@ -261,7 +259,13 @@ configRoute : List Rule
 configRoute =
     [ -- ROUTE
       TypeVariant.makeRule "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
-    , ElementToList.makeRule "Route" "routesAndNames" [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
+    , Install.Rule.rule "REPLACEME"
+        [ ElementToList.add
+            "Route"
+            "routesAndNames"
+            [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
+            |> Install.Rule.addElementToList
+        ]
     ]
 
 
@@ -279,9 +283,14 @@ addPage ( pageTitle, routeName ) =
     [ TypeVariant.makeRule "Route" "Route" [ pageTitle ++ "Route" ]
     , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view") |> ClauseInCase.makeRule
     , Install.Rule.rule "REPLACEME"
-        [ Import.qualified "View.Main" [ "Pages." ++ pageTitle ] |> Install.Rule.addImport
+        [ Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
+            |> Install.Rule.addImport
+        , ElementToList.add
+            "Route"
+            "routesAndNames"
+            [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
+            |> Install.Rule.addElementToList
         ]
-    , ElementToList.makeRule "Route" "routesAndNames" [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
     ]
 
 

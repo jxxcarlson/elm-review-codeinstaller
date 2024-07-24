@@ -1,6 +1,7 @@
 module Install.ElementToListTest exposing (all)
 
-import Install.ElementToList exposing (makeRule)
+import Install.ElementToList as ElementToList
+import Install.Rule
 import Run
 import Test exposing (Test, describe)
 
@@ -8,10 +9,10 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.ElementToList"
-        [ Run.testFix test1
-        , Run.expectNoErrorsTest "should not report error when the field already exists" src0 rule1
-        , Run.testFix test2
-        , Run.testFix test4
+        [ Run.testFix_ test1
+        , Run.expectNoErrorsTest_ "should not report error when the field already exists" src0 rule1
+        , Run.testFix_ test2
+        , Run.testFix_ test4
         ]
 
 
@@ -39,7 +40,7 @@ contributors =
 test1 =
     { description = "should add element to the list"
     , src = src1
-    , rule = rule1
+    , installation = rule1
     , under = under1
     , fixed = fixed1
     , message = "Add 1 element to the list"
@@ -60,7 +61,8 @@ contributors =
 
 
 rule1 =
-    makeRule "Contributors" "contributors" [ "Matt" ]
+    ElementToList.add "Contributors" "contributors" [ "Matt" ]
+        |> Install.Rule.addElementToList
 
 
 under1 =
@@ -87,7 +89,7 @@ contributors =
 test2 =
     { description = "should add multiple elements to the list"
     , src = src2
-    , rule = rule2
+    , installation = rule2
     , under = under2
     , fixed = fixed2
     , message = "Add 2 elements to the list"
@@ -109,7 +111,11 @@ contributors =
 
 
 rule2 =
-    makeRule "Contributors" "contributors" [ "Matt", "Laozi" ]
+    ElementToList.add
+        "Contributors"
+        "contributors"
+        [ "Matt", "Laozi" ]
+        |> Install.Rule.addElementToList
 
 
 under2 =
@@ -137,7 +143,7 @@ contributors =
 test4 =
     { description = "should add an element to a list of tuples in project"
     , src = src4
-    , rule = rule4
+    , installation = rule4
     , under = under4
     , fixed = fixed4
     , message = "Add 2 elements to the list"
@@ -158,7 +164,11 @@ routesAndNames =
 
 
 rule4 =
-    makeRule "Routes" "routesAndNames" [ "(Quotes, \"quotes\")" ]
+    ElementToList.add
+        "Routes"
+        "routesAndNames"
+        [ "(Quotes, \"quotes\")" ]
+        |> Install.Rule.addElementToList
 
 
 under4 =

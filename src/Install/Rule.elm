@@ -1,7 +1,7 @@
 module Install.Rule exposing
     ( rule
     , Installation
-    , addImport
+    , addImport, addElementToList
     )
 
 {-| TODO REPLACEME
@@ -9,34 +9,46 @@ module Install.Rule exposing
 @docs rule
 
 @docs Installation
-@docs addImport
+@docs addImport, addElementToList
 
 -}
 
+import Elm.Syntax.Declaration exposing (Declaration)
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node exposing (Node)
-import Install.Import as Import
+import Install.ElementToList
+import Install.Import
+import Install.Internal.ElementToList
 import Install.Internal.Import
 import Review.Rule as Rule exposing (Error, Rule)
 
 
 type alias Context =
     { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
+    , elementToList : List Install.ElementToList.Config
     }
 
 
 {-| A transformation to apply.
 -}
 type Installation
-    = AddImport Import.Config
+    = AddImport Install.Import.Config
+    | AddElementToList Install.ElementToList.Config
 
 
-{-| Add an import defined by [Install-Import#config].
+{-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
 -}
-addImport : Import.Config -> Installation
+addImport : Install.Import.Config -> Installation
 addImport =
     AddImport
+
+
+{-| Add an element to the end of a list, defined by [`Install.ElementToList.add`](Install-ElementToList#add).
+-}
+addElementToList : Install.ElementToList.Config -> Installation
+addElementToList =
+    AddElementToList
 
 
 {-| Create a rule from a list of transformations.
@@ -46,6 +58,7 @@ rule name installations =
     Rule.newModuleRuleSchemaUsingContextCreator name (initContext installations)
         |> Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
         |> Rule.withImportVisitor importVisitor
+        |> Rule.withDeclarationEnterVisitor declarationVisitor
         |> Rule.withFinalModuleEvaluation finalEvaluation
         |> Rule.providesFixesForModuleRule
         |> Rule.fromModuleRuleSchema
@@ -64,8 +77,16 @@ initContext installations =
 
                             else
                                 context
+
+                        AddElementToList ((Install.Internal.ElementToList.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | elementToList = config :: context.elementToList }
+
+                            else
+                                context
                 )
                 { importContexts = []
+                , elementToList = []
                 }
                 installations
         )
@@ -75,7 +96,8 @@ initContext installations =
 moduleDefinitionVisitor : Node Module -> Context -> ( List (Error {}), Context )
 moduleDefinitionVisitor node context =
     ( []
-    , { importContexts =
+    , { context
+        | importContexts =
             List.map
                 (\( config, importContext ) -> ( config, Install.Internal.Import.moduleDefinitionVisitor node importContext ))
                 context.importContexts
@@ -86,11 +108,21 @@ moduleDefinitionVisitor node context =
 importVisitor : Node Import -> Context -> ( List (Error {}), Context )
 importVisitor node context =
     ( []
-    , { importContexts =
+    , { context
+        | importContexts =
             List.map
                 (\( config, importContext ) -> ( config, Install.Internal.Import.importVisitor config node importContext ))
                 context.importContexts
       }
+    )
+
+
+declarationVisitor : Node Declaration -> Context -> ( List (Rule.Error {}), Context )
+declarationVisitor node context =
+    ( List.concatMap
+        (\config -> Install.Internal.ElementToList.declarationVisitor config node)
+        context.elementToList
+    , context
     )
 
 
