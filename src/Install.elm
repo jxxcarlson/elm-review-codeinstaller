@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription
 
 -}
 
@@ -33,6 +33,8 @@ import Install.Internal.Initializer
 import Install.Internal.InitializerCmd
 import Install.Internal.InsertFunction
 import Install.Internal.ReplaceFunction
+import Install.Internal.Subscription
+import Install.Subscription
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -45,6 +47,7 @@ type alias Context =
     , fieldInTypeAlias : List Install.FieldInTypeAlias.Config
     , initializer : List Install.Initializer.Config
     , initializerCmd : List Install.InitializerCmd.Config
+    , subscription : List Install.Subscription.Config
     }
 
 
@@ -59,6 +62,7 @@ type Installation
     | FieldInTypeAlias Install.FieldInTypeAlias.Config
     | Initializer Install.Initializer.Config
     | InitializerCmd Install.InitializerCmd.Config
+    | Subscription Install.Subscription.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -115,6 +119,13 @@ initializer =
 initializerCmd : Install.InitializerCmd.Config -> Installation
 initializerCmd =
     InitializerCmd
+
+
+{-| Add subscriptions, defined by [`Install.Subscription.config`](Install-Subscription#config).
+-}
+subscription : Install.Subscription.Config -> Installation
+subscription =
+    Subscription
 
 
 {-| Create a rule from a list of transformations.
@@ -192,6 +203,13 @@ initContext installations =
 
                             else
                                 context
+
+                        Subscription ((Install.Internal.Subscription.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | subscription = config :: context.subscription }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
@@ -201,6 +219,7 @@ initContext installations =
                 , fieldInTypeAlias = []
                 , initializer = []
                 , initializerCmd = []
+                , subscription = []
                 }
                 installations
         )
@@ -255,6 +274,9 @@ declarationVisitor node context =
                 , List.concatMap
                     (\config -> Install.Internal.InitializerCmd.declarationVisitor config node)
                     context.initializerCmd
+                , List.concatMap
+                    (\config -> Install.Internal.Subscription.declarationVisitor config node)
+                    context.subscription
                 ]
     in
     ( errors

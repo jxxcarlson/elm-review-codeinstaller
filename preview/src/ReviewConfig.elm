@@ -285,8 +285,9 @@ configAuthBackend adminConfig =
             , { field = "log", value = "[]" }
             ]
             |> Install.initializer
+        , Subscription.config "Backend" [ "Lamdera.onConnect OnConnected" ]
+            |> Install.subscription
         ]
-    , Subscription.makeRule "Backend" [ "Lamdera.onConnect OnConnected" ]
     ]
 
 
