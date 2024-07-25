@@ -42,21 +42,20 @@ stringifyAdminConfig { fullname, username, email } =
 
 configAll : { fullname : String, username : String, email : String } -> List Rule
 configAll adminConfig =
-    List.concat
-        [ configAtmospheric
-        , configUsers
-        , configAuthTypes
-        , configAuthFrontend
-        , configAuthBackend adminConfig
-        , configRoute
-        , newPages
-        , configView
-        ]
+    [ configAtmospheric
+    , configUsers
+    , configAuthTypes
+    , configAuthFrontend
+    , configAuthBackend adminConfig
+    , configRoute
+    , newPages
+    , configView
+    ]
 
 
-configAtmospheric : List Rule
+configAtmospheric : Rule
 configAtmospheric =
-    [ Install.rule "AddAtmospheric"
+    Install.rule "AddAtmospheric"
         [ -- Add fields randomAtmosphericNumbers and time to BackendModel
           Import.qualified "Types" [ "Http" ]
             |> Install.addImport
@@ -84,12 +83,11 @@ configAtmospheric =
             ]
             |> Install.addTypeVariant
         ]
-    ]
 
 
-configUsers : List Rule
+configUsers : Rule
 configUsers =
-    [ Install.rule "ConfigUsers"
+    Install.rule "ConfigUsers"
         [ Import.qualified "Types" [ "User" ]
             |> Install.addImport
         , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
@@ -114,12 +112,11 @@ configUsers =
         , Initializer.config "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
             |> Install.initializer
         ]
-    ]
 
 
-configMagicLinkMinimal : List Rule
+configMagicLinkMinimal : Rule
 configMagicLinkMinimal =
-    [ Install.rule "AddMagicLink"
+    Install.rule "AddMagicLink"
         [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ]
             |> Install.addImport
         , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
@@ -149,12 +146,11 @@ configMagicLinkMinimal =
             ]
             |> Install.addTypeVariant
         ]
-    ]
 
 
-configAuthTypes : List Rule
+configAuthTypes : Rule
 configAuthTypes =
-    [ Install.rule "ConfigAuth"
+    Install.rule "ConfigAuth"
         [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ]
             |> Install.addImport
         , FieldInTypeAlias.config "Types"
@@ -196,12 +192,11 @@ configAuthTypes =
             ]
             |> Install.addTypeVariant
         ]
-    ]
 
 
-configAuthFrontend : List Rule
+configAuthFrontend : Rule
 configAuthFrontend =
-    [ Install.rule "ConfigAuthFrontend"
+    Install.rule "ConfigAuthFrontend"
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
             |> Install.addImport
         , ReplaceFunction.replace "Frontend" "tryLoading" tryLoading2
@@ -246,12 +241,11 @@ configAuthFrontend =
             ]
             |> Install.addTypeVariant
         ]
-    ]
 
 
-configAuthBackend : { fullname : String, username : String, email : String } -> List Rule
+configAuthBackend : { fullname : String, username : String, email : String } -> Rule
 configAuthBackend adminConfig =
-    [ Install.rule "ConfigAuthBackend"
+    Install.rule "ConfigAuthBackend"
         [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg"
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )"
@@ -298,12 +292,11 @@ configAuthBackend adminConfig =
         , Subscription.config "Backend" [ "Lamdera.onConnect OnConnected" ]
             |> Install.subscription
         ]
-    ]
 
 
-configRoute : List Rule
+configRoute : Rule
 configRoute =
-    [ Install.rule "AddRoute"
+    Install.rule "AddRoute"
         [ -- ROUTE
           TypeVariant.config "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
             |> Install.addTypeVariant
@@ -313,39 +306,33 @@ configRoute =
             [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
             |> Install.addElementToList
         ]
-    ]
 
 
+newPages : Rule
 newPages =
-    addPages [ ( "TermsOfService", "terms" ) ]
+    Install.rule "AddPage"
+        (List.concatMap addPage [ ( "TermsOfService", "terms" ) ])
 
 
-addPages : List ( String, String ) -> List Rule
-addPages pageData =
-    List.concatMap addPage pageData
-
-
-addPage : ( String, String ) -> List Rule
+addPage : ( String, String ) -> List Install.Installation
 addPage ( pageTitle, routeName ) =
-    [ Install.rule "AddPage"
-        [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
-            |> Install.addTypeVariant
-        , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
-            |> Install.insertClauseInCase
-        , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
-            |> Install.addImport
-        , ElementToList.add
-            "Route"
-            "routesAndNames"
-            [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
-            |> Install.addElementToList
-        ]
+    [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
+        |> Install.addTypeVariant
+    , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
+        |> Install.insertClauseInCase
+    , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
+        |> Install.addImport
+    , ElementToList.add
+        "Route"
+        "routesAndNames"
+        [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
+        |> Install.addElementToList
     ]
 
 
-configView : List Rule
+configView : Rule
 configView =
-    [ Install.rule "AddConfig"
+    Install.rule "AddConfig"
         [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute
             |> Install.insertClauseInCase
         , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view"
@@ -361,7 +348,6 @@ configView =
         , ReplaceFunction.replace "View.Main" "makeLinks" makeLinks
             |> Install.replaceFunction
         ]
-    ]
 
 
 makeLinks =
