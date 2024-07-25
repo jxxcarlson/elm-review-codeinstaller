@@ -74,6 +74,8 @@ configAtmospheric =
             , "time : Time.Posix"
             ]
             |> Install.insertFieldInTypeAlias
+        , InitializerCmd.config "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
+            |> Install.initializerCmd
         ]
     , TypeVariant.makeRule "Types"
         "BackendMsg"
@@ -81,7 +83,6 @@ configAtmospheric =
         , "SetLocalUuidStuff (List Int)"
         , "GotFastTick Time.Posix"
         ]
-    , InitializerCmd.makeRule "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
     ]
 
 
