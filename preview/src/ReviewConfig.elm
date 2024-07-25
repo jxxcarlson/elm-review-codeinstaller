@@ -89,7 +89,7 @@ configAtmospheric =
 
 configUsers : List Rule
 configUsers =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "ConfigUsers"
         [ Import.qualified "Types" [ "User" ]
             |> Install.addImport
         , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
@@ -119,7 +119,7 @@ configUsers =
 
 configMagicLinkMinimal : List Rule
 configMagicLinkMinimal =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "AddMagicLink"
         [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ]
             |> Install.addImport
         , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
@@ -154,7 +154,7 @@ configMagicLinkMinimal =
 
 configAuthTypes : List Rule
 configAuthTypes =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "ConfigAuth"
         [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ]
             |> Install.addImport
         , FieldInTypeAlias.config "Types"
@@ -201,7 +201,7 @@ configAuthTypes =
 
 configAuthFrontend : List Rule
 configAuthFrontend =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "ConfigAuthFrontend"
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
             |> Install.addImport
         , ReplaceFunction.replace "Frontend" "tryLoading" tryLoading2
@@ -251,7 +251,7 @@ configAuthFrontend =
 
 configAuthBackend : { fullname : String, username : String, email : String } -> List Rule
 configAuthBackend adminConfig =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "ConfigAuthBackend"
         [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg"
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )"
@@ -303,7 +303,7 @@ configAuthBackend adminConfig =
 
 configRoute : List Rule
 configRoute =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "AddRoute"
         [ -- ROUTE
           TypeVariant.config "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
             |> Install.addTypeVariant
@@ -327,7 +327,7 @@ addPages pageData =
 
 addPage : ( String, String ) -> List Rule
 addPage ( pageTitle, routeName ) =
-    [ Install.rule "REPLACEME"
+    [ Install.rule "AddPage"
         [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
             |> Install.addTypeVariant
         , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
