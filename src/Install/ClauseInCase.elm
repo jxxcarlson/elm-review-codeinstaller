@@ -1,4 +1,8 @@
-module Install.ClauseInCase exposing (config, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError)
+module Install.ClauseInCase exposing
+    ( Config, config, makeRule
+    , withInsertAfter, withInsertAtBeginning
+    , withCustomErrorMessage, CustomError
+    )
 
 {-| Add a clause to a case expression in a specified function
 in a specified module. For example, if you put the code below in your
@@ -6,10 +10,14 @@ in a specified module. For example, if you put the code below in your
 `ResetCounter` to the `updateFromFrontend` function in the `Backend` module.
 
     -- code for ReviewConfig.elm:
-    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
-    Thus we will have
+Thus we will have
 
     updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
     updateFromFrontend sessionId clientId msg model =
@@ -21,28 +29,14 @@ in a specified module. For example, if you put the code below in your
             ResetCounter ->
                 ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
 
-    You also can add the clause after another clause of choice with the `withInsertAfter` function:
-        Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-            |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
-            |> Install.ClauseInCase.makeRule
+            ...
 
-    In this case we will have
-        updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
-        updateFromFrontend sessionId clientId msg model =
-            case msg of
-                CounterIncremented ->
-                ...
-                ResetCounter ->
-                    ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+@docs Config, config, makeRule
 
-                CounterDecremented ->
-                ...
-    You can also customize the error message with the `withCustomErrorMessage` function:
-        Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-            |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
-            |> Install.ClauseInCase.makeRule
+By default, the clause will be inserted as the last clause. You can change the insertion location using the following functions:
 
-@docs config, makeRule, withInsertAfter, withInsertAtBeginning, withCustomErrorMessage, Config, CustomError
+@docs withInsertAfter, withInsertAtBeginning
+@docs withCustomErrorMessage, CustomError
 
 -}
 
@@ -57,10 +51,9 @@ import List.Extra
 import Maybe.Extra
 import Review.Fix as Fix exposing (Fix)
 import Review.Rule as Rule exposing (Error, Rule)
-import String.Extra
 
 
-{-| Configuration for makeRule: add a clause to a case expression in a specified function in a specified module.
+{-| Configuration for rule: add a clause to a case expression in a specified function in a specified module.
 -}
 type Config
     = Config
@@ -87,9 +80,14 @@ type CustomError
 
 {-| Basic config to add a new clause to a case expression. If you just need to add a new clause at the end of the case, you can simply use it with the `makeRule` function like this:
 
-    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
-    If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
+
+If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
 
 -}
 config : String -> String -> String -> String -> Config
@@ -104,9 +102,13 @@ config moduleName functionName clause functionCall =
         }
 
 
-{-| Create a makeRule that adds a clause to a case expression in a specified function. You can use it like this:
+{-| Create a rule that adds a clause to a case expression in a specified function. You can use it like this:
 
-    Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+    Install.ClauseInCase.config
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.makeRule
 
 -}
@@ -151,12 +153,13 @@ declarationVisitor (Node _ declaration) moduleName functionName clause functionC
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule moduleName context
-
-                functionDeclaration : FunctionImplementation
-                functionDeclaration =
-                    Node.value function.declaration
             in
             if name == functionName && isInCorrectModule then
+                let
+                    functionDeclaration : FunctionImplementation
+                    functionDeclaration =
+                        Node.value function.declaration
+                in
                 visitFunction clause functionCall functionDeclaration.expression insertAt customError context
 
             else
@@ -197,12 +200,12 @@ visitFunction clause functionCall expressionNode insertAt customError context =
                     List.any
                         (\pattern -> Install.Library.patternToString (Node.empty pattern) == clause_)
                         (getPatterns cases_)
-
-                isClauseStringPattern =
-                    List.any isStringPattern (getPatterns allCases)
             in
             if not (findClause clause allCases) then
                 let
+                    isClauseStringPattern =
+                        List.any isStringPattern (getPatterns allCases)
+
                     rangeToInsert : Maybe ( Range, Int, Int )
                     rangeToInsert =
                         rangeToInsertClause insertAt isClauseStringPattern allCases patternMatchNode |> Just
@@ -359,7 +362,11 @@ Given the following module:
 
 To add the clause `Aspasia` after the clause `Aristotle`, you can use the following configuration:
 
-    Install.ClauseInCase.config "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
+    Install.ClauseInCase.config
+        "Philosopher"
+        "stringToPhilosopher"
+        "Aspasia"
+        "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
         |> Install.ClauseInCase.makeRule
 
@@ -393,6 +400,31 @@ withInsertAfter clauseToInsertAfter (Config config_) =
 
 
 {-| Add a clause at the beginning of the case expression.
+
+You also can add the clause after another clause of choice with the `withInsertAfter` function:
+
+    Install.ClauseInCase.config
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        |> Install.ClauseInCase.withInsertAtBeginning
+        |> Install.ClauseInCase.makeRule
+
+In this case we will have
+
+    updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
+    updateFromFrontend sessionId clientId msg model =
+        case msg of
+            ResetCounter ->
+                ( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )
+
+            CounterIncremented ->
+            ...
+
+            CounterDecremented ->
+            ...
+
 -}
 withInsertAtBeginning : Config -> Config
 withInsertAtBeginning (Config config_) =
@@ -402,7 +434,16 @@ withInsertAtBeginning (Config config_) =
         }
 
 
-{-| Customize the error message that will be displayed when running `elm-review --fix` or `elm-review --fix-all`
+{-| Customize the error message that will be displayed when running `elm-review --fix` or `elm-review --fix-all`.
+
+    Install.ClauseInCase.config
+        "Backend"
+        "updateFromFrontend"
+        "ResetCounter"
+        "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
+        |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
+        |> Install.ClauseInCase.makeRule
+
 -}
 withCustomErrorMessage : String -> List String -> Config -> Config
 withCustomErrorMessage errorMessage details (Config config_) =

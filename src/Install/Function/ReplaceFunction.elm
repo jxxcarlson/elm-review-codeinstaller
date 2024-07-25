@@ -31,15 +31,13 @@ import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Range exposing (Range)
-import Install.Infer as Infer
 import Install.Library
-import Install.Normalize as Normalize
 import Review.Fix as Fix
 import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: replace a function in a specified module with a new implementation.
+{-| Configuration for rule: replace a function in a specified module with a new implementation.
 -}
 type Config
     = Config
@@ -60,12 +58,12 @@ type CustomError
 {-| Initialize the configuration for the rule.
 -}
 config : String -> String -> String -> Config
-config moduleNaeme functionName functionImplementation =
+config moduleName functionName functionImplementation =
     Config
-        { moduleName = moduleNaeme
+        { moduleName = moduleName
         , functionName = functionName
         , functionImplementation = functionImplementation
-        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleNaeme } functionImplementation
+        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleName } functionImplementation
         , customErrorMessage = CustomError { message = "Replace function \"" ++ functionName ++ "\" with new code.", details = [ "" ] }
         }
 
@@ -110,9 +108,6 @@ declarationVisitor context (Config config_) declaration =
 
                 isInCorrectModule =
                     Install.Library.isInCorrectModule config_.moduleName context
-
-                resources =
-                    { lookupTable = context.lookupTable, inferredConstants = ( Infer.empty, [] ) }
 
                 isInCorrectFunction =
                     isInCorrectModule && name == config_.functionName

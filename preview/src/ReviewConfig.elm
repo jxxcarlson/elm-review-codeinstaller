@@ -26,16 +26,17 @@ import Review.Rule exposing (Rule)
 import String.Extra
 
 
-
-config = configMagicLinkAuth "Jim Carlson" "jxxcarlson" "jxxcarlson@gmail.com"
+config =
+    configMagicLinkAuth "Jim Carlson" "jxxcarlson" "jxxcarlson@gmail.com"
 
 
 configMagicLinkAuth fullname username email =
-    configAll {fullname = fullname, username = username, email = email }
+    configAll { fullname = fullname, username = username, email = email }
+
 
 stringifyAdminConfig : { fullname : String, username : String, email : String } -> String
 stringifyAdminConfig { fullname, username, email } =
-    "{ fullname = " ++ String.Extra.quote fullname ++ ", username = " ++ String.Extra.quote username ++ ", email = " ++ String.Extra.quote email ++"}"
+    "{ fullname = " ++ String.Extra.quote fullname ++ ", username = " ++ String.Extra.quote username ++ ", email = " ++ String.Extra.quote email ++ "}"
 
 
 configAll : { fullname : String, username : String, email : String } -> List Rule
@@ -199,7 +200,7 @@ configAuthFrontend =
 
 
 configAuthBackend : { fullname : String, username : String, email : String } -> List Rule
-configAuthBackend adminConfig=
+configAuthBackend adminConfig =
     [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )" |> ClauseInCase.makeRule
     , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )" |> ClauseInCase.makeRule
@@ -236,7 +237,6 @@ configAuthBackend adminConfig=
     , ClauseInCase.config "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )" |> ClauseInCase.makeRule
     , Subscription.makeRule "Backend" [ "Lamdera.onConnect OnConnected" ]
     ]
-
 
 
 configRoute : List Rule

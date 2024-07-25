@@ -44,14 +44,16 @@ import Set.Extra
 
 After running the rule with the following code:
 
-    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" ["clientName: String", "quot: String"]
+    Install.FieldInTypeAlias.makeRule "Types" "FrontendModel" [ "clientName: String", "quot: String" ]
 
-        type alias FrontendModel =
-            { counter : Int
-            , clientId : String
-            , clientName : String
-            , quot : String
-            }
+we will have
+
+    type alias FrontendModel =
+        { counter : Int
+        , clientId : String
+        , clientName : String
+        , quot : String
+        }
 
 -}
 makeRule : String -> String -> List String -> Rule

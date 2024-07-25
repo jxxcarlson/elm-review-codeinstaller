@@ -37,7 +37,7 @@ import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Configuration for makeRule: add a function in a specified module if it does not already exist.
+{-| Configuration for rule: add a function in a specified module if it does not already exist.
 -}
 type Config
     = Config
@@ -71,12 +71,12 @@ withInsertAfter previousDeclaration (Config config_) =
 {-| Initialize the configuration for the rule.
 -}
 config : String -> String -> String -> Config
-config moduleNaeme functionName functionImplementation =
+config moduleName functionName functionImplementation =
     Config
-        { moduleName = moduleNaeme
+        { moduleName = moduleName
         , functionName = functionName
         , functionImplementation = functionImplementation
-        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleNaeme } functionImplementation
+        , theFunctionNodeExpression = Install.Library.maybeNodeExpressionFromString { moduleName = String.split "." moduleName } functionImplementation
         , customErrorMessage = CustomError { message = "Add function \"" ++ functionName ++ "\".", details = [ "" ] }
         , insertAt = AtEnd
         }
@@ -119,24 +119,23 @@ declarationVisitor context (Config config_) declaration =
     let
         declarationName =
             Install.Library.getDeclarationName declaration
-
-        contextWithLastDeclarationRange =
-            case config_.insertAt of
-                After previousDeclaration ->
-                    if Install.Library.getDeclarationName declaration == previousDeclaration then
-                        { context | lastDeclarationRange = Node.range declaration }
-
-                    else
-                        context
-
-                AtEnd ->
-                    { context | lastDeclarationRange = Node.range declaration }
     in
     if declarationName == config_.functionName then
         ( [], { context | appliedFix = True } )
 
     else
-        ( [], contextWithLastDeclarationRange )
+        ( []
+        , case config_.insertAt of
+            After previousDeclaration ->
+                if Install.Library.getDeclarationName declaration == previousDeclaration then
+                    { context | lastDeclarationRange = Node.range declaration }
+
+                else
+                    context
+
+            AtEnd ->
+                { context | lastDeclarationRange = Node.range declaration }
+        )
 
 
 finalEvaluation : Config -> Context -> List (Rule.Error {})

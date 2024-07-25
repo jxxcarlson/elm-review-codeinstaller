@@ -23,7 +23,7 @@ import Review.Rule as Rule exposing (Error, Rule)
 
 and that you want to add `baz` to the list. To do this, say
 
-    Insall.Subscription.makeRule "Backend" [ "baz" ]
+    Install.Subscription.makeRule "Backend" [ "baz" ]
 
 The result is
 
@@ -70,69 +70,56 @@ declarationVisitor moduleName items (Node _ declaration) context =
                     implementation =
                         Node.value function.declaration
 
-                    expr =
-                        implementation.expression
-
-                    endOfRange =
-                        (Node.range expr).end
-
                     name : String
                     name =
                         Node.value implementation.name
-
-                    nameRange =
-                        Node.range implementation.name
-
-                    data =
-                        case Node.value implementation.expression of
-                            Application (head :: rest) ->
-                                Just ( head, rest )
-
-                            _ ->
-                                Nothing
                 in
                 if name /= "subscriptions" then
                     ( [], context )
 
                 else
-                    case data of
-                        Nothing ->
+                    case Node.value implementation.expression of
+                        Application ((Node _ (FunctionOrValue [ "Sub" ] "batch")) :: rest) ->
+                            let
+                                listElements =
+                                    rest
+                                        |> List.head
+                                        |> Maybe.map Node.value
+                                        |> (\expression ->
+                                                case expression of
+                                                    Just (ListExpr exprs) ->
+                                                        exprs
+
+                                                    _ ->
+                                                        []
+                                           )
+
+                                isAlreadyImplemented =
+                                    Install.Library.areItemsInList items listElements
+                            in
+                            if isAlreadyImplemented then
+                                ( [], context )
+
+                            else
+                                let
+                                    expr =
+                                        implementation.expression
+
+                                    endOfRange =
+                                        (Node.range expr).end
+
+                                    nameRange =
+                                        Node.range implementation.name
+
+                                    replacementCode =
+                                        items
+                                            |> List.map (\item -> ", " ++ item)
+                                            |> String.concat
+                                in
+                                ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
+
+                        _ ->
                             ( [], context )
-
-                        Just ( head, rest ) ->
-                            case Node.value head of
-                                FunctionOrValue [ "Sub" ] "batch" ->
-                                    let
-                                        listElements =
-                                            rest
-                                                |> List.head
-                                                |> Maybe.map Node.value
-                                                |> (\expression ->
-                                                        case expression of
-                                                            Just (ListExpr exprs) ->
-                                                                exprs
-
-                                                            _ ->
-                                                                []
-                                                   )
-
-                                        isAlreadyImplemented =
-                                            Install.Library.areItemsInList items listElements
-                                    in
-                                    if isAlreadyImplemented then
-                                        ( [], context )
-
-                                    else
-                                        let
-                                            replacementCode =
-                                                items
-                                                    |> List.map (\item -> ", " ++ item)
-                                                    |> String.concat
-                                        in
-                                        ( [ errorWithFix replacementCode nameRange endOfRange rest ], context )
-
-                                _ ->
-                                    ( [], context )
 
             _ ->
                 ( [], context )

@@ -107,9 +107,6 @@ declarationVisitor moduleName typeName variantList node context =
                 variantNames =
                     List.map variantName variantList |> List.filterMap identity
 
-                variantCode =
-                    List.map variantCodeItem variantList |> String.join ""
-
                 shouldFix : Node Declaration -> Context -> Bool
                 shouldFix node_ context_ =
                     let
@@ -127,6 +124,10 @@ declarationVisitor moduleName typeName variantList node context =
                     not <| Set.Extra.isSubsetOf variantsOfNode (Set.fromList variantNames)
             in
             if isInCorrectModule && Node.value type_.name == typeName && shouldFix node context then
+                let
+                    variantCode =
+                        List.map variantCodeItem variantList |> String.join ""
+                in
                 ( [ errorWithFix typeName variantNames variantCode node (Just <| Node.range node) ]
                 , context
                 )

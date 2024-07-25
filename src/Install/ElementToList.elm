@@ -21,7 +21,10 @@ import String.Extra
 
 For example, the rule
 
-    Install.ElementToList.makeRule "User" "userTypes" [ "Admin", "SystemAdmin" ]
+    Install.ElementToList.makeRule
+        "User"
+        "userTypes"
+        [ "Admin", "SystemAdmin" ]
 
 results in the following fix for function `User.userTypes`:
 
