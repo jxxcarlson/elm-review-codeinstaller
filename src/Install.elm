@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
 
 -}
 
@@ -35,8 +35,10 @@ import Install.Internal.InsertFunction
 import Install.Internal.ReplaceFunction
 import Install.Internal.Subscription
 import Install.Internal.Type
+import Install.Internal.TypeVariant
 import Install.Subscription
 import Install.Type
+import Install.TypeVariant
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -51,6 +53,7 @@ type alias Context =
     , initializerCmd : List Install.InitializerCmd.Config
     , subscription : List Install.Subscription.Config
     , addType : List ( Install.Type.Config, Install.Internal.Type.Context )
+    , addTypeVariant : List Install.TypeVariant.Config
     }
 
 
@@ -67,6 +70,7 @@ type Installation
     | InitializerCmd Install.InitializerCmd.Config
     | Subscription Install.Subscription.Config
     | AddType Install.Type.Config
+    | AddTypeVariant Install.TypeVariant.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -137,6 +141,13 @@ subscription =
 addType : Install.Type.Config -> Installation
 addType =
     AddType
+
+
+{-| Add a type variant, defined by [`Install.TypeVariant.config`](Install-TypeVariant#config).
+-}
+addTypeVariant : Install.TypeVariant.Config -> Installation
+addTypeVariant =
+    AddTypeVariant
 
 
 {-| Create a rule from a list of transformations.
@@ -228,6 +239,13 @@ initContext installations =
 
                             else
                                 context
+
+                        AddTypeVariant ((Install.Internal.TypeVariant.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | addTypeVariant = config :: context.addTypeVariant }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
@@ -239,6 +257,7 @@ initContext installations =
                 , initializerCmd = []
                 , subscription = []
                 , addType = []
+                , addTypeVariant = []
                 }
                 installations
         )
@@ -300,6 +319,9 @@ declarationVisitor node context =
                 , List.concatMap
                     (\config -> Install.Internal.Subscription.declarationVisitor config node)
                     context.subscription
+                , List.concatMap
+                    (\config -> Install.Internal.TypeVariant.declarationVisitor config node)
+                    context.addTypeVariant
                 ]
     in
     ( errors

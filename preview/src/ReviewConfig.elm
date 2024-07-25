@@ -76,12 +76,13 @@ configAtmospheric =
             |> Install.insertFieldInTypeAlias
         , InitializerCmd.config "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
             |> Install.initializerCmd
-        ]
-    , TypeVariant.makeRule "Types"
-        "BackendMsg"
-        [ "GotAtmosphericRandomNumbers (Result Http.Error String)"
-        , "SetLocalUuidStuff (List Int)"
-        , "GotFastTick Time.Posix"
+        , TypeVariant.config "Types"
+            "BackendMsg"
+            [ "GotAtmosphericRandomNumbers (Result Http.Error String)"
+            , "SetLocalUuidStuff (List Int)"
+            , "GotFastTick Time.Posix"
+            ]
+            |> Install.addTypeVariant
         ]
     ]
 
@@ -131,18 +132,22 @@ configMagicLinkMinimal =
             |> Install.insertFieldInTypeAlias
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
             |> Install.initializer
-        ]
-    , TypeVariant.makeRule "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
-    , TypeVariant.makeRule "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
-    , TypeVariant.makeRule "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
-    , TypeVariant.makeRule "Types"
-        "ToFrontend"
-        [ "AuthToFrontend Auth.Common.ToFrontend"
-        , "AuthSuccess Auth.Common.UserInfo"
-        , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
-        , "GetLoginTokenRateLimited"
-        , "RegistrationError String"
-        , "SignInError String"
+        , TypeVariant.config "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
+            |> Install.addTypeVariant
+        , TypeVariant.config "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
+            |> Install.addTypeVariant
+        , TypeVariant.config "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
+            |> Install.addTypeVariant
+        , TypeVariant.config "Types"
+            "ToFrontend"
+            [ "AuthToFrontend Auth.Common.ToFrontend"
+            , "AuthSuccess Auth.Common.UserInfo"
+            , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
+            , "GetLoginTokenRateLimited"
+            , "RegistrationError String"
+            , "SignInError String"
+            ]
+            |> Install.addTypeVariant
         ]
     ]
 
@@ -167,26 +172,29 @@ configAuthTypes =
             |> Install.insertFieldInTypeAlias
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
             |> Install.insertFieldInTypeAlias
-        ]
-    , TypeVariant.makeRule "Types"
-        "FrontendMsg"
-        [ "SignInUser User.SignInData"
-        , "AuthFrontendMsg MagicLink.Types.Msg"
-        , "SetRoute_ Route"
-        , "LiftMsg MagicLink.Types.Msg"
-        ]
-    , TypeVariant.makeRule "Types"
-        "BackendMsg"
-        [ "AuthBackendMsg Auth.Common.BackendMsg"
-        , "AutoLogin SessionId User.SignInData"
-        , "OnConnected SessionId ClientId"
-        ]
-    , TypeVariant.makeRule "Types"
-        "ToBackend"
-        [ "AuthToBackend Auth.Common.ToBackend"
-        , "AddUser String String String"
-        , "RequestSignUp String String String"
-        , "GetUserDictionary"
+        , TypeVariant.config "Types"
+            "FrontendMsg"
+            [ "SignInUser User.SignInData"
+            , "AuthFrontendMsg MagicLink.Types.Msg"
+            , "SetRoute_ Route"
+            , "LiftMsg MagicLink.Types.Msg"
+            ]
+            |> Install.addTypeVariant
+        , TypeVariant.config "Types"
+            "BackendMsg"
+            [ "AuthBackendMsg Auth.Common.BackendMsg"
+            , "AutoLogin SessionId User.SignInData"
+            , "OnConnected SessionId ClientId"
+            ]
+            |> Install.addTypeVariant
+        , TypeVariant.config "Types"
+            "ToBackend"
+            [ "AuthToBackend Auth.Common.ToBackend"
+            , "AddUser String String String"
+            , "RequestSignUp String String String"
+            , "GetUserDictionary"
+            ]
+            |> Install.addTypeVariant
         ]
     ]
 
@@ -222,20 +230,21 @@ configAuthFrontend =
             |> Install.initializer
         , Install.Type.config "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
             |> Install.addType
-        ]
-    , TypeVariant.makeRule "Types"
-        "ToFrontend"
-        [ "AuthToFrontend Auth.Common.ToFrontend"
-        , "AuthSuccess Auth.Common.UserInfo"
-        , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
-        , "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
-        , "GetLoginTokenRateLimited"
-        , "RegistrationError String"
-        , "SignInError String"
-        , "UserSignedIn (Maybe User.User)"
-        , "UserRegistered User.User"
-        , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
-        , "GotMessage String"
+        , TypeVariant.config "Types"
+            "ToFrontend"
+            [ "AuthToFrontend Auth.Common.ToFrontend"
+            , "AuthSuccess Auth.Common.UserInfo"
+            , "UserInfoMsg (Maybe Auth.Common.UserInfo)"
+            , "CheckSignInResponse (Result BackendDataStatus User.SignInData)"
+            , "GetLoginTokenRateLimited"
+            , "RegistrationError String"
+            , "SignInError String"
+            , "UserSignedIn (Maybe User.User)"
+            , "UserRegistered User.User"
+            , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
+            , "GotMessage String"
+            ]
+            |> Install.addTypeVariant
         ]
     ]
 
@@ -294,10 +303,11 @@ configAuthBackend adminConfig =
 
 configRoute : List Rule
 configRoute =
-    [ -- ROUTE
-      TypeVariant.makeRule "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
-    , Install.rule "REPLACEME"
-        [ ElementToList.add
+    [ Install.rule "REPLACEME"
+        [ -- ROUTE
+          TypeVariant.config "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
+            |> Install.addTypeVariant
+        , ElementToList.add
             "Route"
             "routesAndNames"
             [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
@@ -317,9 +327,10 @@ addPages pageData =
 
 addPage : ( String, String ) -> List Rule
 addPage ( pageTitle, routeName ) =
-    [ TypeVariant.makeRule "Route" "Route" [ pageTitle ++ "Route" ]
-    , Install.rule "REPLACEME"
-        [ ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
+    [ Install.rule "REPLACEME"
+        [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
+            |> Install.addTypeVariant
+        , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
             |> Install.insertClauseInCase
         , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
             |> Install.addImport
