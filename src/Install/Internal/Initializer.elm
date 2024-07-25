@@ -106,7 +106,7 @@ getFieldNamesAndLastRange expr =
     case expr of
         TupledExpression expressions ->
             let
-                lastRange_ =
+                lastRange =
                     case expressions |> List.head |> Maybe.map Node.value of
                         Just expression ->
                             Install.Library.lastRange expression
@@ -114,16 +114,16 @@ getFieldNamesAndLastRange expr =
                         Nothing ->
                             Elm.Syntax.Range.empty
 
-                fieldNames_ : List String
-                fieldNames_ =
-                    case expressions |> List.map Node.value |> List.head of
-                        Just recordExpr ->
+                fieldNames : List String
+                fieldNames =
+                    case List.head expressions of
+                        Just (Node _ recordExpr) ->
                             Install.Library.fieldNames recordExpr
 
                         Nothing ->
                             []
             in
-            ( fieldNames_, lastRange_ )
+            ( fieldNames, lastRange )
 
         LetExpression { expression } ->
             getFieldNamesAndLastRange (Node.value expression)
