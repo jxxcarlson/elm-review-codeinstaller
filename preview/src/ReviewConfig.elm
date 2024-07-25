@@ -220,6 +220,8 @@ configAuthFrontend =
             |> Install.insertClauseInCase
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
             |> Install.initializer
+        , Install.Type.config "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
+            |> Install.addType
         ]
     , TypeVariant.makeRule "Types"
         "ToFrontend"
@@ -235,7 +237,6 @@ configAuthFrontend =
         , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
         , "GotMessage String"
         ]
-    , Install.Type.makeRule "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
     ]
 
 

@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription
+    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType
     )
 
 {-| TODO REPLACEME
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription
+@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType
 
 -}
 
@@ -34,7 +34,9 @@ import Install.Internal.InitializerCmd
 import Install.Internal.InsertFunction
 import Install.Internal.ReplaceFunction
 import Install.Internal.Subscription
+import Install.Internal.Type
 import Install.Subscription
+import Install.Type
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -48,6 +50,7 @@ type alias Context =
     , initializer : List Install.Initializer.Config
     , initializerCmd : List Install.InitializerCmd.Config
     , subscription : List Install.Subscription.Config
+    , addType : List ( Install.Type.Config, Install.Internal.Type.Context )
     }
 
 
@@ -63,6 +66,7 @@ type Installation
     | Initializer Install.Initializer.Config
     | InitializerCmd Install.InitializerCmd.Config
     | Subscription Install.Subscription.Config
+    | AddType Install.Type.Config
 
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
@@ -126,6 +130,13 @@ initializerCmd =
 subscription : Install.Subscription.Config -> Installation
 subscription =
     Subscription
+
+
+{-| Add a type, defined by [`Install.Type.config`](Install-Type#config).
+-}
+addType : Install.Type.Config -> Installation
+addType =
+    AddType
 
 
 {-| Create a rule from a list of transformations.
@@ -210,6 +221,13 @@ initContext installations =
 
                             else
                                 context
+
+                        AddType ((Install.Internal.Type.Config { hostModuleName }) as config) ->
+                            if moduleName == hostModuleName then
+                                { context | addType = ( config, Install.Internal.Type.init ) :: context.addType }
+
+                            else
+                                context
                 )
                 { importContexts = []
                 , elementToList = []
@@ -220,6 +238,7 @@ initContext installations =
                 , initializer = []
                 , initializerCmd = []
                 , subscription = []
+                , addType = []
                 }
                 installations
         )
@@ -246,6 +265,10 @@ importVisitor node context =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.Import.importVisitor config node ctx ))
                 context.importContexts
+        , addType =
+            List.map
+                (\( config, ctx ) -> ( config, Install.Internal.Type.importVisitor node ctx ))
+                context.addType
       }
     )
 
@@ -285,6 +308,10 @@ declarationVisitor node context =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.InsertFunction.declarationVisitor config node ctx ))
                 context.insertFunction
+        , addType =
+            List.map
+                (\( config, ctx ) -> ( config, Install.Internal.Type.declarationVisitor config node ctx ))
+                context.addType
       }
     )
 
@@ -298,4 +325,7 @@ finalEvaluation context =
         , List.concatMap
             (\( config, ctx ) -> Install.Internal.InsertFunction.finalEvaluation config ctx)
             context.insertFunction
+        , List.concatMap
+            (\( config, ctx ) -> Install.Internal.Type.finalEvaluation config ctx)
+            context.addType
         ]
