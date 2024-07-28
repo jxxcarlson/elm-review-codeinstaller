@@ -80,7 +80,7 @@ addImport =
     AddImport
 
 
-{-| Add an element to the end of a list, defined by [`Install.ElementToList.add`](Install-ElementToList#add).
+{-| Add an element to the end of a list, defined by [`Install.ElementToList.config`](Install-ElementToList#config).
 -}
 addElementToList : Install.ElementToList.Config -> Installation
 addElementToList =
