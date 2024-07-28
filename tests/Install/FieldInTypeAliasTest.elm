@@ -19,11 +19,11 @@ all =
 test1 =
     { description = "should not report an error when the field already exists"
     , src = """module Client exposing (..)
+
 type alias Client =
     { name : String
     , age : Int
-    }
-    """
+    }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String" ]
             |> Install.insertFieldInTypeAlias
@@ -33,10 +33,10 @@ type alias Client =
 test2 =
     { description = "should report an error when the field does not exist"
     , src = """module Client exposing (..)
+
 type alias Client =
     { age : Int
-    }
-    """
+    }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String" ]
             |> Install.insertFieldInTypeAlias
@@ -44,11 +44,11 @@ type alias Client =
     { age : Int
     }"""
     , fixed = """module Client exposing (..)
+
 type alias Client =
     { age : Int
     , name : String
-    }
-    """
+    }"""
     , message = "Add name to Client"
     }
 
@@ -58,8 +58,7 @@ test3 =
     , src = """module Data.Client exposing (..)
 type alias Client =
     { age : Int
-    }
-    """
+    }"""
     , installation =
         Install.FieldInTypeAlias.config "Data.Client" "Client" [ "name : String" ]
             |> Install.insertFieldInTypeAlias
@@ -70,8 +69,7 @@ type alias Client =
 type alias Client =
     { age : Int
     , name : String
-    }
-    """
+    }"""
     , message = "Add name to Client"
     }
 
@@ -85,8 +83,7 @@ test4 =
     , src = """module Client exposing (..)
 type alias Client =
     { age : Int
-    }
-    """
+    }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String", "email : String", "age : Int", "lastName : String", "favoriteColor : String" ]
             |> Install.insertFieldInTypeAlias
@@ -100,7 +97,6 @@ type alias Client =
     , email : String
     , lastName : String
     , favoriteColor : String
-    }
-    """
+    }"""
     , message = "Add fields email, favoriteColor, lastName, name to Client"
     }
