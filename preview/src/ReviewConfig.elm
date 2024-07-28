@@ -300,7 +300,7 @@ configRoute =
         [ -- ROUTE
           TypeVariant.config "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
             |> Install.addTypeVariant
-        , ElementToList.add
+        , ElementToList.config
             "Route"
             "routesAndNames"
             [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
@@ -322,7 +322,7 @@ addPage ( pageTitle, routeName ) =
         |> Install.insertClauseInCase
     , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
         |> Install.addImport
-    , ElementToList.add
+    , ElementToList.config
         "Route"
         "routesAndNames"
         [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]

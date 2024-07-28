@@ -20,7 +20,7 @@ type alias Config =
 For example, the rule
 
     Install.Rule.rule
-        [ Install.ElementToList.add
+        [ Install.ElementToList.config
             "User"
             "userTypes"
             [ "Admin", "SystemAdmin" ]
