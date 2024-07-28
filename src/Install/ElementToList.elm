@@ -1,11 +1,8 @@
-module Install.ElementToList exposing
-    ( Config
-    , config
-    )
+module Install.ElementToList exposing (config, Config)
 
 {-|
 
-@docs add, Config
+@docs config, Config
 
 -}
 
