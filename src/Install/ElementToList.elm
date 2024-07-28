@@ -1,4 +1,7 @@
-module Install.ElementToList exposing (add, Config)
+module Install.ElementToList exposing
+    ( Config
+    , config
+    )
 
 {-|
 
@@ -32,8 +35,8 @@ results in the following fix for function `User.userTypes`:
     [ Standard ] -> [ Standard, Admin, SystemAdmin ]
 
 -}
-add : String -> String -> List String -> Config
-add hostModuleName functionName elements =
+config : String -> String -> List String -> Config
+config hostModuleName functionName elements =
     Internal.Config
         { hostModuleName = String.split "." hostModuleName
         , functionName = functionName

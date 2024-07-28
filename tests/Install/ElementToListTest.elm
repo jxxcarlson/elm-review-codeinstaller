@@ -61,7 +61,7 @@ contributors =
 
 
 rule1 =
-    ElementToList.add "Contributors" "contributors" [ "Matt" ]
+    ElementToList.config "Contributors" "contributors" [ "Matt" ]
         |> Install.addElementToList
 
 
@@ -111,7 +111,7 @@ contributors =
 
 
 rule2 =
-    ElementToList.add
+    ElementToList.config
         "Contributors"
         "contributors"
         [ "Matt", "Laozi" ]
@@ -164,7 +164,7 @@ routesAndNames =
 
 
 rule4 =
-    ElementToList.add
+    ElementToList.config
         "Routes"
         "routesAndNames"
         [ "(Quotes, \"quotes\")" ]
