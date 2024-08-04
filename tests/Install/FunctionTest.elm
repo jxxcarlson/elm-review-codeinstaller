@@ -210,7 +210,7 @@ test2 =
 
 rule2 : Installation
 rule2 =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -263,7 +263,7 @@ test2a =
 
 rule2a : Installation
 rule2a =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "makeLinks"
         makeLinks
@@ -327,7 +327,7 @@ type alias Model =
 
 rule3 : Installation
 rule3 =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -371,7 +371,7 @@ test4 =
 
 rule4 : Installation
 rule4 =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -418,7 +418,7 @@ test4a =
 
 rule4a : Installation
 rule4a =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
@@ -464,7 +464,7 @@ test4b =
 
 rule4b : Installation
 rule4b =
-    InsertFunction.insert
+    InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =

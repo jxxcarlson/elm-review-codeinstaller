@@ -87,7 +87,7 @@ addElementToList =
     AddElementToList
 
 
-{-| Insert a function, defined by [`Install.Function.InsertFunction.insert`](Install-Function-InsertFunction#insert).
+{-| Insert a function, defined by [`Install.Function.InsertFunction.config`](Install-Function-InsertFunction#config).
 -}
 insertFunction : Install.Function.InsertFunction.Config -> Installation
 insertFunction =

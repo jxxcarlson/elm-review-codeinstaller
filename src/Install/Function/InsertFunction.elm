@@ -1,5 +1,5 @@
 module Install.Function.InsertFunction exposing
-    ( insert
+    ( config
     , Config, withInsertAfter
     )
 
@@ -7,7 +7,7 @@ module Install.Function.InsertFunction exposing
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.InsertFunction.insert
+        Install.Function.InsertFunction.config
             "Frontend"
             "view"
             """view model =
@@ -19,13 +19,13 @@ Running this rule will insert the function `view` in the module `Frontend` with 
 The form of the rule is the same for nested modules:
 
     rule =
-        Install.Function.InsertFunction.insert
+        Install.Function.InsertFunction.config
             "Foo.Bar"
             "earnInterest"
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.insertFunction
 
-@docs insert
+@docs config
 @docs Config, withInsertAfter
 
 -}
@@ -41,8 +41,8 @@ type alias Config =
 
 {-| Initialize the configuration for the rule.
 -}
-insert : String -> String -> String -> Config
-insert hostModuleName functionName functionImplementation =
+config : String -> String -> String -> Config
+config hostModuleName functionName functionImplementation =
     Internal.Config
         { hostModuleName = String.split "." hostModuleName
         , functionName = functionName
