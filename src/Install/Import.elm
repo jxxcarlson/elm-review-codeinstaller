@@ -23,9 +23,7 @@ To add the statement `import Foo.Bar as FB exposing (a, b, c)` to the `Frontend`
 There is a shortcut for importing modules with no alias or exposed values
 
     Install.Import.qualified "Frontend"
-        [ Install.Import.module_ "Foo.Bar"
-        , Install.Import.module_ "Baz.Qux"
-        ]
+        [ "Foo.Bar", "Baz.Qux" ]
 
 @docs config, Config
 @docs ImportData, module_, withAlias, withExposedValues, qualified
@@ -82,7 +80,7 @@ withExposedValues exposedValues importData =
     { importData | exposedValues = Just exposedValues }
 
 
-{-| Initialize the configuration for the rule.
+{-| Create a rule that adds import statements to a module with no alias or exposed values. Just pass the module name and the list of modules to import.
 -}
 qualified : String -> List String -> Config
 qualified hostModuleName_ imports =
