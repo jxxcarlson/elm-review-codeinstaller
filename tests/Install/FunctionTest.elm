@@ -39,7 +39,7 @@ test1 =
 
 rule1 : Installation
 rule1 =
-    ReplaceFunction.replace
+    ReplaceFunction.config
         "Frontend"
         "view"
         """view model =
@@ -130,7 +130,7 @@ makeLinks model route =
 
 rule1b : Installation
 rule1b =
-    ReplaceFunction.replace
+    ReplaceFunction.config
         "View.Main"
         "makeLinks"
         makeLinks

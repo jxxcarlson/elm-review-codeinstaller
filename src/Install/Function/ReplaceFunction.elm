@@ -1,15 +1,15 @@
-module Install.Function.ReplaceFunction exposing (Config, replace)
+module Install.Function.ReplaceFunction exposing (Config, config)
 
 {-| Replace a function in a given module with a new implementation.
 
     -- code for ReviewConfig.elm:
     rule =
-        Install.Function.InsertFunction.config
+        Install.Function.ReplaceFunction.config
             "Frontend"
             "view"
             """view model =
             Html.text "This is a test\""""
-            |> Install.Function.InsertFunction.makeRule
+            |> Install.Function.ReplaceFunction.makeRule
 
 Running this rule will replace the function `view` in the module `Frontend` with the provided implementation.
 
@@ -22,7 +22,7 @@ The form of the rule is the same for nested modules:
             "hoho model = { model | interest = 1.03 * model.interest }"
             |> Install.Function.ReplaceFunction.makeRule
 
-@docs Config, replace
+@docs Config, config
 
 -}
 
@@ -37,8 +37,8 @@ type alias Config =
 
 {-| Initialize the configuration for the rule.
 -}
-replace : String -> String -> String -> Config
-replace hostModuleName functionName functionImplementation =
+config : String -> String -> String -> Config
+config hostModuleName functionName functionImplementation =
     Internal.Config
         { hostModuleName = String.split "." hostModuleName
         , functionName = functionName

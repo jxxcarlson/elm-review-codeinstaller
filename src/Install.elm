@@ -4,7 +4,7 @@ module Install exposing
     , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
     )
 
-{-| TODO REPLACEME
+{-|
 
 @docs rule
 
@@ -94,7 +94,7 @@ insertFunction =
     InsertFunction
 
 
-{-| Replace a function, defined by [`Install.Function.ReplaceFunction.replace`](Install-Function-ReplaceFunction#replace).
+{-| Replace a function, defined by [`Install.Function.ReplaceFunction.config`](Install-Function-ReplaceFunction#config).
 -}
 replaceFunction : Install.Function.ReplaceFunction.Config -> Installation
 replaceFunction =
