@@ -8,7 +8,7 @@ import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Range as Range exposing (Range)
 import List.Extra
-import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
+import Review.ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule
 import Set exposing (Set)
 import Set.Extra as Set
@@ -129,23 +129,8 @@ extractNamesFromPattern (Node _ pattern) set =
 
 
 visitExpression : String -> Ignored -> Node Expression -> ModuleContext -> ModuleContext
-visitExpression namespace ignored ((Node _ expression) as expressionNode) context =
+visitExpression namespace ignored (Node _ expression) context =
     case expression of
-        FunctionOrValue moduleName name ->
-            case ModuleNameLookupTable.fullModuleNameFor context.lookupTable expressionNode of
-                Nothing ->
-                    context
-
-                Just fullModuleName ->
-                    if
-                        List.isEmpty moduleName && Set.member name ignored
-                        --|| Set.member fullModuleNameJoined coreModules
-                    then
-                        context
-
-                    else
-                        context
-
         IfBlock c t f ->
             visitExpressions namespace ignored [ c, t, f ] context
 
@@ -295,7 +280,7 @@ getDeclarationName : Node Declaration -> String
 getDeclarationName declaration =
     let
         getName declaration_ =
-            declaration_ |> .name >> Node.value
+            declaration_ |> .name |> Node.value
     in
     case Node.value declaration of
         FunctionDeclaration function ->
@@ -513,7 +498,7 @@ isStringEqualToDeclaration str decl =
                                 else
                                     lines
                    )
-                |> String.join ""
+                |> String.concat
     in
     (declarationToString >> deepCleanString) decl == (removeTypeAnnotation >> deepCleanString) str
 

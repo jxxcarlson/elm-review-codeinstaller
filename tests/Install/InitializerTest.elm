@@ -1,5 +1,6 @@
 module Install.InitializerTest exposing (all)
 
+import Install
 import Install.Initializer
 import Run
 import Test exposing (Test, describe)
@@ -8,11 +9,11 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.Initializer"
-        [ Run.testFix test1
-        , Run.testFix test2
-        , Run.testFix test3
-        , Run.testFix test4
-        , Run.testFix test5
+        [ Run.testFix_ test1
+        , Run.testFix_ test2
+        , Run.testFix_ test3
+        , Run.testFix_ test4
+        , Run.testFix_ test5
         ]
 
 
@@ -26,7 +27,9 @@ init =
     , Cmd.none
     )
 """
-    , rule = Install.Initializer.makeRule "Client" "init" [ { field = "name", value = "\"Nancy\"" } ]
+    , installation =
+        Install.Initializer.config "Client" "init" [ { field = "name", value = "\"Nancy\"" } ]
+            |> Install.initializer
     , under = """init =
     ( { age = 30
       }
@@ -54,7 +57,9 @@ init =
     , Cmd.none
     )
 """
-    , rule = Install.Initializer.makeRule "Client" "init" [ { field = "name", value = "\"Nancy\"" }, { field = "count", value = "0" } ]
+    , installation =
+        Install.Initializer.config "Client" "init" [ { field = "name", value = "\"Nancy\"" }, { field = "count", value = "0" } ]
+            |> Install.initializer
     , under = """init =
     ( { age = 30
       }
@@ -75,7 +80,7 @@ init =
 test3 =
     { description = "should insert a field in a function with multiple arguments"
     , src = src3
-    , rule = rule3
+    , installation = rule3
     , under = under3
     , fixed = fixed3
     , message = "Add fields to the model"
@@ -147,7 +152,8 @@ init url key =
 
 
 rule3 =
-    Install.Initializer.makeRule "Frontend" "init" [ { field = "authFlow", value = "Auth.Common.Idle" } ]
+    Install.Initializer.config "Frontend" "init" [ { field = "authFlow", value = "Auth.Common.Idle" } ]
+        |> Install.initializer
 
 
 fixed3 =
@@ -237,7 +243,7 @@ under3 =
 test4 =
     { description = "should insert multiple fields in a function with multiple arguments"
     , src = src4
-    , rule = rule4
+    , installation = rule4
     , under = under4
     , fixed = fixed4
     , message = "Add fields to the model"
@@ -245,12 +251,13 @@ test4 =
 
 
 rule4 =
-    Install.Initializer.makeRule "Backend"
+    Install.Initializer.config "Backend"
         "init"
         [ { field = "pendingAuths", value = "Dict.empty" }
         , { field = "sessions", value = "Dict.empty" }
         , { field = "users", value = "Dict.empty" }
         ]
+        |> Install.initializer
 
 
 src4 =
@@ -286,7 +293,7 @@ init =
 test5 =
     { description = "should insert multiple fields in a function with multiple arguments 2"
     , src = src5
-    , rule = rule5
+    , installation = rule5
     , under = under5
     , fixed = fixed5
     , message = "Add fields to the model"
@@ -336,12 +343,13 @@ updateFromFrontend sessionId clientId msg model =
 
 
 rule5 =
-    Install.Initializer.makeRule "Backend"
+    Install.Initializer.config "Backend"
         "init"
         [ { field = "pendingAuths", value = "Dict.empty" }
         , { field = "sessions", value = "Dict.empty" }
         , { field = "users", value = "Dict.empty" }
         ]
+        |> Install.initializer
 
 
 under5 =

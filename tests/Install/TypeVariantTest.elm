@@ -1,5 +1,6 @@
 module Install.TypeVariantTest exposing (all)
 
+import Install
 import Install.TypeVariant
 import Run
 import Test exposing (Test, describe)
@@ -8,15 +9,15 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.TypeVariant"
-        [ Run.testFix test1
-        , Run.testFix test2
+        [ Run.testFix_ test1
+        , Run.testFix_ test2
         ]
 
 
 test1 =
     { description = "should report an error when the variant does not exist"
     , src = src1
-    , rule = rule1
+    , installation = rule1
     , under = under1
     , fixed = fixed1
     , message = "Add variants [Admin, Assistant] to Role"
@@ -26,7 +27,7 @@ test1 =
 test2 =
     { description = "should report an error when the variant does not exist in nested module"
     , src = src2
-    , rule = rule2
+    , installation = rule2
     , under = under2
     , fixed = fixed2
     , message = "Add variants [TO] to BrazilianStates"
@@ -34,7 +35,8 @@ test2 =
 
 
 rule1 =
-    Install.TypeVariant.makeRule "User" "Role" [ "Admin", "Assistant Int" ]
+    Install.TypeVariant.config "User" "Role" [ "Admin", "Assistant Int" ]
+        |> Install.addTypeVariant
 
 
 src1 =
@@ -59,7 +61,8 @@ type Role
 
 
 rule2 =
-    Install.TypeVariant.makeRule "Data.States" "BrazilianStates" [ "TO" ]
+    Install.TypeVariant.config "Data.States" "BrazilianStates" [ "TO" ]
+        |> Install.addTypeVariant
 
 
 src2 =

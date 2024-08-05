@@ -1,22 +1,32 @@
 module Install.ImportTest exposing (..)
 
+import Install
 import Install.Import exposing (module_, withAlias, withExposedValues)
-import Review.Rule exposing (Rule)
-import Run
-import Test exposing (Test, describe)
+import Review.Test
+import Run exposing (TestData_)
+import Test exposing (Test, describe, test)
 
 
 all : Test
 all =
     describe "Install.Import"
-        [ Run.testFix test1
-        , Run.testFix test1a
-        , Run.testFix test2
-        , Run.testFix test3
-        , Run.testFix test4
-        , Run.expectNoErrorsTest test5.description test5.src test5.rule
-        , Run.testFix test6
-        , Run.testFix test7
+        [ Run.testFix_ test1
+        , Run.testFix_ test1a
+        , Run.testFix_ test2
+        , Run.testFix_ test3
+        , Run.testFix_ test4
+        , Run.expectNoErrorsTest_ test5.description test5.src test5.installation
+        , Run.testFix_ test6
+        , Run.testFix_ test7
+        , test "should not report an error when it's not the target module" <|
+            \() ->
+                """module NotMain exposing (..)
+
+import Set
+
+foo = 1"""
+                    |> Review.Test.run (Install.rule "TestRule" [ rule1 ])
+                    |> Review.Test.expectNoErrors
         ]
 
 
@@ -24,21 +34,21 @@ all =
 -- test 1 - add simple import
 
 
-test1 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1 : TestData_
 test1 =
     { description = "add simple import"
     , src = src1
-    , rule = rule1
+    , installation = rule1
     , under = under1
     , fixed = fixed1
     , message = "add 1 import to module Main"
     }
 
 
-rule1 : Rule
+rule1 : Install.Installation
 rule1 =
     Install.Import.config "Main" [ module_ "Dict" ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 src1 : String
@@ -68,11 +78,11 @@ foo = 1"""
 -- test 1a - add simple import when there are no imports
 
 
-test1a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1a : TestData_
 test1a =
     { description = "add simple import when there are no imports"
     , src = src1a
-    , rule = rule1
+    , installation = rule1
     , under = under1a
     , fixed = fixed1a
     , message = "add 1 import to module Main"
@@ -102,21 +112,21 @@ foo = 1"""
 -- test 2 - add import with alias
 
 
-test2 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2 : TestData_
 test2 =
     { description = "add import with alias"
     , src = src1
-    , rule = rule2
+    , installation = rule2
     , under = under1
     , fixed = fixed2
     , message = "add 1 import to module Main"
     }
 
 
-rule2 : Rule
+rule2 : Install.Installation
 rule2 =
     Install.Import.config "Main" [ module_ "Dict" |> withAlias "D" ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 fixed2 : String
@@ -132,21 +142,21 @@ foo = 1"""
 -- test 3 - add import exposing
 
 
-test3 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test3 : TestData_
 test3 =
     { description = "add import exposing"
     , src = src1
-    , rule = rule3
+    , installation = rule3
     , under = under1
     , fixed = fixed3
     , message = "add 1 import to module Main"
     }
 
 
-rule3 : Rule
+rule3 : Install.Installation
 rule3 =
     Install.Import.config "Main" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 fixed3 : String
@@ -162,18 +172,18 @@ foo = 1"""
 -- Test 4 - add multiple imports with aliases and exposed values
 
 
-test4 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4 : TestData_
 test4 =
     { description = "add multiple imports with aliases and exposed values"
     , src = src1
-    , rule = rule4
+    , installation = rule4
     , under = under1
     , fixed = fixed4
     , message = "add 5 imports to module Main"
     }
 
 
-rule4 : Rule
+rule4 : Install.Installation
 rule4 =
     Install.Import.config "Main"
         [ module_ "Dict" |> withAlias "D" |> withExposedValues [ "Dict" ]
@@ -182,7 +192,7 @@ rule4 =
         , module_ "Pages.NestedModule.EvenMoreNested.MyPage" |> withAlias "MyPage"
         , module_ "Array" |> withExposedValues [ "Array" ]
         ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 fixed4 : String
@@ -202,43 +212,43 @@ foo = 1"""
 -- TEST 5 - should not report an error when import already exists
 
 
-test5 : { description : String, src : String, rule : Rule }
+test5 : { description : String, src : String, installation : Install.Installation }
 test5 =
     { description = "should not report an error when import already exists"
     , src = src1
-    , rule = rule5
+    , installation = rule5
     }
 
 
-rule5 : Rule
+rule5 : Install.Installation
 rule5 =
     Install.Import.config "Main"
         [ module_ "Set" ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 
 -- Test 6 - Should show correct number of imports to add when repeated imports are ignored
 
 
-test6 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test6 : TestData_
 test6 =
     { description = "Should show correct number of imports to add when repeated importes are ignored"
     , src = src1
-    , rule = rule6
+    , installation = rule6
     , under = under1
     , fixed = fixed6
     , message = "add 1 import to module Main"
     }
 
 
-rule6 : Rule
+rule6 : Install.Installation
 rule6 =
     Install.Import.config "Main"
         [ module_ "Set"
         , module_ "Dict"
         ]
-        |> Install.Import.makeRule
+        |> Install.addImport
 
 
 fixed6 : String
@@ -250,20 +260,20 @@ import Dict
 foo = 1"""
 
 
-test7 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test7 : TestData_
 test7 =
     { description = "Should show correct number of imports to add when repeated imports are ignored"
     , src = src1
-    , rule = rule7
+    , installation = rule7
     , under = under1
     , fixed = fixed7
     , message = "add 2 imports to module Main" --"Add Set and Dict to module Main using initSimple"
     }
 
 
-rule7 : Rule
+rule7 : Install.Installation
 rule7 =
-    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.Import.makeRule
+    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.addImport
 
 
 fixed7 : String

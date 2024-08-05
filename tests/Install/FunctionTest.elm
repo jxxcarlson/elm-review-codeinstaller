@@ -1,8 +1,8 @@
 module Install.FunctionTest exposing (all)
 
+import Install exposing (Installation)
 import Install.Function.InsertFunction as InsertFunction
 import Install.Function.ReplaceFunction as ReplaceFunction
-import Review.Rule exposing (Rule)
 import Run
 import Test exposing (Test, describe)
 
@@ -10,15 +10,15 @@ import Test exposing (Test, describe)
 all : Test
 all =
     describe "Install.Function"
-        [ Run.testFix test1
-        , Run.testFix test1b
-        , Run.testFix test2
-        , Run.testFix test2a
-        , Run.testFix test3
-        , Run.testFix test4
-        , Run.testFix test4a
-        , Run.testFix test4b
-        , Run.testFix test4c
+        [ Run.testFix_ test1
+        , Run.testFix_ test1b
+        , Run.testFix_ test2
+        , Run.testFix_ test2a
+        , Run.testFix_ test3
+        , Run.testFix_ test4
+        , Run.testFix_ test4a
+        , Run.testFix_ test4b
+        , Run.testFix_ test4c
         ]
 
 
@@ -26,25 +26,25 @@ all =
 -- TEST 1
 
 
-test1 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1 : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test1 =
     { description = "Test 1, replace function body of of Frontend.view"
     , src = src1
-    , rule = rule1
+    , installation = rule1
     , under = under1
     , fixed = fixed1
     , message = "Replace function \"view\""
     }
 
 
-rule1 : Rule
+rule1 : Installation
 rule1 =
     ReplaceFunction.config
         "Frontend"
         "view"
         """view model =
     Html.text "This is a test\""""
-        |> ReplaceFunction.makeRule
+        |> Install.replaceFunction
 
 
 src1 : String
@@ -89,11 +89,11 @@ update msg model =
             model"""
 
 
-test1b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test1b : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test1b =
     { description = "Test 1b, replace function with unformatted code"
     , src = src1b
-    , rule = rule1b
+    , installation = rule1b
     , under = under1b
     , fixed = fixed1b
     , message = "Replace function \"makeLinks\""
@@ -128,13 +128,13 @@ makeLinks model route =
         :: List.map (makeLink route) Route.routesAndNames"""
 
 
-rule1b : Rule
+rule1b : Installation
 rule1b =
     ReplaceFunction.config
         "View.Main"
         "makeLinks"
         makeLinks
-        |> ReplaceFunction.makeRule
+        |> Install.replaceFunction
 
 
 under1b : String
@@ -197,25 +197,25 @@ makeLinks =
 -- TEST 2 - Should add a new function
 
 
-test2 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2 : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test2 =
     { description = "Test 2, add a new function"
     , src = src1
-    , rule = rule2
+    , installation = rule2
     , under = under2
     , fixed = fixed2
     , message = "Add function \"newFunction\""
     }
 
 
-rule2 : Rule
+rule2 : Installation
 rule2 =
     InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 under2 : String
@@ -250,24 +250,24 @@ newFunction model =
 -- TEST 2A - should add new function with unformatted code
 
 
-test2a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test2a : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test2a =
     { description = "Test 2a, add a new function with unformatted code"
     , src = src1
-    , rule = rule2a
+    , installation = rule2a
     , under = under2
     , fixed = fixed2a
     , message = "Add function \"makeLinks\""
     }
 
 
-rule2a : Rule
+rule2a : Installation
 rule2a =
     InsertFunction.config
         "Frontend"
         "makeLinks"
         makeLinks
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 fixed2a : String
@@ -302,11 +302,11 @@ makeLinks model route =
 -- TEST 3 - Should add a new function when there is no function in the module
 
 
-test3 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test3 : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test3 =
     { description = "Test 3, add a new function when there is no function in the module"
     , src = src3
-    , rule = rule3
+    , installation = rule3
     , under = under3
     , fixed = fixed3
     , message = "Add function \"newFunction\""
@@ -325,14 +325,14 @@ type alias Model =
 """
 
 
-rule3 : Rule
+rule3 : Installation
 rule3 =
     InsertFunction.config
         "Frontend"
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 under3 : String
@@ -358,18 +358,18 @@ newFunction model =
 -- TEST 4 - Should add a new function after a specific function
 
 
-test4 : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4 : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test4 =
     { description = "Test 4, add a new function after a specific function"
     , src = src1
-    , rule = rule4
+    , installation = rule4
     , under = under4
     , fixed = fixed4
     , message = "Add function \"newFunction\""
     }
 
 
-rule4 : Rule
+rule4 : Installation
 rule4 =
     InsertFunction.config
         "Frontend"
@@ -377,7 +377,7 @@ rule4 =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "view"
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 under4 : String
@@ -405,18 +405,18 @@ update msg model =
             model"""
 
 
-test4a : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4a : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test4a =
     { description = "Test 4a, add a new function after a specific type"
     , src = src1
-    , rule = rule4a
+    , installation = rule4a
     , under = under4a
     , fixed = fixed4a
     , message = "Add function \"newFunction\""
     }
 
 
-rule4a : Rule
+rule4a : Installation
 rule4a =
     InsertFunction.config
         "Frontend"
@@ -424,7 +424,7 @@ rule4a =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "Model"
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 under4a : String
@@ -451,18 +451,18 @@ update msg model =
             model"""
 
 
-test4b : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4b : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test4b =
     { description = "Test 4b, add a new function after a specific type alias"
     , src = src3
-    , rule = rule4b
+    , installation = rule4b
     , under = under4b
     , fixed = fixed4b
     , message = "Add function \"newFunction\""
     }
 
 
-rule4b : Rule
+rule4b : Installation
 rule4b =
     InsertFunction.config
         "Frontend"
@@ -470,7 +470,7 @@ rule4b =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "Model"
-        |> InsertFunction.makeRule
+        |> Install.insertFunction
 
 
 under4b : String
@@ -492,11 +492,11 @@ newFunction model =
     Html.text "This is a test\""""
 
 
-test4c : { description : String, src : String, rule : Rule, under : String, fixed : String, message : String }
+test4c : { description : String, src : String, installation : Installation, under : String, fixed : String, message : String }
 test4c =
     { description = "Test 4c, add a new function after a specific type alias"
     , src = src3
-    , rule = rule4b
+    , installation = rule4b
     , under = under4b
     , fixed = fixed4b
     , message = "Add function \"newFunction\""

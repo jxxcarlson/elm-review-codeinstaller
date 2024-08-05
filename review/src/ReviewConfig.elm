@@ -6,10 +6,12 @@ import Docs.ReviewLinksAndSections
 import Docs.UpToDateReadmeLinks
 import NoDebug.Log
 import NoDebug.TodoOrToString
+import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoUnused.Dependencies
 import NoUnused.Variables
 import Review.Rule exposing (Rule)
+import Simplify
 
 
 config : List Rule
@@ -21,5 +23,7 @@ config =
         }
     , Docs.ReviewLinksAndSections.rule
     , Docs.ReviewAtDocs.rule
+    , NoMissingTypeExpose.rule
     , NoPrematureLetComputation.rule
+    , Simplify.rule Simplify.defaults
     ]
