@@ -44,7 +44,7 @@ rule1 =
         "view"
         """view model =
     Html.text "This is a test\""""
-        |> Install.function
+        |> Install.replaceFunction
 
 
 src1 : String
@@ -134,7 +134,7 @@ rule1b =
         "View.Main"
         "makeLinks"
         makeLinks
-        |> Install.function
+        |> Install.replaceFunction
 
 
 under1b : String
@@ -215,7 +215,7 @@ rule2 =
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.insertFunction
+        |> Install.function
 
 
 under2 : String
@@ -267,7 +267,7 @@ rule2a =
         "Frontend"
         "makeLinks"
         makeLinks
-        |> Install.insertFunction
+        |> Install.function
 
 
 fixed2a : String
@@ -332,7 +332,7 @@ rule3 =
         "newFunction"
         """newFunction model =
     Html.text "This is a test\""""
-        |> Install.insertFunction
+        |> Install.function
 
 
 under3 : String
@@ -377,7 +377,7 @@ rule4 =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "view"
-        |> Install.insertFunction
+        |> Install.function
 
 
 under4 : String
@@ -424,7 +424,7 @@ rule4a =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "Model"
-        |> Install.insertFunction
+        |> Install.function
 
 
 under4a : String
@@ -470,7 +470,7 @@ rule4b =
         """newFunction model =
     Html.text "This is a test\""""
         |> InsertFunction.withInsertAfter "Model"
-        |> Install.insertFunction
+        |> Install.function
 
 
 under4b : String

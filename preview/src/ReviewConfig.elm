@@ -200,7 +200,7 @@ configAuthFrontend =
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
             |> Install.imports
         , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
-            |> Install.function
+            |> Install.replaceFunction
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
             |> ClauseInCase.withInsertAtBeginning
             |> Install.clauseInCase
@@ -344,9 +344,9 @@ configView =
         , Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ]
             |> Install.imports
         , ReplaceFunction.config "View.Main" "headerRow" headerRow
-            |> Install.function
+            |> Install.replaceFunction
         , ReplaceFunction.config "View.Main" "makeLinks" makeLinks
-            |> Install.function
+            |> Install.replaceFunction
         ]
 
 

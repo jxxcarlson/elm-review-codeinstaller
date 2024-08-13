@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , imports, addElementToList, insertFunction, function, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+    , imports, addElementToList, function, replaceFunction, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
     )
 
 {-|
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs imports, addElementToList, insertFunction, function, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+@docs imports, addElementToList, function, replaceFunction, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
 
 -}
 
@@ -45,8 +45,8 @@ import Review.Rule as Rule exposing (Error, Rule)
 type alias Context =
     { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
     , elementToList : List Install.ElementToList.Config
-    , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
-    , function : List Install.Function.ReplaceFunction.Config
+    , function : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
+    , replaceFunction : List Install.Function.ReplaceFunction.Config
     , clauseInCase : List Install.ClauseInCase.Config
     , fieldInTypeAlias : List Install.FieldInTypeAlias.Config
     , initializer : List Install.Initializer.Config
@@ -89,15 +89,15 @@ addElementToList =
 
 {-| Insert a function, defined by [`Install.Function.InsertFunction.config`](Install-Function-InsertFunction#config).
 -}
-insertFunction : Install.Function.InsertFunction.Config -> Installation
-insertFunction =
+function : Install.Function.InsertFunction.Config -> Installation
+function =
     InsertFunction
 
 
 {-| Replace a function, defined by [`Install.Function.ReplaceFunction.config`](Install-Function-ReplaceFunction#config).
 -}
-function : Install.Function.ReplaceFunction.Config -> Installation
-function =
+replaceFunction : Install.Function.ReplaceFunction.Config -> Installation
+replaceFunction =
     ReplaceFunction
 
 
@@ -186,14 +186,14 @@ initContext installations =
 
                         InsertFunction ((Install.Internal.InsertFunction.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | insertFunction = ( config, Install.Internal.InsertFunction.init ) :: context.insertFunction }
+                                { context | function = ( config, Install.Internal.InsertFunction.init ) :: context.function }
 
                             else
                                 context
 
                         ReplaceFunction ((Install.Internal.ReplaceFunction.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | function = config :: context.function }
+                                { context | replaceFunction = config :: context.replaceFunction }
 
                             else
                                 context
@@ -249,8 +249,8 @@ initContext installations =
                 )
                 { importContexts = []
                 , elementToList = []
-                , insertFunction = []
                 , function = []
+                , replaceFunction = []
                 , clauseInCase = []
                 , fieldInTypeAlias = []
                 , initializer = []
@@ -303,7 +303,7 @@ declarationVisitor node context =
                     context.elementToList
                 , List.concatMap
                     (\config -> Install.Internal.ReplaceFunction.declarationVisitor config node)
-                    context.function
+                    context.replaceFunction
                 , List.concatMap
                     (\config -> Install.Internal.ClauseInCase.declarationVisitor config node)
                     context.clauseInCase
@@ -326,10 +326,10 @@ declarationVisitor node context =
     in
     ( errors
     , { context
-        | insertFunction =
+        | function =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.InsertFunction.declarationVisitor config node ctx ))
-                context.insertFunction
+                context.function
         , addType =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.Type.declarationVisitor config node ctx ))
@@ -346,7 +346,7 @@ finalEvaluation context =
             context.importContexts
         , List.concatMap
             (\( config, ctx ) -> Install.Internal.InsertFunction.finalEvaluation config ctx)
-            context.insertFunction
+            context.function
         , List.concatMap
             (\( config, ctx ) -> Install.Internal.Type.finalEvaluation config ctx)
             context.addType

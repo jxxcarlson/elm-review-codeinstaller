@@ -1,10 +1,10 @@
 # elm-review-codeinstaller
 
-**NOTE:** *This version is a breaking change from version 11.0.  In case where you wrote `.init ... |> makeRule` you will need to write `.config ... |> makeRule` instead.*
+**NOTE:** *This version is a breaking change from version 12.05.  The visible part is an improved set of rule names. Please see the documentation,
+both below and for the 
+A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.*
 
-A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.
-
-The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment.
+*The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment.*
 
 ## Installation
 
@@ -111,13 +111,19 @@ To test the review code in its current state, try running this in a clean Lamder
 npx elm-review --template jxxcarlson/elm-review-codeinstaller/example
 ```
 
+For this to succeed, your Lamdera project must have a notion of "page," as in the counter app
+that you will find in the folder `counter-original` of the
+repo for this project. Try copying that folder.
+
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
 
 ## Contributors
 
-James Carlson and Mateus Leite.
+James Carlson and Mateus Leite.  We also thank Jeroen Engels for his
+contributions to making our API much better.
 
 ## License
 
