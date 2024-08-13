@@ -1,7 +1,8 @@
 module Install exposing
     ( rule
     , Installation
-    , addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+    , addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+    , imports
     )
 
 {-|
@@ -75,8 +76,8 @@ type Installation
 
 {-| Add an import, defined by [`Install.Import.config`](Install-Import#config).
 -}
-addImport : Install.Import.Config -> Installation
-addImport =
+imports : Install.Import.Config -> Installation
+imports =
     AddImport
 
 

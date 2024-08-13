@@ -48,7 +48,7 @@ test1 =
 rule1 : Install.Installation
 rule1 =
     Install.Import.config "Main" [ module_ "Dict" ]
-        |> Install.addImport
+        |> Install.imports
 
 
 src1 : String
@@ -126,7 +126,7 @@ test2 =
 rule2 : Install.Installation
 rule2 =
     Install.Import.config "Main" [ module_ "Dict" |> withAlias "D" ]
-        |> Install.addImport
+        |> Install.imports
 
 
 fixed2 : String
@@ -156,7 +156,7 @@ test3 =
 rule3 : Install.Installation
 rule3 =
     Install.Import.config "Main" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
-        |> Install.addImport
+        |> Install.imports
 
 
 fixed3 : String
@@ -192,7 +192,7 @@ rule4 =
         , module_ "Pages.NestedModule.EvenMoreNested.MyPage" |> withAlias "MyPage"
         , module_ "Array" |> withExposedValues [ "Array" ]
         ]
-        |> Install.addImport
+        |> Install.imports
 
 
 fixed4 : String
@@ -224,7 +224,7 @@ rule5 : Install.Installation
 rule5 =
     Install.Import.config "Main"
         [ module_ "Set" ]
-        |> Install.addImport
+        |> Install.imports
 
 
 
@@ -248,7 +248,7 @@ rule6 =
         [ module_ "Set"
         , module_ "Dict"
         ]
-        |> Install.addImport
+        |> Install.imports
 
 
 fixed6 : String
@@ -273,7 +273,7 @@ test7 =
 
 rule7 : Install.Installation
 rule7 =
-    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.addImport
+    Install.Import.qualified "Main" [ "Set", "Dict", "Foo.Bar" ] |> Install.imports
 
 
 fixed7 : String

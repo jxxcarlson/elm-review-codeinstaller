@@ -58,9 +58,9 @@ configAtmospheric =
     Install.rule "AddAtmospheric"
         [ -- Add fields randomAtmosphericNumbers and time to BackendModel
           Import.qualified "Types" [ "Http" ]
-            |> Install.addImport
+            |> Install.imports
         , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper", "MagicLink.Backend", "MagicLink.Auth" ]
-            |> Install.addImport
+            |> Install.imports
         , ClauseInCase.config "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString"
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)"
@@ -89,18 +89,18 @@ configUsers : Rule
 configUsers =
     Install.rule "ConfigUsers"
         [ Import.qualified "Types" [ "User" ]
-            |> Install.addImport
+            |> Install.imports
         , Import.config "Types" [ module_ "Dict" |> withExposedValues [ "Dict" ] ]
-            |> Install.addImport
+            |> Install.imports
         , Import.qualified "Backend" [ "Time", "Task", "LocalUUID" ]
-            |> Install.addImport
+            |> Install.imports
         , Import.config "Backend"
             [ module_ "MagicLink.Helper" |> withAlias "Helper"
             , module_ "Dict" |> withExposedValues [ "Dict" ]
             ]
-            |> Install.addImport
+            |> Install.imports
         , Import.qualified "Frontend" [ "Dict" ]
-            |> Install.addImport
+            |> Install.imports
         , FieldInTypeAlias.config "Types"
             "BackendModel"
             [ "users: Dict.Dict User.EmailString User.User"
@@ -118,11 +118,11 @@ configMagicLinkMinimal : Rule
 configMagicLinkMinimal =
     Install.rule "AddMagicLink"
         [ Import.qualified "Types" [ "Auth.Common", "MagicLink.Types" ]
-            |> Install.addImport
+            |> Install.imports
         , Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
-            |> Install.addImport
+            |> Install.imports
         , Import.qualified "Backend" [ "Auth.Flow" ]
-            |> Install.addImport
+            |> Install.imports
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
             |> Install.insertClauseInCase
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
@@ -152,7 +152,7 @@ configAuthTypes : Rule
 configAuthTypes =
     Install.rule "ConfigAuth"
         [ Import.qualified "Types" [ "AssocList", "Auth.Common", "LocalUUID", "MagicLink.Types", "Session" ]
-            |> Install.addImport
+            |> Install.imports
         , FieldInTypeAlias.config "Types"
             "BackendModel"
             [ "localUuidData : Maybe LocalUUID.Data"
@@ -198,7 +198,7 @@ configAuthFrontend : Rule
 configAuthFrontend =
     Install.rule "ConfigAuthFrontend"
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
-            |> Install.addImport
+            |> Install.imports
         , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
             |> Install.replaceFunction
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
@@ -263,7 +263,7 @@ configAuthBackend adminConfig =
             , "Reconnect"
             , "User"
             ]
-            |> Install.addImport
+            |> Install.imports
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
             |> Install.insertClauseInCase
         , ClauseInCase.config "Backend" "updateFromFrontend" "AddUser realname username email" "MagicLink.Backend.addUser model clientId email realname username"
@@ -321,7 +321,7 @@ addPage ( pageTitle, routeName ) =
     , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
         |> Install.insertClauseInCase
     , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
-        |> Install.addImport
+        |> Install.imports
     , ElementToList.config
         "Route"
         "routesAndNames"
@@ -342,7 +342,7 @@ configView =
         , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view"
             |> Install.insertClauseInCase
         , Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ]
-            |> Install.addImport
+            |> Install.imports
         , ReplaceFunction.config "View.Main" "headerRow" headerRow
             |> Install.replaceFunction
         , ReplaceFunction.config "View.Main" "makeLinks" makeLinks
