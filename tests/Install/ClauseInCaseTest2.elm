@@ -64,21 +64,21 @@ test1c =
 rule1a : Installation
 rule1a =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 rule1b : Installation
 rule1b =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAfter "CounterIncremented"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 rule1c : Installation
 rule1c =
     Install.ClauseInCase.config "Backend" "updateFromFrontend" "ResetCounter" "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 src1 : String
@@ -169,7 +169,7 @@ rule2 : Installation
 rule2 =
     Install.ClauseInCase.config "Frontend" "update" "Reset" "( { model | counter = 0 }, sendToBackend CounterReset )"
         |> Install.ClauseInCase.withInsertAfter "Increment"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 src2 : String
@@ -267,7 +267,7 @@ rule3 : Installation
 rule3 =
     Install.ClauseInCase.config "Philosopher" "stringToPhilosopher" "Aspasia" "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under3 : String
@@ -345,7 +345,7 @@ isStringPattern nodePattern =
 rule4 : Installation
 rule4 =
     Install.ClauseInCase.config "Elm.Syntax.Pattern2" "isStringPattern" "_" "False"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under4 : String
@@ -404,7 +404,7 @@ rule5 =
     Install.ClauseInCase.config "SomeElmReviewRule" "errorFix" "Just \"\"" "[]"
         |> Install.ClauseInCase.withInsertAtBeginning
         |> Install.ClauseInCase.withCustomErrorMessage "Add handler for empty error string" [ "" ]
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under5 : String
@@ -477,7 +477,7 @@ rule6 : Installation
 rule6 =
     Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under6 : String
@@ -566,7 +566,7 @@ rule7 : Installation
 rule7 =
     Install.ClauseInCase.config "Backend" "someFunction" "Just []" "Result.Err \"Empty data\""
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under7 : String
@@ -644,7 +644,7 @@ rule8 : Installation
 rule8 =
     Install.ClauseInCase.config "WeekShiftForm" "getShiftFormFromWeekday" "Sun" ".sunday"
         |> Install.ClauseInCase.withInsertAfter "Sat"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under8 : String
@@ -739,7 +739,7 @@ rule9 : Installation
 rule9 =
     Install.ClauseInCase.config "Errors" "decodeFieldErrors" "Just []" "Dict.singleton \"base\" []"
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under9 : String
@@ -816,7 +816,7 @@ viewModal modal =
 rule10 : Installation
 rule10 =
     Install.ClauseInCase.config "Modal" "viewModal" "ModalConfirm" "div [class \"modal-confirm\"] []"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 under10 : String

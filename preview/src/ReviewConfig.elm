@@ -62,11 +62,11 @@ configAtmospheric =
         , Import.qualified "Backend" [ "Atmospheric", "Dict", "Time", "Task", "MagicLink.Helper", "MagicLink.Backend", "MagicLink.Auth" ]
             |> Install.imports
         , ClauseInCase.config "Backend" "update" "GotAtmosphericRandomNumbers randomNumberString" "Atmospheric.setAtmosphericRandomNumbers model randomNumberString"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "update" "SetLocalUuidStuff randomInts" "(model, Cmd.none)"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "update" "GotFastTick time" "( { model | time = time } , Cmd.none )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , FieldInTypeAlias.config "Types"
             "BackendModel"
             [ "randomAtmosphericNumbers : Maybe (List Int)"
@@ -124,7 +124,7 @@ configMagicLinkMinimal =
         , Import.qualified "Backend" [ "Auth.Flow" ]
             |> Install.imports
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
             |> Install.insertFieldInTypeAlias
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
@@ -200,27 +200,27 @@ configAuthFrontend =
         [ Import.qualified "Frontend" [ "MagicLink.Types", "Auth.Common", "MagicLink.Frontend", "MagicLink.Auth", "Pages.SignIn", "Pages.Home", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes" ]
             |> Install.imports
         , ReplaceFunction.config "Frontend" "tryLoading" tryLoading2
-            |> Install.replaceFunction
+            |> Install.function
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "AuthToFrontend authToFrontendMsg" "MagicLink.Auth.updateFromBackend authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
             |> ClauseInCase.withInsertAtBeginning
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "GotUserDictionary users" "( { model | users = users }, Cmd.none )"
             |> ClauseInCase.withInsertAtBeginning
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "UserRegistered user" "MagicLink.Frontend.userRegistered model.magicLinkModel user |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
             |> ClauseInCase.withInsertAtBeginning
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateFromBackendLoaded" "GotMessage message" "({model | message = message}, Cmd.none)"
             |> ClauseInCase.withInsertAtBeginning
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateLoaded" "SetRoute_ route" "( { model | route = route }, Cmd.none )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateLoaded" "AuthFrontendMsg authToFrontendMsg" "MagicLink.Auth.update authToFrontendMsg model.magicLinkModel |> Tuple.mapFirst (\\magicLinkModel -> { model | magicLinkModel = magicLinkModel })"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateLoaded" "SignInUser userData" "MagicLink.Frontend.signIn model userData"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Frontend" "updateLoaded" "LiftMsg _" "( model, Cmd.none )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
             |> Install.initializer
         , Install.Type.config "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
@@ -247,13 +247,13 @@ configAuthBackend : { fullname : String, username : String, email : String } -> 
 configAuthBackend adminConfig =
     Install.rule "ConfigAuthBackend"
         [ ClauseInCase.config "Backend" "update" "AuthBackendMsg authMsg" "Auth.Flow.backendUpdate (MagicLink.Auth.backendConfig model) authMsg"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "update" "AutoLogin sessionId loginData" "( model, Lamdera.sendToFrontend sessionId (AuthToFrontend <| Auth.Common.AuthSignInWithTokenResponse <| Ok <| loginData) )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "update" "OnConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "update" "ClientConnected sessionId clientId" "( model, Reconnect.connect model sessionId clientId )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , Import.qualified "Backend"
             [ "AssocList"
             , "Auth.Common"
@@ -265,13 +265,13 @@ configAuthBackend adminConfig =
             ]
             |> Install.imports
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "updateFromFrontend" "AddUser realname username email" "MagicLink.Backend.addUser model clientId email realname username"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "updateFromFrontend" "RequestSignUp realname username email" "MagicLink.Backend.requestSignUp model clientId realname username email"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "Backend" "updateFromFrontend" "GetUserDictionary" "( model, Lamdera.sendToFrontend clientId (GotUserDictionary model.users) )"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , Initializer.config "Backend"
             "init"
             [ { field = "randomAtmosphericNumbers", value = "Just [ 235880, 700828, 253400, 602641 ]" }
@@ -319,7 +319,7 @@ addPage ( pageTitle, routeName ) =
     [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
         |> Install.addTypeVariant
     , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
     , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
         |> Install.imports
     , ElementToList.config
@@ -334,19 +334,19 @@ configView : Rule
 configView =
     Install.rule "AddConfig"
         [ ClauseInCase.config "View.Main" "loadedView" "AdminRoute" adminRoute
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "View.Main" "loadedView" "NotesRoute" "generic model Pages.Notes.view"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "View.Main" "loadedView" "SignInRoute" "generic model (\\model_ -> Pages.SignIn.view Types.LiftMsg model_.magicLinkModel |> Element.map Types.AuthFrontendMsg)"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , ClauseInCase.config "View.Main" "loadedView" "CounterPageRoute" "generic model Pages.Counter.view"
-            |> Install.insertClauseInCase
+            |> Install.clauseInCase
         , Import.qualified "View.Main" [ "MagicLink.Helper", "Pages.Counter", "Pages.SignIn", "Pages.Admin", "Pages.TermsOfService", "Pages.Notes", "User" ]
             |> Install.imports
         , ReplaceFunction.config "View.Main" "headerRow" headerRow
-            |> Install.replaceFunction
+            |> Install.function
         , ReplaceFunction.config "View.Main" "makeLinks" makeLinks
-            |> Install.replaceFunction
+            |> Install.function
         ]
 
 

@@ -1,8 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
-    , imports
+    , imports, addElementToList, insertFunction, function, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
     )
 
 {-|
@@ -10,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs addImport, addElementToList, insertFunction, replaceFunction, insertClauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+@docs imports, addElementToList, insertFunction, function, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
 
 -}
 
@@ -47,7 +46,7 @@ type alias Context =
     { importContexts : List ( Install.Internal.Import.Config, Install.Internal.Import.Context )
     , elementToList : List Install.ElementToList.Config
     , insertFunction : List ( Install.Function.InsertFunction.Config, Install.Internal.InsertFunction.Context )
-    , replaceFunction : List Install.Function.ReplaceFunction.Config
+    , function : List Install.Function.ReplaceFunction.Config
     , clauseInCase : List Install.ClauseInCase.Config
     , fieldInTypeAlias : List Install.FieldInTypeAlias.Config
     , initializer : List Install.Initializer.Config
@@ -97,15 +96,15 @@ insertFunction =
 
 {-| Replace a function, defined by [`Install.Function.ReplaceFunction.config`](Install-Function-ReplaceFunction#config).
 -}
-replaceFunction : Install.Function.ReplaceFunction.Config -> Installation
-replaceFunction =
+function : Install.Function.ReplaceFunction.Config -> Installation
+function =
     ReplaceFunction
 
 
 {-| Insert a clause in a `case` expression, defined by [`Install.ClauseInCase.config`](Install-ClauseInCase#config).
 -}
-insertClauseInCase : Install.ClauseInCase.Config -> Installation
-insertClauseInCase =
+clauseInCase : Install.ClauseInCase.Config -> Installation
+clauseInCase =
     InsertClauseInCase
 
 
@@ -194,7 +193,7 @@ initContext installations =
 
                         ReplaceFunction ((Install.Internal.ReplaceFunction.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | replaceFunction = config :: context.replaceFunction }
+                                { context | function = config :: context.function }
 
                             else
                                 context
@@ -251,7 +250,7 @@ initContext installations =
                 { importContexts = []
                 , elementToList = []
                 , insertFunction = []
-                , replaceFunction = []
+                , function = []
                 , clauseInCase = []
                 , fieldInTypeAlias = []
                 , initializer = []
@@ -304,7 +303,7 @@ declarationVisitor node context =
                     context.elementToList
                 , List.concatMap
                     (\config -> Install.Internal.ReplaceFunction.declarationVisitor config node)
-                    context.replaceFunction
+                    context.function
                 , List.concatMap
                     (\config -> Install.Internal.ClauseInCase.declarationVisitor config node)
                     context.clauseInCase

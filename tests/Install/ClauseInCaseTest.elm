@@ -16,7 +16,7 @@ all =
 
 rule1 =
     config "REPLACEME" "REPLACEME" "REPLACEME" "REPLACEME"
-        |> Install.insertClauseInCase
+        |> Install.clauseInCase
 
 
 src1 =

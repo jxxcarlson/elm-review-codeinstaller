@@ -44,7 +44,7 @@ rule1 =
         "view"
         """view model =
     Html.text "This is a test\""""
-        |> Install.replaceFunction
+        |> Install.function
 
 
 src1 : String
@@ -134,7 +134,7 @@ rule1b =
         "View.Main"
         "makeLinks"
         makeLinks
-        |> Install.replaceFunction
+        |> Install.function
 
 
 under1b : String
