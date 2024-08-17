@@ -8,7 +8,7 @@ name, and the type of the new variant.
         "Types"
         "ToBackend"
         [ "ResetCounter" "SetCounter Int" ]
-        |> Install.addTypeVariant
+        |> Install.typeVariant
 
 Then you will have
 
@@ -39,7 +39,7 @@ type alias Config =
         "Types"
         "ToBackend"
         [ "ResetCounter", "SetCounter: Int" ]
-        |> Install.addTypeVariant
+        |> Install.typeVariant
 
 -}
 config : String -> String -> List String -> Config

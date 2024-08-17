@@ -62,7 +62,7 @@ contributors =
 
 rule1 =
     ElementToList.config "Contributors" "contributors" [ "Matt" ]
-        |> Install.addElementToList
+        |> Install.elementToList
 
 
 under1 =
@@ -115,7 +115,7 @@ rule2 =
         "Contributors"
         "contributors"
         [ "Matt", "Laozi" ]
-        |> Install.addElementToList
+        |> Install.elementToList
 
 
 under2 =
@@ -168,7 +168,7 @@ rule4 =
         "Routes"
         "routesAndNames"
         [ "(Quotes, \"quotes\")" ]
-        |> Install.addElementToList
+        |> Install.elementToList
 
 
 under4 =

@@ -1,7 +1,7 @@
 module Install exposing
     ( rule
     , Installation
-    , imports, addElementToList, function, replaceFunction, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+    , imports, elementToList, function, replaceFunction, clauseInCase, fieldInTypeAlias, initializer, initializerCmd, subscription, customType, typeVariant
     )
 
 {-|
@@ -9,7 +9,7 @@ module Install exposing
 @docs rule
 
 @docs Installation
-@docs imports, addElementToList, function, replaceFunction, clauseInCase, insertFieldInTypeAlias, initializer, initializerCmd, subscription, addType, addTypeVariant
+@docs imports, elementToList, function, replaceFunction, clauseInCase, fieldInTypeAlias, initializer, initializerCmd, subscription, customType, typeVariant
 
 -}
 
@@ -52,8 +52,8 @@ type alias Context =
     , initializer : List Install.Initializer.Config
     , initializerCmd : List Install.InitializerCmd.Config
     , subscription : List Install.Subscription.Config
-    , addType : List ( Install.Type.Config, Install.Internal.Type.Context )
-    , addTypeVariant : List Install.TypeVariant.Config
+    , customType : List ( Install.Type.Config, Install.Internal.Type.Context )
+    , typeVariant : List Install.TypeVariant.Config
     }
 
 
@@ -82,8 +82,8 @@ imports =
 
 {-| Add an element to the end of a list, defined by [`Install.ElementToList.config`](Install-ElementToList#config).
 -}
-addElementToList : Install.ElementToList.Config -> Installation
-addElementToList =
+elementToList : Install.ElementToList.Config -> Installation
+elementToList =
     AddElementToList
 
 
@@ -110,8 +110,8 @@ clauseInCase =
 
 {-| Insert a field in a type alias, defined by [`Install.FieldInTypeAlias.config`](Install-FieldInTypeAlias#config).
 -}
-insertFieldInTypeAlias : Install.FieldInTypeAlias.Config -> Installation
-insertFieldInTypeAlias =
+fieldInTypeAlias : Install.FieldInTypeAlias.Config -> Installation
+fieldInTypeAlias =
     FieldInTypeAlias
 
 
@@ -138,15 +138,15 @@ subscription =
 
 {-| Add a type, defined by [`Install.Type.config`](Install-Type#config).
 -}
-addType : Install.Type.Config -> Installation
-addType =
+customType : Install.Type.Config -> Installation
+customType =
     AddType
 
 
 {-| Add a type variant, defined by [`Install.TypeVariant.config`](Install-TypeVariant#config).
 -}
-addTypeVariant : Install.TypeVariant.Config -> Installation
-addTypeVariant =
+typeVariant : Install.TypeVariant.Config -> Installation
+typeVariant =
     AddTypeVariant
 
 
@@ -235,14 +235,14 @@ initContext installations =
 
                         AddType ((Install.Internal.Type.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | addType = ( config, Install.Internal.Type.init ) :: context.addType }
+                                { context | customType = ( config, Install.Internal.Type.init ) :: context.customType }
 
                             else
                                 context
 
                         AddTypeVariant ((Install.Internal.TypeVariant.Config { hostModuleName }) as config) ->
                             if moduleName == hostModuleName then
-                                { context | addTypeVariant = config :: context.addTypeVariant }
+                                { context | typeVariant = config :: context.typeVariant }
 
                             else
                                 context
@@ -256,8 +256,8 @@ initContext installations =
                 , initializer = []
                 , initializerCmd = []
                 , subscription = []
-                , addType = []
-                , addTypeVariant = []
+                , customType = []
+                , typeVariant = []
                 }
                 installations
         )
@@ -284,10 +284,10 @@ importVisitor node context =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.Import.importVisitor config node ctx ))
                 context.importContexts
-        , addType =
+        , customType =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.Type.importVisitor node ctx ))
-                context.addType
+                context.customType
       }
     )
 
@@ -321,7 +321,7 @@ declarationVisitor node context =
                     context.subscription
                 , List.concatMap
                     (\config -> Install.Internal.TypeVariant.declarationVisitor config node)
-                    context.addTypeVariant
+                    context.typeVariant
                 ]
     in
     ( errors
@@ -330,10 +330,10 @@ declarationVisitor node context =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.InsertFunction.declarationVisitor config node ctx ))
                 context.function
-        , addType =
+        , customType =
             List.map
                 (\( config, ctx ) -> ( config, Install.Internal.Type.declarationVisitor config node ctx ))
-                context.addType
+                context.customType
       }
     )
 
@@ -349,5 +349,5 @@ finalEvaluation context =
             context.function
         , List.concatMap
             (\( config, ctx ) -> Install.Internal.Type.finalEvaluation config ctx)
-            context.addType
+            context.customType
         ]

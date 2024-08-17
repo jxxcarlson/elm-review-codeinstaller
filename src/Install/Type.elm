@@ -6,7 +6,7 @@ in the given module and if not, it adds it right after the imports.
 For example, the rule
 
     Install.Type.config "Frontend" "Magic" [ "Inactive", "Wizard String", "Spell String Int" ]
-        |> Install.addType
+        |> Install.customType
 
 results in insertion the text below in the module "Frontend":
 
