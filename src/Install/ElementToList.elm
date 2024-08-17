@@ -24,7 +24,7 @@ For example, the rule
             "User"
             "userTypes"
             [ "Admin", "SystemAdmin" ]
-            |> Install.Rule.addElementToList
+            |> Install.Rule.elementToList
         ]
 
 results in the following fix for function `User.userTypes`:

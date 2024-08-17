@@ -36,7 +36,7 @@ test2 =
 
 rule1 =
     Install.TypeVariant.config "User" "Role" [ "Admin", "Assistant Int" ]
-        |> Install.addTypeVariant
+        |> Install.typeVariant
 
 
 src1 =
@@ -62,7 +62,7 @@ type Role
 
 rule2 =
     Install.TypeVariant.config "Data.States" "BrazilianStates" [ "TO" ]
-        |> Install.addTypeVariant
+        |> Install.typeVariant
 
 
 src2 =

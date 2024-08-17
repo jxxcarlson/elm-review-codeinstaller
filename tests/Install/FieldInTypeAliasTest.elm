@@ -26,7 +26,7 @@ type alias Client =
     }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
     }
 
 
@@ -39,7 +39,7 @@ type alias Client =
     }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
     , under = """type alias Client =
     { age : Int
     }"""
@@ -61,7 +61,7 @@ type alias Client =
     }"""
     , installation =
         Install.FieldInTypeAlias.config "Data.Client" "Client" [ "name : String" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
     , under = """type alias Client =
     { age : Int
     }"""
@@ -86,7 +86,7 @@ type alias Client =
     }"""
     , installation =
         Install.FieldInTypeAlias.config "Client" "Client" [ "name : String", "email : String", "age : Int", "lastName : String", "favoriteColor : String" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
     , under = """type alias Client =
     { age : Int
     }"""

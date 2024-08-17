@@ -72,7 +72,7 @@ configAtmospheric =
             [ "randomAtmosphericNumbers : Maybe (List Int)"
             , "time : Time.Posix"
             ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , InitializerCmd.config "Backend" "init" [ "Time.now |> Task.perform GotFastTick", "MagicLink.Helper.getAtmosphericRandomNumbers" ]
             |> Install.initializerCmd
         , TypeVariant.config "Types"
@@ -81,7 +81,7 @@ configAtmospheric =
             , "SetLocalUuidStuff (List Int)"
             , "GotFastTick Time.Posix"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         ]
 
 
@@ -106,9 +106,9 @@ configUsers =
             [ "users: Dict.Dict User.EmailString User.User"
             , "userNameToEmailString : Dict.Dict User.Username User.EmailString"
             ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "users : Dict.Dict User.EmailString User.User" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , Initializer.config "Frontend" "initLoaded" [ { field = "users", value = "Dict.empty" } ]
             |> Install.initializer
         ]
@@ -126,15 +126,15 @@ configMagicLinkMinimal =
         , ClauseInCase.config "Backend" "updateFromFrontend" "AuthToBackend authMsg" "Auth.Flow.updateFromFrontend (MagicLink.Auth.backendConfig model) clientId sessionId authMsg model"
             |> Install.clauseInCase
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
             |> Install.initializer
         , TypeVariant.config "Types" "FrontendMsg" [ "AuthFrontendMsg MagicLink.Types.Msg" ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , TypeVariant.config "Types" "BackendMsg" [ "AuthBackendMsg Auth.Common.BackendMsg" ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , TypeVariant.config "Types" "ToBackend" [ "AuthToBackend Auth.Common.ToBackend" ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , TypeVariant.config "Types"
             "ToFrontend"
             [ "AuthToFrontend Auth.Common.ToFrontend"
@@ -144,7 +144,7 @@ configMagicLinkMinimal =
             , "RegistrationError String"
             , "SignInError String"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         ]
 
 
@@ -165,9 +165,9 @@ configAuthTypes =
             , "log : MagicLink.Types.Log"
             , "sessionInfo : Session.SessionInfo"
             ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , FieldInTypeAlias.config "Types" "LoadedModel" [ "magicLinkModel : MagicLink.Types.Model" ]
-            |> Install.insertFieldInTypeAlias
+            |> Install.fieldInTypeAlias
         , TypeVariant.config "Types"
             "FrontendMsg"
             [ "SignInUser User.SignInData"
@@ -175,14 +175,14 @@ configAuthTypes =
             , "SetRoute_ Route"
             , "LiftMsg MagicLink.Types.Msg"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , TypeVariant.config "Types"
             "BackendMsg"
             [ "AuthBackendMsg Auth.Common.BackendMsg"
             , "AutoLogin SessionId User.SignInData"
             , "OnConnected SessionId ClientId"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , TypeVariant.config "Types"
             "ToBackend"
             [ "AuthToBackend Auth.Common.ToBackend"
@@ -190,7 +190,7 @@ configAuthTypes =
             , "RequestSignUp String String String"
             , "GetUserDictionary"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         ]
 
 
@@ -224,7 +224,7 @@ configAuthFrontend =
         , Initializer.config "Frontend" "initLoaded" [ { field = "magicLinkModel", value = "Pages.SignIn.init loadingModel.initUrl" } ]
             |> Install.initializer
         , Install.Type.config "Types" "BackendDataStatus" [ "Sunny", "LoadedBackendData", "Spell String Int" ]
-            |> Install.addType
+            |> Install.customType
         , TypeVariant.config "Types"
             "ToFrontend"
             [ "AuthToFrontend Auth.Common.ToFrontend"
@@ -239,7 +239,7 @@ configAuthFrontend =
             , "GotUserDictionary (Dict.Dict User.EmailString User.User)"
             , "GotMessage String"
             ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         ]
 
 
@@ -299,12 +299,12 @@ configRoute =
     Install.rule "AddRoute"
         [ -- ROUTE
           TypeVariant.config "Route" "Route" [ "NotesRoute", "SignInRoute", "AdminRoute" ]
-            |> Install.addTypeVariant
+            |> Install.typeVariant
         , ElementToList.config
             "Route"
             "routesAndNames"
             [ "(NotesRoute, \"notes\")", "(SignInRoute, \"signin\")", "(AdminRoute, \"admin\")" ]
-            |> Install.addElementToList
+            |> Install.elementToList
         ]
 
 
@@ -317,7 +317,7 @@ newPages =
 addPage : ( String, String ) -> List Install.Installation
 addPage ( pageTitle, routeName ) =
     [ TypeVariant.config "Route" "Route" [ pageTitle ++ "Route" ]
-        |> Install.addTypeVariant
+        |> Install.typeVariant
     , ClauseInCase.config "View.Main" "loadedView" (pageTitle ++ "Route") ("generic model Pages." ++ pageTitle ++ ".view")
         |> Install.clauseInCase
     , Import.qualified "View.Main" [ "Pages." ++ pageTitle ]
@@ -326,7 +326,7 @@ addPage ( pageTitle, routeName ) =
         "Route"
         "routesAndNames"
         [ "(" ++ pageTitle ++ "Route, \"" ++ routeName ++ "\")" ]
-        |> Install.addElementToList
+        |> Install.elementToList
     ]
 
 
