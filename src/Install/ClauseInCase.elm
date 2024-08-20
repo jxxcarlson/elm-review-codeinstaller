@@ -15,7 +15,7 @@ in a specified module. For example, if you put the code below in your
         "updateFromFrontend"
         "ResetCounter"
         "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 
 Thus we will have
 
@@ -56,7 +56,7 @@ type alias Config =
         "updateFromFrontend"
         "ResetCounter"
         "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 
 If you need additional configuration, check the `withInsertAfter` and `withCustomErrorMessage` functions.
 
@@ -110,7 +110,7 @@ To add the clause `Aspasia` after the clause `Aristotle`, you can use the follow
         "Aspasia"
         "Just Aspasia"
         |> Install.ClauseInCase.withInsertAfter "Aristotle"
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 
 This will add the clause `Aspasia` after the clause `Aristotle` in the `stringToPhilosopher` function, resulting in:
 
@@ -151,7 +151,7 @@ You also can add the clause after another clause of choice with the `withInsertA
         "ResetCounter"
         "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withInsertAtBeginning
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 
 In this case we will have
 
@@ -184,7 +184,7 @@ withInsertAtBeginning (Internal.Config config_) =
         "ResetCounter"
         "( { model | counter = 0 }, broadcast (CounterNewValue 0 clientId) )"
         |> Install.ClauseInCase.withCustomErrorMessage "Add handler for ResetCounter" []
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 
 -}
 withCustomErrorMessage : String -> List String -> Config -> Config

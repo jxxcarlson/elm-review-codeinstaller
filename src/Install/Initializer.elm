@@ -6,9 +6,10 @@ the `ReviewConfig` item below, you specify the module name, the function
 name, as well as a list of item `{field = <fieldName>, value = <value>}`
 to be added to the function.
 
-    Install.Initializer.makeRule "Main"
+    Install.Initializer.config "Main"
         "init"
         [ { field = "message", value = "\"hohoho!\"" }, { field = "counter", value = "0" } ]
+        |> Install.initializer
 
 Thus we will have
 
@@ -40,9 +41,10 @@ As in the `ReviewConfig` item below, you specify
 the module name, the function name, as well as the
 field name and value to be added to the function:
 
-    Install.Initializer.makeRule "Main"
+    Install.Initializer.config "Main"
         "init"
         [ { field = "message", value = "\"hohoho!\"" }, { field = "counter", value = "0" } ]
+        |> Install.initializer
 
 -}
 config : String -> String -> List { field : String, value : String } -> Config

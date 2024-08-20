@@ -9,7 +9,7 @@ module Install.Function.ReplaceFunction exposing (Config, config)
             "view"
             """view model =
             Html.text "This is a test\""""
-            |> Install.Function.ReplaceFunction.makeRule
+            |> Install.replaceFunction
 
 Running this rule will replace the function `view` in the module `Frontend` with the provided implementation.
 
@@ -20,7 +20,7 @@ The form of the rule is the same for nested modules:
             "Foo.Bar"
             "earnInterest"
             "hoho model = { model | interest = 1.03 * model.interest }"
-            |> Install.Function.ReplaceFunction.makeRule
+            |> Install.replaceFunction
 
 @docs Config, config
 

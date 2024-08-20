@@ -1,10 +1,9 @@
 # elm-review-codeinstaller
 
-**NOTE:** *This version is a breaking change from version 12.05.  The visible part is an improved set of rule names. Please see the documentation,
-both below and for the 
-A package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types.*
+**NOTE:** _This version is a breaking change from version 12.05. The visible part is an improved set of rule names. Please see the documentation,
+both below and for the [codeinstaller-rulesets](https://github.com/jxxcarlson/codeinstaller-rulesets) package designed to make it easy to add pieces of code to an existing codebase using `elm-review` rules. This package provides a set of tools to help you automatically insert clauses in case expressions, fields in type aliases, fields in initializer functions, and variants in custom types._
 
-*The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment.*
+_The project is still in development, so expect it to change a lot over the next weeks and likely months. For now, consider it to be an experiment._
 
 ## Installation
 
@@ -59,12 +58,12 @@ addResetCounter =
 
 addResetCounterVariant : Rule
 addResetCounterVariant =
-    Install.TypeVariant.makeRule "Counter" "Msg" "ResetCounter"
+    Install.typeVariant "Counter" "Msg" "ResetCounter"
 
 addResetCounterClause : Rule
 addResetCounterClause =
     Install.ClauseInCase.config "Counter" "update" "ResetCounter" "( { model | counter = 0 }, Cmd.none )"
-        |> Install.ClauseInCase.makeRule
+        |> Install.clauseInCase
 ```
 
 After running `elm-review --fix`, your `Counter` module will be updated as follows:
@@ -115,14 +114,13 @@ For this to succeed, your Lamdera project must have a notion of "page," as in th
 that you will find in the folder `counter-original` of the
 repo for this project. Try copying that folder.
 
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or bug fixes.
 
 ## Contributors
 
-James Carlson and Mateus Leite.  We also thank Jeroen Engels for his
+[James Carlson](https://github.com/jxxcarlson) and [Mateus Leite](https://github.com/mateusfpleite). We also thank [Jeroen Engels](https://github.com/jfmengels) for his
 contributions to making our API much better.
 
 ## License
